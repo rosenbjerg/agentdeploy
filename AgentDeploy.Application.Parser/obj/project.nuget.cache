@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "xOOB6aCr9oCD6DWF4DFCB6pitNDRIlxgIHcVaHh2t05EcyxkfggL/TzHydA9P5ATDhiQK6Tv/snKA2vblmaOHw==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\malte\\Documents\\GitHub\\AgentDeploy\\AgentDeploy.Application.Parser\\AgentDeploy.Application.Parser.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\malte\\.nuget\\packages\\yamldotnet\\9.1.4\\yamldotnet.9.1.4.nupkg.sha512"
+  ],
+  "logs": []
+}
