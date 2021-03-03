@@ -1,0 +1,10 @@
+﻿variables:
+  username:
+    type: 'string'
+    default_value: 'postgres'
+  password:
+    type: 'string'
+show_command: true
+show_output: true
+command: 'echo "$(username) and $(password)"'
+  
