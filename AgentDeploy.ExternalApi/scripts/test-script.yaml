@@ -6,5 +6,5 @@
     type: 'string'
 show_command: true
 show_output: true
-command: 'echo "$(username) and $(password)"'
+command: 'echo "$HELLO $(username) with $(password)"'
   

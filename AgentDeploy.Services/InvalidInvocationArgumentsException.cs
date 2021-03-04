@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AgentDeploy.Application.Parser
+namespace AgentDeploy.Services
 {
     public class InvalidInvocationArgumentsException : Exception
     {

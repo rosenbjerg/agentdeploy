@@ -1,13 +1,10 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using AgentDeploy.Application.Parser;
+using AgentDeploy.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Primitives;
 
-namespace AgentDeploy.ApplicationHost.ExternalApi.Controllers
+namespace AgentDeploy.ExternalApi.Controllers
 {
     [ApiController]
     [Route("api/command")]

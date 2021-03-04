@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace AgentDeploy.ApplicationHost.ExternalApi.Options
+namespace AgentDeploy.ExternalApi.Options
 {
     public static class ServiceCollectionExtensions
     {

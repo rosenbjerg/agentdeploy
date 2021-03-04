@@ -1,4 +1,4 @@
 ﻿available_commands:
   test-script:
     variable_contraints:
-      password: .{6,}
+      password: test|contoso

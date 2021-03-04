@@ -1,17 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AgentDeploy.Application.Parser;
-using AgentDeploy.ApplicationHost.ExternalApi.Options;
+using AgentDeploy.ExternalApi.Options;
+using AgentDeploy.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace AgentDeploy.ApplicationHost.ExternalApi
+namespace AgentDeploy.ExternalApi
 {
     public class Startup
     {

@@ -1,10 +1,10 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using AgentDeploy.Application.Parser.Models;
+using AgentDeploy.Services.Models;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace AgentDeploy.Application.Parser
+namespace AgentDeploy.Services
 {
     public class TokenFileParser
     {

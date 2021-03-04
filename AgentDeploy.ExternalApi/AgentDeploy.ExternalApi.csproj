@@ -3,7 +3,6 @@
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <RootNamespace>AgentDeploy.ApplicationHost.ExternalApi</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,6 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\AgentDeploy.Models\AgentDeploy.Models.csproj" />
       <ProjectReference Include="..\AgentDeploy.Services\AgentDeploy.Services.csproj" />
     </ItemGroup>
 

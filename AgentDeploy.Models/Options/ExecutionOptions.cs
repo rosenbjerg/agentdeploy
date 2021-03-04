@@ -1,4 +1,4 @@
-﻿namespace AgentDeploy.ApplicationHost.ExternalApi.Options
+﻿namespace AgentDeploy.ExternalApi.Options
 {
     public class ExecutionOptions
     {

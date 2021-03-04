@@ -1,13 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
-namespace AgentDeploy.ApplicationHost.ExternalApi
+namespace AgentDeploy.ExternalApi
 {
     public class Program
     {
@@ -22,7 +18,7 @@ namespace AgentDeploy.ApplicationHost.ExternalApi
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
-                        .UseKestrel()
+                        .UseKestrel(o => o.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(30))
                         .UseStartup<Startup>();
                 });
     }

@@ -1,4 +1,4 @@
-﻿namespace AgentDeploy.Application.Parser
+﻿namespace AgentDeploy.Services.Models
 {
     public enum ArgumentType
     {

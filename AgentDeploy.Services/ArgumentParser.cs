@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
-using AgentDeploy.Application.Parser.Models;
+using AgentDeploy.Services.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace AgentDeploy.Application.Parser
+namespace AgentDeploy.Services
 {
     public record InvocationArgument(string Name, ArgumentType Type, object Value, bool Secret);
     public record InvocationArgumentError(string Name, string Error);

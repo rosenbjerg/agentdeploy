@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace AgentDeploy.Application.Parser.Models
+namespace AgentDeploy.Services.Models
 {
     public class Script
     {

@@ -1,4 +1,4 @@
-﻿namespace AgentDeploy.Application.Parser.Models
+﻿namespace AgentDeploy.Services.Models
 {
     public class ScriptArgument
     {
