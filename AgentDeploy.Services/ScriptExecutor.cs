@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.ExternalApi.Options;
 using AgentDeploy.Services.Models;
@@ -23,14 +24,16 @@ namespace AgentDeploy.Services
         {
             _executionOptions = executionOptions;
         }
-        public async Task<ExecutionResult> Execute(Script script, ReadOnlyCollection<InvocationArgument> args, string[] environmentVariables)
+        public async Task<ExecutionResult> Execute(Script script, ReadOnlyCollection<InvocationArgument> args, string[] environmentVariables, CancellationToken cancellationToken)
         {
             var tempFilePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.sh");
             try
             {
-                var scriptText = await PrepareScriptFile(script, args, environmentVariables, tempFilePath);
+                cancellationToken.ThrowIfCancellationRequested();
+                var scriptText = await PrepareScriptFile(script, args, environmentVariables, tempFilePath, cancellationToken);
                 var startInfo = PrepareStartInfo(environmentVariables, tempFilePath);
                 var instance = new Instance(startInfo);
+                cancellationToken.ThrowIfCancellationRequested();
                 
                 var exitCode = await instance.FinishedRunning();
                 var visibleOutput = script.ShowOutput ? HideSecrets(string.Join('\n', instance.OutputData), args) : string.Empty;
@@ -44,12 +47,12 @@ namespace AgentDeploy.Services
         }
 
         private static async Task<string> PrepareScriptFile(Script script, ReadOnlyCollection<InvocationArgument> args, string[] environmentVariables,
-            string tempFilePath)
+            string tempFilePath, CancellationToken cancellationToken)
         {
             var argDict = args.ToDictionary(arg => arg.Name);
             var scriptText = ReplaceVariables(script, argDict);
             var finalText = string.Join('\n', environmentVariables) + "\n" + scriptText;
-            await File.WriteAllTextAsync(tempFilePath, finalText);
+            await File.WriteAllTextAsync(tempFilePath, finalText, cancellationToken);
             return scriptText;
         }
 

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AgentDeploy.ExternalApi.Controllers
 {
     [ApiController]
-    [Route("api/command")]
+    [Route("rest")]
     public class InvocationController : ControllerBase
     {
         private readonly CommandSpecParser _commandSpecParser;
@@ -35,8 +35,7 @@ namespace AgentDeploy.ExternalApi.Controllers
 
             try
             {
-                var constraints = profile.AvailableCommands[command]!.VariableContraints;
-                var (args, env) = _argumentParser.Parse(form, script.Variables, constraints);
+                var (args, env) = _argumentParser.Parse(form, script.Variables, profile.AvailableCommands[command]!);
                 var result = await _scriptExecutor.Execute(script, args, env);
                 return Ok(result);
             }

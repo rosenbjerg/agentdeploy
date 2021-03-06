@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Services.Models;
 using YamlDotNet.Serialization;
@@ -16,12 +17,12 @@ namespace AgentDeploy.Services
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
         }
-        public async Task<Token?> ParseTokenFile(string token)
+        public async Task<Token?> ParseTokenFile(string token, CancellationToken cancellationToken = default)
         {
             var filename = Path.Combine("tokens", $"{token}.yaml");
             if (!File.Exists(filename))
                 return null;
-            var yaml = await File.ReadAllTextAsync(filename);
+            var yaml = await File.ReadAllTextAsync(filename, cancellationToken);
             return _deserializer.Deserialize<Token>(yaml);
         }
     }

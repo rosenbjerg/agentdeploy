@@ -15,7 +15,7 @@ namespace AgentDeploy.Services
     public class ArgumentParser
     {
         public (ReadOnlyCollection<InvocationArgument> accepted, string[] enviromnentVariables) Parse(
-            IFormCollection formCollection, Dictionary<string, ScriptArgument> scriptArguments, Dictionary<string, string> profileArgumentConstraints)
+            IFormCollection formCollection, Dictionary<string, ScriptArgument> scriptArguments, ConstrainedCommand profile)
         {
             var failed = new List<InvocationArgumentError>();
             var accepted = new List<InvocationArgument>();
@@ -23,24 +23,35 @@ namespace AgentDeploy.Services
             var rawInvocationArguments = ParseRawInvocationArguments(formCollection);
             foreach (var inputVariable in scriptArguments)
             {
-                if (!rawInvocationArguments.TryGetValue(inputVariable.Key, out var arg))
+                if (!rawInvocationArguments.TryGetValue(inputVariable.Key, out var invocationValue))
                 {
-                    if (inputVariable.Value.DefaultValue == null)
+                    if (profile.LockedVariables.TryGetValue(inputVariable.Key, out var lockedValue))
+                    {
+                        invocationValue = new RawInvocationArgument(inputVariable.Key, lockedValue, false);
+                    }
+                    else if (inputVariable.Value.DefaultValue != null)
+                    {
+                        invocationValue = new RawInvocationArgument(inputVariable.Key, inputVariable.Value.DefaultValue, false);
+                    }
+                    else
                     {
                         failed.Add(new InvocationArgumentError(inputVariable.Key, "No value provided"));
                         continue;
                     }
-
-                    arg = new RawInvocationArgument(inputVariable.Key, inputVariable.Value.DefaultValue, false);
+                }
+                else if (profile.LockedVariables.ContainsKey(inputVariable.Key))
+                {
+                    failed.Add(new InvocationArgumentError(inputVariable.Key, "Variable is locked and may not be provided"));
+                    continue;
                 }
                 
-                if (inputVariable.Value.Regex != null && !Regex.IsMatch(arg.Value, inputVariable.Value.Regex))
+                if (inputVariable.Value.Regex != null && !Regex.IsMatch(invocationValue.Value, inputVariable.Value.Regex))
                 {
                     failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass command regex validation ({inputVariable.Value.Regex})"));
                     continue;
                 }
 
-                if (profileArgumentConstraints.TryGetValue(inputVariable.Key, out var profileArgumentConstraint) && !Regex.IsMatch(arg.Value, profileArgumentConstraint))
+                if (profile.VariableContraints.TryGetValue(inputVariable.Key, out var profileArgumentConstraint) && !Regex.IsMatch(invocationValue.Value, profileArgumentConstraint))
                 {
                     failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass profile constraint regex validation ({profileArgumentConstraint})"));
                     continue;
@@ -48,7 +59,7 @@ namespace AgentDeploy.Services
 
                 var invocationArgument = inputVariable.Value.Type switch
                 {
-                    ArgumentType.String => new InvocationArgument(arg.Name, ArgumentType.String, arg.Value, arg.Secret),
+                    ArgumentType.String => new InvocationArgument(invocationValue.Name, ArgumentType.String, invocationValue.Value, invocationValue.Secret),
                     _ => throw new ArgumentOutOfRangeException(nameof(inputVariable.Value.Type))
                 };
                 accepted.Add(invocationArgument);

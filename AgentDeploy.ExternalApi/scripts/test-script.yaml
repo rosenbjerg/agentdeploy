@@ -4,7 +4,7 @@
     default_value: 'postgres'
   password:
     type: 'string'
-show_command: true
+show_command: false
 show_output: true
 command: 'echo "$HELLO $(username) with $(password)"'
   

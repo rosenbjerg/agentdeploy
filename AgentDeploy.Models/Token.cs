@@ -4,11 +4,12 @@ namespace AgentDeploy.Services.Models
 {
     public class Token
     {
-        public Dictionary<string, CommandArgumentConstraint> AvailableCommands { get; set; } = new();
+        public Dictionary<string, ConstrainedCommand> AvailableCommands { get; set; } = new();
     }
 
-    public class CommandArgumentConstraint
+    public class ConstrainedCommand
     {
         public Dictionary<string, string> VariableContraints { get; set; } = new();
+        public Dictionary<string, string> LockedVariables { get; set; } = new();
     }
 }

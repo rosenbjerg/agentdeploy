@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Services.Models;
 using YamlDotNet.Serialization;
@@ -16,13 +17,13 @@ namespace AgentDeploy.Services
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
         }
-        public async Task<Script?> Load(string command)
+        public async Task<Script?> Load(string command, CancellationToken cancellationToken = default)
         {
             var path = Path.Combine("scripts", $"{command}.yaml");
             if (!File.Exists(path))
                 return null;
             
-            var yaml = await File.ReadAllTextAsync(path);
+            var yaml = await File.ReadAllTextAsync(path, cancellationToken);
             return _deserializer.Deserialize<Script>(yaml);
         }
     }
