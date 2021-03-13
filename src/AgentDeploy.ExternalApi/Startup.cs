@@ -24,6 +24,7 @@ namespace AgentDeploy.ExternalApi
                     .WithMethods("POST")));
 
             services.AddValidatedOptions<ExecutionOptions>(_configuration);
+            services.AddValidatedOptions<DirectoryOptions>(_configuration);
             
             services.AddSingleton<CommandSpecParser>();
             services.AddSingleton<ArgumentParser>();

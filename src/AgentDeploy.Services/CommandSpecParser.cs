@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
+using AgentDeploy.Models.Options;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -9,17 +10,19 @@ namespace AgentDeploy.Services
 {
     public class CommandSpecParser
     {
+        private readonly DirectoryOptions _directoryOptions;
         private readonly IDeserializer _deserializer;
-
-        public CommandSpecParser()
+        
+        public CommandSpecParser(DirectoryOptions directoryOptions)
         {
+            _directoryOptions = directoryOptions;
             _deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
         }
         public async Task<Script?> Load(string command, CancellationToken cancellationToken = default)
         {
-            var path = Path.Combine("scripts", $"{command}.yaml");
+            var path = Path.Combine(_directoryOptions.Scripts, $"{command}.yaml");
             if (!File.Exists(path))
                 return null;
             
