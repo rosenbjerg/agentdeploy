@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
@@ -23,6 +24,7 @@ namespace AgentDeploy.Services
         public async Task<Script?> Load(string command, CancellationToken cancellationToken = default)
         {
             var path = Path.Combine(_directoryOptions.Scripts, $"{command}.yaml");
+            Console.WriteLine("Scripts: " + path);
             if (!File.Exists(path))
                 return null;
             

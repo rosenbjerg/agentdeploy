@@ -4,32 +4,7 @@
     <projectFile>AgentDeploy.ExternalApi/AgentDeploy.ExternalApi.csproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7f1948f9-079e-452c-9362-b44bf2171c76" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.ExternalApi/AgentDeploy.ExternalApi.csproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.ExternalApi/Controllers/InvocationController.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.ExternalApi/Program.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.ExternalApi/Properties/launchSettings.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.ExternalApi/ServiceCollectionExtensions.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.ExternalApi/Startup.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.ExternalApi/appsettings.Development.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.ExternalApi/appsettings.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.ExternalApi/scripts/test-script.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.ExternalApi/test.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.ExternalApi/tokens/d93kdp32mx0mg82k6ndl39nm53bc9.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.Models/AgentDeploy.Models.csproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.Models/ArgumentType.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.Models/Options/ExecutionOptions.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.Models/Script.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.Models/ScriptArgument.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.Models/Token.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.Services/AgentDeploy.Services.csproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.Services/ArgumentParser.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.Services/CommandSpecParser.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.Services/InvalidInvocationArgumentsException.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.Services/ScriptExecutor.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.Services/TokenFileParser.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../AgentDeploy.sln" beforeDir="false" />
-    </list>
+    <list default="true" id="7f1948f9-079e-452c-9362-b44bf2171c76" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -47,16 +22,12 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/F3DD31A3-D437-4D7D-9525-D887480DAE95/40A/ReadOnlyCollection.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/AgentDeploy.Services/ArgumentParser.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/0BA85151-3437-400A-B898-82D88B7FD227/A/ServiceProvider.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="IdeDocumentHistory">
     <changedPaths>
       <option value="$PROJECT_DIR$/AgentDeploy.ExternalApi/Options/ExecutionOptions.cs" />
       <option value="$PROJECT_DIR$/AgentDeploy.Models/Class1.cs" />
-      <option value="$PROJECT_DIR$/AgentDeploy.Services/TokenFileParser.cs" />
-      <option value="$PROJECT_DIR$/AgentDeploy.Services/CommandSpecParser.cs" />
       <option value="$PROJECT_DIR$/AgentDeploy.Services/InvalidInvocationArgumentsException.cs" />
       <option value="$PROJECT_DIR$/AgentDeploy.ExternalApi/test.html" />
       <option value="$PROJECT_DIR$/AgentDeploy.Models/ArgumentType.cs" />
@@ -73,8 +44,14 @@
       <option value="$PROJECT_DIR$/AgentDeploy.Models/SecureShellOptions.cs" />
       <option value="$PROJECT_DIR$/AgentDeploy.Services/SecureShellExecutor.cs" />
       <option value="$PROJECT_DIR$/AgentDeploy.ExternalApi/appsettings.json" />
+      <option value="$PROJECT_DIR$/AgentDeploy.ExternalApi/appsettings.Development.json" />
+      <option value="$PROJECT_DIR$/AgentDeploy.Models/Options/ExecutionOptions.cs" />
       <option value="$PROJECT_DIR$/AgentDeploy.ExternalApi/Startup.cs" />
+      <option value="$PROJECT_DIR$/AgentDeploy.Services/TokenFileParser.cs" />
+      <option value="$PROJECT_DIR$/AgentDeploy.Models/Options/DirectoryOptions.cs" />
+      <option value="$PROJECT_DIR$/AgentDeploy.Services/CommandSpecParser.cs" />
       <option value="$PROJECT_DIR$/AgentDeploy.ExternalApi/Controllers/InvocationController.cs" />
+      <option value="$PROJECT_DIR$/AgentDeploy.ExternalApi/scripts/add-nginx-server.yaml" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="1pGi0qDG77KAasi9r7Ug3eteJD9" />
@@ -154,6 +131,8 @@
       <workItem from="1615446989745" duration="12246000" />
       <workItem from="1615561664339" duration="263000" />
       <workItem from="1615562517824" duration="3741000" />
+      <workItem from="1615632169969" duration="2250000" />
+      <workItem from="1615654840528" duration="3068000" />
     </task>
     <servers />
   </component>
@@ -181,66 +160,31 @@
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/AgentDeploy.Services/SecureShellExecutor.cs</url>
           <line>81</line>
-          <properties documentPath="C:\Users\malte\Documents\GitHub\AgentDeploy\AgentDeploy.Services\SecureShellExecutor.cs" initialLine="59" containingFunctionPresentation="method 'CleanupUsingPrivateKey'">
-            <startOffsets>
-              <option value="3692" />
-            </startOffsets>
-            <endOffsets>
-              <option value="3720" />
-            </endOffsets>
-          </properties>
+          <properties documentPath="C:\Users\malte\Documents\GitHub\AgentDeploy\AgentDeploy.Services\SecureShellExecutor.cs" initialLine="59" containingFunctionPresentation="method 'CleanupUsingPrivateKey'" />
           <option name="timeStamp" value="10" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/AgentDeploy.Services/SecureShellExecutor.cs</url>
           <line>91</line>
-          <properties documentPath="C:\Users\malte\Documents\GitHub\AgentDeploy\AgentDeploy.Services\SecureShellExecutor.cs" initialLine="69" containingFunctionPresentation="lambda expression inside method 'CleanupUsingSshPass'">
-            <startOffsets>
-              <option value="4320" />
-            </startOffsets>
-            <endOffsets>
-              <option value="4341" />
-            </endOffsets>
-          </properties>
+          <properties documentPath="C:\Users\malte\Documents\GitHub\AgentDeploy\AgentDeploy.Services\SecureShellExecutor.cs" initialLine="69" containingFunctionPresentation="lambda expression inside method 'CleanupUsingSshPass'" />
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/AgentDeploy.Services/SecureShellExecutor.cs</url>
           <line>113</line>
-          <properties documentPath="C:\Users\malte\Documents\GitHub\AgentDeploy\AgentDeploy.Services\SecureShellExecutor.cs" initialLine="113" containingFunctionPresentation="method 'CopyUsingPrivateKey'">
-            <startOffsets>
-              <option value="5663" />
-            </startOffsets>
-            <endOffsets>
-              <option value="5709" />
-            </endOffsets>
-          </properties>
+          <properties documentPath="C:\Users\malte\Documents\GitHub\AgentDeploy\AgentDeploy.Services\SecureShellExecutor.cs" initialLine="113" containingFunctionPresentation="method 'CopyUsingPrivateKey'" />
           <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/AgentDeploy.Services/SecureShellExecutor.cs</url>
           <line>61</line>
-          <properties documentPath="C:\Users\malte\Documents\GitHub\AgentDeploy\AgentDeploy.Services\SecureShellExecutor.cs" initialLine="61" containingFunctionPresentation="lambda expression inside method 'ExecuteUsingSshPass'">
-            <startOffsets>
-              <option value="2659" />
-            </startOffsets>
-            <endOffsets>
-              <option value="2675" />
-            </endOffsets>
-          </properties>
+          <properties documentPath="C:\Users\malte\Documents\GitHub\AgentDeploy\AgentDeploy.Services\SecureShellExecutor.cs" initialLine="61" containingFunctionPresentation="lambda expression inside method 'ExecuteUsingSshPass'" />
           <option name="timeStamp" value="14" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/AgentDeploy.Services/SecureShellExecutor.cs</url>
           <line>52</line>
-          <properties documentPath="C:\Users\malte\Documents\GitHub\AgentDeploy\AgentDeploy.Services\SecureShellExecutor.cs" initialLine="52" containingFunctionPresentation="method 'ExecuteUsingPrivateKey'">
-            <startOffsets>
-              <option value="2068" />
-            </startOffsets>
-            <endOffsets>
-              <option value="2084" />
-            </endOffsets>
-          </properties>
+          <properties documentPath="C:\Users\malte\Documents\GitHub\AgentDeploy\AgentDeploy.Services\SecureShellExecutor.cs" initialLine="52" containingFunctionPresentation="method 'ExecuteUsingPrivateKey'" />
           <option name="timeStamp" value="15" />
         </line-breakpoint>
       </breakpoints>

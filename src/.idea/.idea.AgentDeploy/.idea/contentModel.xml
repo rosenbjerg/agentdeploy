@@ -3,8 +3,6 @@
   <component name="ContentModelStore">
     <e p="C:\Users\malte\AppData\Local\JetBrains\Rider2020.3\extResources" t="IncludeRecursive" />
     <e p="C:\Users\malte\AppData\Local\JetBrains\Rider2020.3\resharper-host\Local\Transient\Rider\v203\SolutionCaches\_AgentDeploy.-1833926257.00" t="ExcludeRecursive" />
-    <e p="C:\Users\malte\AppData\Roaming\JetBrains\Rider2020.3\consoles\db" t="IncludeRecursive" />
-    <e p="C:\Users\malte\AppData\Roaming\JetBrains\Rider2020.3\extensions" t="IncludeRecursive" />
     <e p="C:\Users\malte\Documents\GitHub\AgentDeploy\src" t="IncludeFlat">
       <e p="AgentDeploy.ExternalApi" t="IncludeRecursive">
         <e p="AgentDeploy.ExternalApi.csproj" t="IncludeRecursive" />
@@ -27,6 +25,7 @@
           <e p="launchSettings.json" t="Include" />
         </e>
         <e p="scripts" t="Include">
+          <e p="add-nginx-server.yaml" t="Include" />
           <e p="test-script.yaml" t="Include" />
         </e>
         <e p="ServiceCollectionExtensions.cs" t="Include" />
@@ -49,6 +48,7 @@
           </e>
         </e>
         <e p="Options" t="Include">
+          <e p="DirectoryOptions.cs" t="Include" />
           <e p="ExecutionOptions.cs" t="Include" />
         </e>
         <e p="Script.cs" t="Include" />
