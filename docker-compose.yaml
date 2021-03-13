@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  agentd:
+    image: mrosenbjerg/agentd
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./src/AgentDeploy.ExternalApi/scripts:/app/scripts:ro
+      - ./src/AgentDeploy.ExternalApi/tokens:/app/tokens:ro
+      

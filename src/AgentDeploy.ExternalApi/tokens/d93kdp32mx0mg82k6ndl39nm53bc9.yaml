@@ -1,0 +1,13 @@
+﻿name: test-token
+description: just a token used for testing agentd
+available_commands:
+  test-script:
+    ssh:
+      username: malte
+      password: test
+      address: localhost
+      port: 2222
+    locked_variables:
+      username: johndoe
+    variable_contraints:
+      password: contoso

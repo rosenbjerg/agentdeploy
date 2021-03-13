@@ -1,6 +1,0 @@
-﻿available_commands:
-  test-script:
-    locked_variables:
-      username: johndoe
-    variable_contraints:
-      password: ^test$|contoso

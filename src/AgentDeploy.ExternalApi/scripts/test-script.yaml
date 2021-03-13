@@ -1,0 +1,23 @@
+﻿variables:
+  username:
+    type: 'string'
+    default_value: 'postgres'
+  password:
+    type: 'string'
+  test_number:
+    type: 'integer'
+files:
+  test_file:
+    min_size: 10
+    max_size: 1_000
+    accepted_extensions:
+      - txt
+      - c
+show_command: false
+show_output: true
+command: |
+  echo "Hello $WORLD"
+  echo "this is $(username) with the password $(password)"
+  cat $(test_file)
+  
+  
