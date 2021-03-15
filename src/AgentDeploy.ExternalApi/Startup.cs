@@ -1,3 +1,4 @@
+using AgentDeploy.ExternalApi.Middleware;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Services;
 using Microsoft.AspNetCore.Builder;
@@ -5,6 +6,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace AgentDeploy.ExternalApi
 {
@@ -27,11 +30,16 @@ namespace AgentDeploy.ExternalApi
             services.AddValidatedOptions<ExecutionOptions>(_configuration);
             services.AddValidatedOptions<DirectoryOptions>(_configuration);
             
-            services.AddSingleton<CommandSpecParser>();
-            services.AddSingleton<ArgumentParser>();
-            services.AddSingleton<TokenFileParser>();
-            services.AddSingleton<ScriptExecutionService>();
-            services.AddSingleton<ScriptTransformer>();
+            services.AddScoped<CommandReader>();
+            services.AddScoped<ExecutionContextService>();
+            services.AddScoped<TokenReader>();
+            services.AddScoped<ScriptExecutionService>();
+            services.AddScoped<ScriptTransformer>();
+            services.AddScoped<LocalScriptExecutor>();
+            services.AddScoped<SecureShellExecutor>();
+            services.AddSingleton(_ => new DeserializerBuilder()
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .Build());
             services.AddControllers();
         }
 
@@ -43,6 +51,7 @@ namespace AgentDeploy.ExternalApi
             }
 
             app.UseCors("Default");
+            app.UseMiddleware<AuthenticationMiddleware>();
             app.UseRouting();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
         }

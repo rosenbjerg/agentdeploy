@@ -1,17 +1,14 @@
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
-using AgentDeploy.Models.Options;
 using Instances;
 
 namespace AgentDeploy.Services
 {
     public class SecureShellExecutor : IScriptExecutor
     {
-        public async Task<int> Execute(ScriptExecutionContext executionContext, string directory, Action<string, bool> onOutput,
-            CancellationToken cancellationToken)
+        public async Task<int> Execute(ScriptExecutionContext executionContext, string directory, Action<string, bool> onOutput)
         {
             var ssh = executionContext.SecureShellOptions!;
             

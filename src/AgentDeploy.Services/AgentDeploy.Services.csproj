@@ -22,10 +22,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Models" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\AgentDeploy.Models\AgentDeploy.Models.csproj" />
     </ItemGroup>
 

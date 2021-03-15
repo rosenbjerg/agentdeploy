@@ -4,21 +4,27 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
+using AgentDeploy.Services.Models;
 
 namespace AgentDeploy.Services
 {
     public class ScriptTransformer
     {
-        public async Task<string> PrepareScriptFile(Script script, ScriptExecutionContext executionContext,
-            string scriptFilePath, CancellationToken cancellationToken)
+        private readonly IOperationContext _operationContext;
+
+        public ScriptTransformer(IOperationContext operationContext)
         {
-            var argDict = executionContext.Arguments.ToDictionary(arg => arg.Name);
-            var scriptText = ReplaceVariables(script, argDict);
+            _operationContext = operationContext;
+        }
+        
+        public async Task<string> PrepareScriptFile(ScriptExecutionContext executionContext, string directory)
+        {
+            var scriptText = ReplaceVariables(executionContext.Script, executionContext);
             var finalText = string.Join(Environment.NewLine, executionContext.EnvironmentVariables) + Environment.NewLine + scriptText;
-            await File.WriteAllTextAsync(scriptFilePath, finalText, cancellationToken);
+            var scriptFilePath = Path.Combine(directory, "script.sh");
+            await File.WriteAllTextAsync(scriptFilePath, finalText, _operationContext.OperationCancelled);
             return scriptText;
         }
 
@@ -33,8 +39,9 @@ namespace AgentDeploy.Services
             return sb.ToString();
         }
 
-        private static string ReplaceVariables(Script script, Dictionary<string, InvocationArgument> argDict)
+        private string ReplaceVariables(Script script, ScriptExecutionContext executionContext)
         {
+            var argDict = executionContext.Arguments.ToDictionary(arg => arg.Name);
             return Regex.Replace(script.Command, @"\$\(([^)]+)\)", match =>
             {
                 var key = match.Groups[1].Value;

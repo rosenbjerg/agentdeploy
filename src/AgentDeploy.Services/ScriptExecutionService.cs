@@ -2,45 +2,48 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
+using AgentDeploy.Services.Models;
+using Microsoft.Extensions.Logging;
 
 namespace AgentDeploy.Services
 {
     public class ScriptExecutionService
     {
-        private readonly ExecutionOptions _executionOptions;
         private readonly ScriptTransformer _scriptTransformer;
+        private readonly SecureShellExecutor _secureShellExecutor;
+        private readonly LocalScriptExecutor _localScriptExecutor;
+        private readonly ILogger<ScriptExecutionService> _logger;
+        private readonly IOperationContext _operationContext;
 
-        public ScriptExecutionService(ExecutionOptions executionOptions, ScriptTransformer scriptTransformer)
+        public ScriptExecutionService(IOperationContext operationContext, ScriptTransformer scriptTransformer, SecureShellExecutor secureShellExecutor, LocalScriptExecutor localScriptExecutor, ILogger<ScriptExecutionService> logger)
         {
-            _executionOptions = executionOptions;
             _scriptTransformer = scriptTransformer;
+            _secureShellExecutor = secureShellExecutor;
+            _localScriptExecutor = localScriptExecutor;
+            _operationContext = operationContext;
+            _logger = logger;
         }
-        public async Task<ExecutionResult> Execute(Script script, ScriptExecutionContext executionContext, CancellationToken cancellationToken)
+        public async Task<ExecutionResult> Execute(ScriptExecutionContext executionContext)
         {
-            var directory = CreateTemporaryDirectory(out string scriptFilePath, out string filesDirectory);
+            var directory = CreateTemporaryDirectory();
             try
             {
-                await DownloadFiles(executionContext, cancellationToken, filesDirectory);
-                
-                cancellationToken.ThrowIfCancellationRequested();
-                var scriptText = await _scriptTransformer.PrepareScriptFile(script, executionContext, scriptFilePath, cancellationToken);
+                await DownloadFiles(executionContext, directory);
+                var scriptText = await _scriptTransformer.PrepareScriptFile(executionContext, directory);
 
                 var output = new LinkedList<ProcessOutput>();
 
-                IScriptExecutor executor = executionContext.SecureShellOptions != null
-                    ? new SecureShellExecutor()
-                    : new LocalScriptExecutor(_executionOptions);
-
+                IScriptExecutor executor = executionContext.SecureShellOptions != null ? _secureShellExecutor : _localScriptExecutor;
+                _logger.LogDebug($"Executing script using {executor.GetType().Name}");
+                
                 var exitCode = await executor.Execute(executionContext, directory,
-                    (data, error) => output.AddLast(new ProcessOutput(DateTime.UtcNow, _scriptTransformer.HideSecrets(data, executionContext.Arguments), error)), 
-                    cancellationToken);
+                    (data, error) => output.AddLast(new ProcessOutput(DateTime.UtcNow, _scriptTransformer.HideSecrets(data, executionContext.Arguments), error)));
 
-                var visibleOutput = script.ShowOutput ? output : Enumerable.Empty<ProcessOutput>();
-                var visibleCommand = script.ShowCommand ? _scriptTransformer.HideSecrets(scriptText, executionContext.Arguments) : string.Empty;
+                var visibleOutput = executionContext.Script.ShowOutput ? output : Enumerable.Empty<ProcessOutput>();
+                var visibleCommand = executionContext.Script.ShowCommand ? _scriptTransformer.HideSecrets(scriptText, executionContext.Arguments) : string.Empty;
                 return new ExecutionResult(visibleOutput, visibleCommand, exitCode);
             }
             finally
@@ -49,25 +52,25 @@ namespace AgentDeploy.Services
             }
         }
         
-        private async Task DownloadFiles(ScriptExecutionContext executionContext, CancellationToken cancellationToken,
-            string filesDirectory)
+        private async Task DownloadFiles(ScriptExecutionContext executionContext, string directory)
         {
+            _logger.LogDebug($"Downloading input files to {directory}");
+            var filesDirectory = Path.Combine(directory, "files");
+            Directory.CreateDirectory(filesDirectory);
             foreach (var file in executionContext.Files)
             {
                 var filePath = Path.Combine(filesDirectory, file.FileName);
                 await using var outputFile = File.Create(filePath);
                 await using var inputStream = file.OpenRead();
-                await inputStream.CopyToAsync(outputFile, cancellationToken);
+                await inputStream.CopyToAsync(outputFile, _operationContext.OperationCancelled);
                 executionContext.Arguments.Add(new InvocationArgument(file.Name, ArgumentType.String, filePath, false));
             }
         }
 
-        private static string CreateTemporaryDirectory(out string scriptFilePath, out string filesDirectory)
+        private static string CreateTemporaryDirectory()
         {
             var directory = Path.Combine(Path.GetTempPath(), $"agentdeploy_{DateTime.Now:yyyyMMddhhmmss}");
-            scriptFilePath = Path.Combine(directory, "script.sh");
-            filesDirectory = Path.Combine(directory, "files");
-            Directory.CreateDirectory(filesDirectory);
+            Directory.CreateDirectory(directory);
             return directory;
         }
     }

@@ -6,10 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Filters" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\AgentDeploy.Models\AgentDeploy.Models.csproj" />
       <ProjectReference Include="..\AgentDeploy.Services\AgentDeploy.Services.csproj" />
     </ItemGroup>
@@ -21,6 +17,11 @@
       <Content Include="..\..\Dockerfile">
         <Link>Dockerfile</Link>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="IPAddressRange" Version="4.2.0" />
+      <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
     </ItemGroup>
 
 </Project>

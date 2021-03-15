@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using AgentDeploy.ExternalApi.Filters;
 using AgentDeploy.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -11,34 +12,28 @@ namespace AgentDeploy.ExternalApi.Controllers
     [Route("rest")]
     public class InvocationController : ControllerBase
     {
-        private readonly CommandSpecParser _commandSpecParser;
-        private readonly ArgumentParser _argumentParser;
-        private readonly TokenFileParser _tokenFileParser;
+        private readonly CommandReader _commandReader;
+        private readonly ExecutionContextService _executionContextService;
         private readonly ScriptExecutionService _scriptExecutionService;
 
-        public InvocationController(CommandSpecParser commandSpecParser, ArgumentParser argumentParser, TokenFileParser tokenFileParser, ScriptExecutionService scriptExecutionService)
+        public InvocationController(CommandReader commandReader, ExecutionContextService executionContextService, ScriptExecutionService scriptExecutionService)
         {
-            _commandSpecParser = commandSpecParser;
-            _argumentParser = argumentParser;
-            _tokenFileParser = tokenFileParser;
+            _commandReader = commandReader;
+            _executionContextService = executionContextService;
             _scriptExecutionService = scriptExecutionService;
         }
         
         [HttpPost("invoke")]
-        public async Task<IActionResult> InvokeCommand([FromHeader(Name = "Token"), Required]string token, [FromForm, Required]string command, IFormCollection form)
+        [Authorized]
+        public async Task<IActionResult> InvokeCommand([FromForm, Required]string command, IFormCollection form)
         {
-            var profile = await _tokenFileParser.ParseTokenFile(token, HttpContext.RequestAborted);
-            if (profile == null || !profile.AvailableCommands.ContainsKey(command))
-                return Unauthorized();
-            
-            var script = await _commandSpecParser.Load(command, HttpContext.RequestAborted);
-            if (script == null)
-                return NotFound();
-
             try
             {
-                var executionContext = _argumentParser.Parse(form, script, profile.AvailableCommands[command]!);
-                var result = await _scriptExecutionService.Execute(script, executionContext, HttpContext.RequestAborted);
+                var executionContext = await _executionContextService.Build(command, form);
+                if (executionContext == null)
+                    return NotFound();
+                
+                var result = await _scriptExecutionService.Execute(executionContext);
                 return Ok(result);
             }
             catch (InvalidInvocationArgumentsException e)

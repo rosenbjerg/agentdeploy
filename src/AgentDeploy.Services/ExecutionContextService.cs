@@ -2,26 +2,43 @@
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using AgentDeploy.Models;
+using AgentDeploy.Services.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace AgentDeploy.Services
 {
-    public class ArgumentParser
+    public class ExecutionContextService
     {
-        public ScriptExecutionContext Parse(IFormCollection formCollection, Script script, ConstrainedCommand profile)
+        private readonly IOperationContext _operationContext;
+        private readonly CommandReader _commandReader;
+
+        public ExecutionContextService(IOperationContext operationContext, CommandReader commandReader)
         {
+            _operationContext = operationContext;
+            _commandReader = commandReader;
+        }
+        
+        public async Task<ScriptExecutionContext?> Build(string command, IFormCollection formCollection)
+        {
+            var script = await _commandReader.Load(command);
+            if (script == null)
+                return null;
+            
             var failed = new List<InvocationArgumentError>();
             var accepted = new List<InvocationArgument>();
             var acceptedFiles = new List<InvocationFile>();
+
+            var commandContstraints = _operationContext.Token.AvailableCommands[script.Command];
             
             var rawInvocationArguments = ParseRawInvocationArguments(formCollection);
             foreach (var inputVariable in script.Variables)
             {
                 if (!rawInvocationArguments.TryGetValue(inputVariable.Key, out var invocationValue))
                 {
-                    if (profile.LockedVariables.TryGetValue(inputVariable.Key, out var lockedValue))
+                    if (commandContstraints.LockedVariables.TryGetValue(inputVariable.Key, out var lockedValue))
                     {
                         invocationValue = new RawInvocationArgument(inputVariable.Key, lockedValue, false);
                     }
@@ -35,7 +52,7 @@ namespace AgentDeploy.Services
                         continue;
                     }
                 }
-                else if (profile.LockedVariables.ContainsKey(inputVariable.Key))
+                else if (commandContstraints.LockedVariables.ContainsKey(inputVariable.Key))
                 {
                     failed.Add(new InvocationArgumentError(inputVariable.Key, "Variable is locked and can not be provided"));
                     continue;
@@ -47,7 +64,7 @@ namespace AgentDeploy.Services
                     continue;
                 }
 
-                if (profile.VariableContraints.TryGetValue(inputVariable.Key, out var profileArgumentConstraint) && !Regex.IsMatch(invocationValue.Value, profileArgumentConstraint))
+                if (commandContstraints.VariableContraints.TryGetValue(inputVariable.Key, out var profileArgumentConstraint) && !Regex.IsMatch(invocationValue.Value, profileArgumentConstraint))
                 {
                     failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass profile constraint regex validation ({profileArgumentConstraint})"));
                     continue;
@@ -102,11 +119,11 @@ namespace AgentDeploy.Services
             
             var environmentVariables = formCollection.Where(e => e.Key == "environment").SelectMany(e => e.Value).Select(env => env.Trim()).ToArray();
 
-            return new ScriptExecutionContext(accepted, acceptedFiles.ToArray(), environmentVariables, profile.Ssh);
+            return new ScriptExecutionContext(script, accepted, acceptedFiles.ToArray(), environmentVariables, commandContstraints.Ssh);
         }
 
-        private static Regex IntegerRegex = new Regex("^\\d+$", RegexOptions.Compiled);
-        private static Regex FloatRegex = new Regex("^\\d+\\.\\d+$", RegexOptions.Compiled);
+        private static Regex IntegerRegex = new("^\\d+$", RegexOptions.Compiled);
+        private static Regex FloatRegex = new("^\\d+\\.\\d+$", RegexOptions.Compiled);
         
         private static Dictionary<string, RawInvocationArgument> ParseRawInvocationArguments(IFormCollection formCollection)
         {

@@ -17,6 +17,6 @@ namespace AgentDeploy.Models
     public record InvocationArgumentError(string Name, string Error);
     public record RawInvocationArgument(string Name, string Value, bool Secret);
     
-    public record ScriptExecutionContext(List<InvocationArgument> Arguments, InvocationFile[] Files,
+    public record ScriptExecutionContext(Script Script, List<InvocationArgument> Arguments, InvocationFile[] Files,
         string[] EnvironmentVariables, SecureShellOptions? SecureShellOptions);
 }
