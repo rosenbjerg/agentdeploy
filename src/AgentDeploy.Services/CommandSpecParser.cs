@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
+using Microsoft.Extensions.Logging;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -12,23 +13,25 @@ namespace AgentDeploy.Services
     public class CommandSpecParser
     {
         private readonly DirectoryOptions _directoryOptions;
+        private readonly ILogger<CommandSpecParser> _logger;
         private readonly IDeserializer _deserializer;
         
-        public CommandSpecParser(DirectoryOptions directoryOptions)
+        public CommandSpecParser(DirectoryOptions directoryOptions, ILogger<CommandSpecParser> logger)
         {
             _directoryOptions = directoryOptions;
+            _logger = logger;
             _deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
         }
         public async Task<Script?> Load(string command, CancellationToken cancellationToken = default)
         {
-            var path = Path.Combine(_directoryOptions.Scripts, $"{command}.yaml");
-            Console.WriteLine("Scripts: " + path);
-            if (!File.Exists(path))
+            var filename = Path.Combine(_directoryOptions.Scripts, $"{command}.yaml");
+            _logger.LogInformation("Loading command file: {TokenFile}", filename);
+            if (!File.Exists(filename))
                 return null;
             
-            var yaml = await File.ReadAllTextAsync(path, cancellationToken);
+            var yaml = await File.ReadAllTextAsync(filename, cancellationToken);
             return _deserializer.Deserialize<Script>(yaml);
         }
     }

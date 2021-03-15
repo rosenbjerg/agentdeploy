@@ -14,4 +14,13 @@
       <ProjectReference Include="..\AgentDeploy.Services\AgentDeploy.Services.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="..\..\docker-compose.yaml">
+        <Link>docker-compose.yaml</Link>
+      </Content>
+      <Content Include="..\..\Dockerfile">
+        <Link>Dockerfile</Link>
+      </Content>
+    </ItemGroup>
+
 </Project>

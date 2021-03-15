@@ -2,10 +2,11 @@
 description: just a token used for testing agentd
 available_commands:
   test-script:
+    trusted_ips:
+      - 127.0.0.1
     ssh:
-      username: malte
+      username: test
       password: test
-      address: localhost
       port: 2222
     locked_variables:
       username: johndoe

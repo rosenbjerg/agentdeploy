@@ -23,8 +23,9 @@ namespace AgentDeploy.ExternalApi.Controllers
             _tokenFileParser = tokenFileParser;
             _scriptExecutionService = scriptExecutionService;
         }
+        
         [HttpPost("invoke")]
-        public async Task<IActionResult> InvokeCommand([FromForm, Required]string token, [FromForm, Required]string command, IFormCollection form)
+        public async Task<IActionResult> InvokeCommand([FromHeader(Name = "Token"), Required]string token, [FromForm, Required]string command, IFormCollection form)
         {
             var profile = await _tokenFileParser.ParseTokenFile(token, HttpContext.RequestAborted);
             if (profile == null || !profile.AvailableCommands.ContainsKey(command))
@@ -48,6 +49,6 @@ namespace AgentDeploy.ExternalApi.Controllers
                     Errors = e.Errors
                 });
             }
-        }<
+        }
     }
 }

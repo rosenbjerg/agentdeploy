@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -33,7 +32,7 @@ namespace AgentDeploy.Services
                 var output = new LinkedList<ProcessOutput>();
 
                 IScriptExecutor executor = executionContext.SecureShellOptions != null
-                    ? new SecureShellExecutor(_executionOptions)
+                    ? new SecureShellExecutor()
                     : new LocalScriptExecutor(_executionOptions);
 
                 var exitCode = await executor.Execute(executionContext, directory,
@@ -59,15 +58,13 @@ namespace AgentDeploy.Services
                 await using var outputFile = File.Create(filePath);
                 await using var inputStream = file.OpenRead();
                 await inputStream.CopyToAsync(outputFile, cancellationToken);
-                var path = _executionOptions.UseWslPath ? WslUtils.TransformPath(filePath) : filePath;
-                executionContext.Arguments.Add(new InvocationArgument(file.Name, ArgumentType.String, path, true));
+                executionContext.Arguments.Add(new InvocationArgument(file.Name, ArgumentType.String, filePath, false));
             }
         }
 
         private static string CreateTemporaryDirectory(out string scriptFilePath, out string filesDirectory)
         {
-            var root = Path.GetPathRoot(Path.GetFullPath("./"))!;
-            var directory = Path.Combine(root, "agentd", $"deploy_{DateTime.Now:yyyyMMddhhmmss}");
+            var directory = Path.Combine(Path.GetTempPath(), $"agentdeploy_{DateTime.Now:yyyyMMddhhmmss}");
             scriptFilePath = Path.Combine(directory, "script.sh");
             filesDirectory = Path.Combine(directory, "files");
             Directory.CreateDirectory(filesDirectory);

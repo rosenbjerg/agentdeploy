@@ -18,6 +18,7 @@ show_output: true
 command: |
   echo "Hello $WORLD"
   echo "this is $(username) with the password $(password)"
+  echo "$(test_file)"
   cat $(test_file)
   
   

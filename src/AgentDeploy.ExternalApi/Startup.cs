@@ -21,6 +21,7 @@ namespace AgentDeploy.ExternalApi
             services.AddCors(options => options
                 .AddPolicy("Default", cors => cors
                     .AllowAnyOrigin()
+                    .WithHeaders("Token")
                     .WithMethods("POST")));
 
             services.AddValidatedOptions<ExecutionOptions>(_configuration);

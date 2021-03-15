@@ -19,7 +19,7 @@
 
     formdata.append('environment', 'WORLD=Verden');
     formdata.append('environment', 'SASS_BINARY=/opt/node-sass/bin');
-    fetch('http://localhost:5000/rest/invoke', { method: 'POST', body: formdata }).then(r => r.json()).then(console.log);
+    fetch('http://localhost:5000/rest/invoke', { method: 'POST', body: formdata, headers: { 'Token': 'd93kdp32mx0mg82k6ndl39nm53bc9' } }).then(r => r.json()).then(console.log);
 </script>
 </body>
 </html>

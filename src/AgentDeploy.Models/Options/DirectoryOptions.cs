@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace AgentDeploy.Models.Options
 {
     public class DirectoryOptions
@@ -5,11 +7,13 @@ namespace AgentDeploy.Models.Options
         /// <summary>
         /// Directory containing yaml script files
         /// </summary>
-        public string Scripts { get; set; } = "scripts";
+        [Required]
+        public string Scripts { get; set; } = null!;
         
         /// <summary>
         /// Directory containing yaml token files
         /// </summary>
-        public string Tokens { get; set; } = "tokens";
+        [Required]
+        public string Tokens { get; set; } = null!;
     }
 }
