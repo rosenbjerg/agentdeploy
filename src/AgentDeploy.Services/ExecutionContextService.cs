@@ -31,95 +31,130 @@ namespace AgentDeploy.Services
             var accepted = new List<InvocationArgument>();
             var acceptedFiles = new List<InvocationFile>();
 
-            var commandContstraints = _operationContext.Token.AvailableCommands[command];
-            
+            var commandConstraints = GetCommandConstraints(command);
             var rawInvocationArguments = ParseRawInvocationArguments(formCollection);
             foreach (var inputVariable in script.Variables)
             {
-                if (!rawInvocationArguments.TryGetValue(inputVariable.Key, out var invocationValue))
-                {
-                    if (commandContstraints.LockedVariables.TryGetValue(inputVariable.Key, out var lockedValue))
-                    {
-                        invocationValue = new RawInvocationArgument(inputVariable.Key, lockedValue, false);
-                    }
-                    else if (inputVariable.Value.DefaultValue != null)
-                    {
-                        invocationValue = new RawInvocationArgument(inputVariable.Key, inputVariable.Value.DefaultValue, false);
-                    }
-                    else
-                    {
-                        failed.Add(new InvocationArgumentError(inputVariable.Key, "No value provided"));
-                        continue;
-                    }
-                }
-                else if (commandContstraints.LockedVariables.ContainsKey(inputVariable.Key))
-                {
-                    failed.Add(new InvocationArgumentError(inputVariable.Key, "Variable is locked and can not be provided"));
-                    continue;
-                }
-                
-                if (inputVariable.Value.Regex != null && !Regex.IsMatch(invocationValue.Value, inputVariable.Value.Regex))
-                {
-                    failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass command regex validation ({inputVariable.Value.Regex})"));
-                    continue;
-                }
-
-                if (commandContstraints.VariableContraints.TryGetValue(inputVariable.Key, out var profileArgumentConstraint) && !Regex.IsMatch(invocationValue.Value, profileArgumentConstraint))
-                {
-                    failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass profile constraint regex validation ({profileArgumentConstraint})"));
-                    continue;
-                }
-
-                if (inputVariable.Value.Type == ArgumentType.Integer && !IntegerRegex.IsMatch(invocationValue.Value))
-                {
-                    failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass type validation ({IntegerRegex})"));
-                    continue;
-                }
-                if (inputVariable.Value.Type == ArgumentType.Float && !FloatRegex.IsMatch(invocationValue.Value))
-                {
-                    failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass type validation ({FloatRegex})"));
-                    continue;
-                }
-                
-                accepted.Add(new InvocationArgument(invocationValue.Name, inputVariable.Value.Type, invocationValue.Value, invocationValue.Secret));
+                var invocationValue = ValidateInputVariables(rawInvocationArguments, inputVariable, commandConstraints, failed);
+                if (invocationValue == null) continue;
+                accepted.Add(new InvocationArgument(inputVariable.Key, inputVariable.Value.Type, invocationValue.Value, invocationValue.Secret));
             }
 
             foreach (var inputFile in script.Files)
             {
-                var providedFile = formCollection.Files.GetFile(inputFile.Key);
-                if (providedFile == null)
-                {
-                    failed.Add(new InvocationArgumentError(inputFile.Key, "No file provided"));
-                    continue;
-                }
-                
-                if (providedFile.Length < inputFile.Value.MinSize)
-                {
-                    failed.Add(new InvocationArgumentError(inputFile.Key, $"File contains too few bytes (min. {inputFile.Value.MinSize})"));
-                    continue;
-                }
-                if (providedFile.Length > inputFile.Value.MaxSize)
-                {
-                    failed.Add(new InvocationArgumentError(inputFile.Key, $"File contains too many bytes (max. {inputFile.Value.MaxSize})"));
-                    continue;
-                }
-
-                var ext = Path.GetExtension(providedFile.FileName).TrimStart('.').ToLowerInvariant();
-                if (inputFile.Value.AcceptedExtensions != null && !inputFile.Value.AcceptedExtensions.Contains(ext))
-                {
-                    failed.Add(new InvocationArgumentError(inputFile.Key, $"File extension '{ext}' is not accepted (accepted: {string.Join(", ", inputFile.Value.AcceptedExtensions)})"));
-                    continue;
-                }
-
+                var providedFile = ValidateFileInput(formCollection, inputFile, failed);
+                if (providedFile == null) continue;
                 acceptedFiles.Add(new InvocationFile(inputFile.Key, Path.GetFileName(providedFile.FileName), providedFile.OpenReadStream));
             }
             
-            if (failed.Any())
-                throw new InvalidInvocationArgumentsException(failed);
+            if (failed.Any()) throw new InvalidInvocationArgumentsException(failed);
             
             var environmentVariables = formCollection.Where(e => e.Key == "environment").SelectMany(e => e.Value).Select(env => env.Trim()).ToArray();
+            return new ScriptExecutionContext(script, accepted, acceptedFiles.ToArray(), environmentVariables, commandConstraints?.Ssh);
+        }
 
-            return new ScriptExecutionContext(script, accepted, acceptedFiles.ToArray(), environmentVariables, commandContstraints.Ssh);
+        private static RawInvocationArgument? ValidateInputVariables(Dictionary<string, RawInvocationArgument> rawInvocationArguments, KeyValuePair<string, ScriptArgument> inputVariable,
+            ConstrainedCommand? commandConstraints, List<InvocationArgumentError> failed)
+        {
+            if (!rawInvocationArguments.TryGetValue(inputVariable.Key, out var invocationValue))
+            {
+                if (commandConstraints != null &&
+                    commandConstraints.LockedVariables.TryGetValue(inputVariable.Key, out var lockedValue))
+                {
+                    invocationValue = new RawInvocationArgument(inputVariable.Key, lockedValue, false);
+                }
+                else if (inputVariable.Value.DefaultValue != null)
+                {
+                    invocationValue = new RawInvocationArgument(inputVariable.Key, inputVariable.Value.DefaultValue, false);
+                }
+                else
+                {
+                    failed.Add(new InvocationArgumentError(inputVariable.Key, "No value provided"));
+                    return null;
+                }
+            }
+            else if (commandConstraints != null && commandConstraints.LockedVariables.ContainsKey(inputVariable.Key))
+            {
+                failed.Add(new InvocationArgumentError(inputVariable.Key, "Variable is locked and can not be provided"));
+                return null;
+            }
+
+            if (inputVariable.Value.Regex != null && !Regex.IsMatch(invocationValue.Value, inputVariable.Value.Regex))
+            {
+                failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass command regex validation ({inputVariable.Value.Regex})"));
+                return null;
+            }
+
+            if (commandConstraints != null &&
+                commandConstraints.VariableContraints.TryGetValue(inputVariable.Key, out var profileArgumentConstraint) &&
+                !Regex.IsMatch(invocationValue.Value, profileArgumentConstraint))
+            {
+                failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass profile constraint regex validation ({profileArgumentConstraint})"));
+                return null;
+            }
+
+            if (inputVariable.Value.Type == ArgumentType.Integer && !IntegerRegex.IsMatch(invocationValue.Value))
+            {
+                failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass type validation ({IntegerRegex})"));
+                return null;
+            }
+
+            if (inputVariable.Value.Type == ArgumentType.Float && !FloatRegex.IsMatch(invocationValue.Value))
+            {
+                failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass type validation ({FloatRegex})"));
+                return null;
+            }
+
+            return invocationValue;
+        }
+
+        private static IFormFile? ValidateFileInput(IFormCollection form, KeyValuePair<string, ScriptFileArgument> inputFile, List<InvocationArgumentError> failed)
+        {
+            var providedFile = form.Files.GetFile(inputFile.Key);
+            if (providedFile == null)
+            {
+                failed.Add(new InvocationArgumentError(inputFile.Key, "No file provided"));
+                return null;
+            }
+
+            if (providedFile.Length < inputFile.Value.MinSize)
+            {
+                failed.Add(new InvocationArgumentError(inputFile.Key, $"File contains too few bytes (min. {inputFile.Value.MinSize})"));
+                return null;
+            }
+
+            if (providedFile.Length > inputFile.Value.MaxSize)
+            {
+                failed.Add(new InvocationArgumentError(inputFile.Key, $"File contains too many bytes (max. {inputFile.Value.MaxSize})"));
+                return null;
+            }
+
+            var ext = Path.GetExtension(providedFile.FileName).TrimStart('.').ToLowerInvariant();
+            if (inputFile.Value.AcceptedExtensions != null && !inputFile.Value.AcceptedExtensions.Contains(ext))
+            {
+                failed.Add(new InvocationArgumentError(inputFile.Key, $"File extension '{ext}' is not accepted (accepted: {string.Join(", ", inputFile.Value.AcceptedExtensions)})"));
+                return null;
+            }
+
+            return providedFile;
+        }
+
+        private ConstrainedCommand? GetCommandConstraints(string command)
+        {
+            if (_operationContext.Token.AvailableCommands != null)
+            {
+                if (!_operationContext.Token.AvailableCommands.TryGetValue(command, out var commandConstraints))
+                {
+                    throw new InvalidInvocationArgumentsException(new List<InvocationArgumentError>
+                    {
+                        new InvocationArgumentError(command, "Command not allowed")
+                    });
+                }
+                
+                return commandConstraints;
+            }
+
+            return null;
         }
 
         private static Regex IntegerRegex = new("^\\d+$", RegexOptions.Compiled);

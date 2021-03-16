@@ -4,6 +4,7 @@ using AgentDeploy.Services;
 using AgentDeploy.Services.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,9 +28,12 @@ namespace AgentDeploy.ExternalApi
                     .AllowAnyOrigin()
                     .WithHeaders("Authorization")
                     .WithMethods("POST")));
+            
+            services.Configure<ForwardedHeadersOptions>(options => options.ForwardedHeaders = ForwardedHeaders.All);
 
             services.AddValidatedOptions<ExecutionOptions>(_configuration);
             services.AddValidatedOptions<DirectoryOptions>(_configuration);
+            services.AddValidatedOptions<AgentOptions>(_configuration);
             
             services.AddScoped<CommandReader>();
             services.AddScoped<ExecutionContextService>();
@@ -46,14 +50,16 @@ namespace AgentDeploy.ExternalApi
             services.AddControllers();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, AgentOptions agentOptions)
         {
+            if (agentOptions.TrustXForwardedHeaders) app.UseForwardedHeaders();
+            if (agentOptions.AllowCors) app.UseCors("Default");
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCors("Default");
             app.UseMiddleware<AuthenticationMiddleware>();
             app.UseRouting();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
