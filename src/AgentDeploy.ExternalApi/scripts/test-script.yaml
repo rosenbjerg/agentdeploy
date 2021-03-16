@@ -18,7 +18,7 @@ show_output: true
 command: |
   echo "Hello $WORLD"
   echo "this is $(username) with the password $(password)"
-  echo "$(test_file)"
+  echo "The file path is: $(test_file)"
   cat $(test_file)
   
   
