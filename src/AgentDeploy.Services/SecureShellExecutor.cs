@@ -40,7 +40,7 @@ namespace AgentDeploy.Services
                 success = await CopyUsingPrivateKey(ssh, sourceDirectory, remoteDirectory, onOutput);
             else
                 throw new Exception("Private-key or password must be provided");
-            onOutput("All files copied to remote", false);
+            if (success) onOutput("All files copied to remote", false);
             return success ? remoteDirectory : null;
         }
 

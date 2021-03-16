@@ -28,8 +28,11 @@ namespace AgentDeploy.Services
             if (!File.Exists(filePath))
                 return null;
 
-            var yaml = await File.ReadAllTextAsync(filePath, cancellationToken);
-            return _deserializer.Deserialize<Token>(yaml);
+            return await PerformanceLoggingUtilities.Time($"Parsing token file {token}", _logger, async () =>
+            {
+                var yaml = await File.ReadAllTextAsync(filePath, cancellationToken);
+                return _deserializer.Deserialize<Token>(yaml);
+            });
         }
     }
 }

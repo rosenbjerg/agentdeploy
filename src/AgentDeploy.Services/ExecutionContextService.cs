@@ -31,7 +31,7 @@ namespace AgentDeploy.Services
             var accepted = new List<InvocationArgument>();
             var acceptedFiles = new List<InvocationFile>();
 
-            var commandContstraints = _operationContext.Token.AvailableCommands[script.Command];
+            var commandContstraints = _operationContext.Token.AvailableCommands[command];
             
             var rawInvocationArguments = ParseRawInvocationArguments(formCollection);
             foreach (var inputVariable in script.Variables)

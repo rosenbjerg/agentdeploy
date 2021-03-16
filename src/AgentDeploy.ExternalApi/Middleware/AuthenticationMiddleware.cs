@@ -18,7 +18,7 @@ namespace AgentDeploy.ExternalApi.Middleware
 
         public async Task Invoke(HttpContext context, OperationContext operationContext, TokenReader tokenReader)
         {
-            if (context.Request.Headers.TryGetValue("Authentication", out var headerValue))
+            if (context.Request.Headers.TryGetValue("Authorization", out var headerValue))
             {
                 var tokenString = headerValue.FirstOrDefault()?.Replace("Token ", string.Empty);
                 if (!string.IsNullOrEmpty(tokenString))

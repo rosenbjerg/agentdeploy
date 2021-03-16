@@ -1,6 +1,7 @@
 using AgentDeploy.ExternalApi.Middleware;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Services;
+using AgentDeploy.Services.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -24,7 +25,7 @@ namespace AgentDeploy.ExternalApi
             services.AddCors(options => options
                 .AddPolicy("Default", cors => cors
                     .AllowAnyOrigin()
-                    .WithHeaders("Token")
+                    .WithHeaders("Authorization")
                     .WithMethods("POST")));
 
             services.AddValidatedOptions<ExecutionOptions>(_configuration);
@@ -37,6 +38,8 @@ namespace AgentDeploy.ExternalApi
             services.AddScoped<ScriptTransformer>();
             services.AddScoped<LocalScriptExecutor>();
             services.AddScoped<SecureShellExecutor>();
+            services.AddScoped<OperationContext>();
+            services.AddScoped<IOperationContext>(provider => provider.GetRequiredService<OperationContext>());
             services.AddSingleton(_ => new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build());
