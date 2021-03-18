@@ -1,0 +1,39 @@
+name: Releases
+
+on:
+  push:
+    branches:
+    - release
+    paths:
+    - 'client/**'
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./Frontend
+    steps:
+    - uses: actions/checkout@v1
+    
+    - name: Install dependencies
+      working-directory: ${{env.working-directory}}
+      run: yarn install --frozen-lockfile --no-progress --silent
+      
+    - name: Build Windows client
+      working-directory: ${{env.working-directory}}
+      run: yarn build:windows
+      
+    - name: Build Linux client
+      working-directory: ${{env.working-directory}}
+      run: yarn build:linux
+      
+    - name: Build macOS client
+      working-directory: ${{env.working-directory}}
+      run: yarn build:mac
+    
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "agentd-client-win-x64.exe,agentd-client-linux-x64,agentd-client-mac-x64"
+        body: "agentd client release"
+        tag: client-1.0.0-alpha
+        token: ${{ secrets.GITHUB_TOKEN }}
