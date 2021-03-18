@@ -7,6 +7,7 @@ const FormData = require('form-data');
 
 const TokenFilePath = './agentd.token';
 const program = new Command();
+
 program
     .name('agentd client')
     .version('0.0.1')
