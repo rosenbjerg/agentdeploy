@@ -6,10 +6,6 @@ trusted_ips:
   - ::ffff:172.18.0.1
 available_commands:
   test-script:
-    ssh:
-      username: test
-      password: test
-      port: 2222
     locked_variables:
       username: johndoe
     variable_contraints:

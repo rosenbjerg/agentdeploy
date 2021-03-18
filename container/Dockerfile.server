@@ -2,7 +2,7 @@ ARG BASE_IMAGE=amd64/alpine
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0-alpine as builder
 WORKDIR /app
-COPY ./src /app/src
+COPY ./server /app/src
 ARG DOTNET_RID=linux-musl-x64
 RUN dotnet publish -r ${DOTNET_RID} /p:PublishTrimmed=true -o /app/build src/AgentDeploy.ExternalApi/AgentDeploy.ExternalApi.csproj
 

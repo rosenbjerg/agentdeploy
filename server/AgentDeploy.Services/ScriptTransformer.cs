@@ -28,10 +28,10 @@ namespace AgentDeploy.Services
             return scriptText;
         }
 
-        public string HideSecrets(string text, IEnumerable<InvocationArgument> args)
+        public string HideSecrets(string text, ScriptExecutionContext executionContext)
         {
             var sb = new StringBuilder(text);
-            foreach (var secret in args.Where(arg => arg.Secret))
+            foreach (var secret in executionContext.Arguments.Where(arg => arg.Secret))
             {
                 sb.Replace(secret.Value, new string('*', secret.Value.Length));
             }

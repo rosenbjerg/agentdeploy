@@ -5,6 +5,7 @@
         public ArgumentType Type { get; set; }
         public string? DefaultValue { get; set; }
         public string? Regex { get; set; }
+        public bool Secret { get; set; }
     }
     public class ScriptFileArgument
     {

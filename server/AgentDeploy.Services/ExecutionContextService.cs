@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
@@ -30,14 +31,13 @@ namespace AgentDeploy.Services
             var failed = new List<InvocationArgumentError>();
             var accepted = new List<InvocationArgument>();
             var acceptedFiles = new List<InvocationFile>();
-
             var commandConstraints = GetCommandConstraints(command);
             var rawInvocationArguments = ParseRawInvocationArguments(formCollection);
             foreach (var inputVariable in script.Variables)
             {
                 var invocationValue = ValidateInputVariables(rawInvocationArguments, inputVariable, commandConstraints, failed);
                 if (invocationValue == null) continue;
-                accepted.Add(new InvocationArgument(inputVariable.Key, inputVariable.Value.Type, invocationValue.Value, invocationValue.Secret));
+                accepted.Add(new InvocationArgument(inputVariable.Key, inputVariable.Value.Type, invocationValue.Value, invocationValue.Secret || inputVariable.Value.Secret));
             }
 
             foreach (var inputFile in script.Files)

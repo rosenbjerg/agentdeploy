@@ -40,10 +40,10 @@ namespace AgentDeploy.Services
                 _logger.LogDebug($"Executing script using {executor.GetType().Name}");
                 
                 var exitCode = await executor.Execute(executionContext, directory,
-                    (data, error) => output.AddLast(new ProcessOutput(DateTime.UtcNow, _scriptTransformer.HideSecrets(data, executionContext.Arguments), error)));
+                    (data, error) => output.AddLast(new ProcessOutput(DateTime.UtcNow, _scriptTransformer.HideSecrets(data, executionContext), error)));
 
                 var visibleOutput = executionContext.Script.ShowOutput ? output : Enumerable.Empty<ProcessOutput>();
-                var visibleCommand = executionContext.Script.ShowCommand ? _scriptTransformer.HideSecrets(scriptText, executionContext.Arguments) : string.Empty;
+                var visibleCommand = executionContext.Script.ShowCommand ? _scriptTransformer.HideSecrets(scriptText, executionContext) : string.Empty;
                 return new ExecutionResult(visibleOutput, visibleCommand, exitCode);
             }
             finally

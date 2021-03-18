@@ -1,11 +1,8 @@
 ﻿variables:
-  username:
-    type: 'string'
-    default_value: 'postgres'
+  hello:
+    type: string
   password:
     type: 'string'
-  test_number:
-    type: 'integer'
 files:
   test_file:
     min_size: 10
@@ -13,11 +10,11 @@ files:
     accepted_extensions:
       - txt
       - c
-show_command: false
+show_command: true
 show_output: true
 command: |
-  echo "Hello $WORLD"
-  echo "this is $(username) with the password $(password)"
+  echo "$(hello) $WORLD"
+  echo "hidden password is $(password)"
   echo "The file path is: $(test_file)"
   cat $(test_file)
   
