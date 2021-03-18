@@ -112,6 +112,7 @@ function addFieldToForm(collection, formdata, kind, formattedKind) {
     }
     return error;
 }
+
 function addFileToForm(collection, formdata) {
     let error = false;
     for (const fileArgument of collection) {
