@@ -37,5 +37,5 @@ jobs:
       with:
         artifacts: "agentd-client-win-x64.exe,agentd-client-linux-x64,agentd-client-mac-x64"
         body: "agentd client release"
-        bodyFile: "body.md"
+        tag: client-1.0.0-alpha
         token: ${{ secrets.GITHUB_TOKEN }}
