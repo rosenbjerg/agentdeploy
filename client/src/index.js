@@ -9,17 +9,12 @@ const TokenFilePath = './agentd.token';
 const program = new Command();
 program
     .name('agentd client')
-    .version('0.0.1');
-
-program
+    .version('0.0.1')
     .option('-t, --token <token>', 'Authentication token')
     .option('-v, --variables <keyValuePair...>', 'Add variable')
     .option('-s, --secret-variables <keyValuePair...>', 'Add secret variable')
     .option('-e, --environment-variables <keyValuePair...>', 'Add environment variable')
-    .option('-f, --files <keyValuePair...>', 'Add file');
-    // .option('-ws, --websocket', 'Use websocket connection to receive the output');
-
-program
+    .option('-f, --files <keyValuePair...>', 'Add file')
     .command('invoke <command> <serverUrl>')
     .description('Invoke command')
     .action(invokeCommand);
