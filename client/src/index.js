@@ -5,7 +5,6 @@ const chalk = require('chalk');
 const { Command } = require('commander');
 const FormData = require('form-data');
 
-
 const TokenFilePath = './agentd.token';
 const program = new Command();
 program
