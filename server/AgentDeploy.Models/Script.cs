@@ -1,6 +1,4 @@
-﻿using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace AgentDeploy.Models
 {
@@ -12,11 +10,4 @@ namespace AgentDeploy.Models
         public bool ShowCommand { get; set; } = false;
         public bool ShowOutput { get; set; } = true;
     }
-    public record InvocationArgument(string Name, ArgumentType Type, string Value, bool Secret);
-    public record InvocationFile(string Name, string FileName, Func<Stream> OpenRead);
-    public record InvocationArgumentError(string Name, string Error);
-    public record RawInvocationArgument(string Name, string Value, bool Secret);
-    
-    public record ScriptExecutionContext(Script Script, List<InvocationArgument> Arguments, InvocationFile[] Files,
-        string[] EnvironmentVariables, SecureShellOptions? SecureShellOptions);
 }

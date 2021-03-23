@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using AgentDeploy.Services;
 using AgentDeploy.Services.Models;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 
 namespace AgentDeploy.ExternalApi.Middleware
 {

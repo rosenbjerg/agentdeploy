@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
@@ -48,9 +48,26 @@ namespace AgentDeploy.Services
             }
             
             if (failed.Any()) throw new InvalidInvocationArgumentsException(failed);
-            
+
+            var sessionId = ExtractWebsocketToken(formCollection);
             var environmentVariables = formCollection.Where(e => e.Key == "environment").SelectMany(e => e.Value).Select(env => env.Trim()).ToArray();
-            return new ScriptExecutionContext(script, accepted, acceptedFiles.ToArray(), environmentVariables, commandConstraints?.Ssh);
+            return new ScriptExecutionContext
+            {
+                Script = script,
+                Arguments = accepted,
+                Files = acceptedFiles.ToArray(),
+                EnvironmentVariables = environmentVariables,
+                SecureShellOptions = commandConstraints?.Ssh,
+                WebSocketSessionId = sessionId
+            };
+        }
+
+        private static Guid? ExtractWebsocketToken(IFormCollection formCollection)
+        {
+            if (formCollection.TryGetValue("websocket-session-id", out var sessionIdString) &&
+                Guid.TryParse(sessionIdString, out var sessionId))
+                return sessionId;
+            return null;
         }
 
         private static RawInvocationArgument? ValidateInputVariables(Dictionary<string, RawInvocationArgument> rawInvocationArguments, KeyValuePair<string, ScriptArgument> inputVariable,

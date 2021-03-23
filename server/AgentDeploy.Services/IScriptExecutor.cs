@@ -6,6 +6,6 @@ namespace AgentDeploy.Services
 {
     public interface IScriptExecutor
     {
-        Task<int> Execute(ScriptExecutionContext executionContext, string directory, Action<string, bool> onOutput);
+        Task<int> Execute(ScriptExecutionContext executionContext, string directory, Action<ProcessOutput> onOutput);
     }
 }

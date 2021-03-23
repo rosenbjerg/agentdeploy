@@ -2,13 +2,23 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
+using AgentDeploy.Models.Options;
 using Instances;
 
 namespace AgentDeploy.Services
 {
     public class SecureShellExecutor : IScriptExecutor
     {
-        public async Task<int> Execute(ScriptExecutionContext executionContext, string directory, Action<string, bool> onOutput)
+        private readonly ScriptTransformer _scriptTransformer;
+        private readonly ExecutionOptions _executionOptions;
+
+        public SecureShellExecutor(ScriptTransformer scriptTransformer, ExecutionOptions executionOptions)
+        {
+            _scriptTransformer = scriptTransformer;
+            _executionOptions = executionOptions;
+        }
+        
+        public async Task<int> Execute(ScriptExecutionContext executionContext, string directory, Action<ProcessOutput> onOutput)
         {
             var ssh = executionContext.SecureShellOptions!;
             
@@ -26,13 +36,13 @@ namespace AgentDeploy.Services
             }
         }
 
-        private async Task<string?> CopyScriptToRemote(string directory, SecureShellOptions ssh, Action<string, bool> onOutput)
+        private async Task<string?> CopyScriptToRemote(string directory, SecureShellOptions ssh, Action<ProcessOutput> onOutput)
         {
             var directoryName = Path.GetFileName(directory);
             var remoteDirectory = $"{ssh.TemporaryAgentDirectory.TrimEnd('/')}/{directoryName}";
             var sourceDirectory = directory;
 
-            onOutput("Copying files to remote..", false);
+            onOutput(new ProcessOutput(DateTime.Now, "Copying files to remote..", false));
             var success = false;
             if (!string.IsNullOrEmpty(ssh.Password))
                 success = await CopyUsingSshPass(ssh, sourceDirectory, remoteDirectory, onOutput);
@@ -40,28 +50,28 @@ namespace AgentDeploy.Services
                 success = await CopyUsingPrivateKey(ssh, sourceDirectory, remoteDirectory, onOutput);
             else
                 throw new Exception("Private-key or password must be provided");
-            if (success) onOutput("All files copied to remote", false);
+            if (success) onOutput(new ProcessOutput(DateTime.Now, "All files copied to remote", false));
             return success ? remoteDirectory : null;
         }
 
-        private async Task<bool> CopyUsingPrivateKey(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<string, bool> onOutput)
+        private async Task<bool> CopyUsingPrivateKey(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
             var scpCommand = $"-rqi {ssh.PrivateKeyPath} -o StrictHostKeyChecking={(ssh.StrictHostKeyChecking ? "yes" : "no")} -P {ssh.Port} {sourceDirectory} {ssh.Username}@{ssh.Address}:{remoteDirectory}";
-            var (exitCode, instance) = await Instance.FinishAsync("scp", scpCommand, (_, tuple) => onOutput(tuple.Data, tuple.Type == DataType.Error));
+            var (exitCode, instance) = await Instance.FinishAsync("scp", scpCommand, (_, tuple) => onOutput(new ProcessOutput(DateTime.UtcNow, tuple.Data, tuple.Type == DataType.Error)));
             return exitCode == 0;
         }
 
-        private async Task<bool> CopyUsingSshPass(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<string, bool> onOutput)
+        private async Task<bool> CopyUsingSshPass(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
             return await UsePasswordFile(ssh, async passwordFile =>
             {
                 var scpCommand = $"-f {passwordFile} scp -rq -o StrictHostKeyChecking={(ssh.StrictHostKeyChecking ? "yes" : "no")} -P {ssh.Port} {sourceDirectory} {ssh.Username}@{ssh.Address}:{remoteDirectory}";
-                var (exitCode, instance) = await Instance.FinishAsync("sshpass", scpCommand, (_, tuple) => onOutput(tuple.Data, tuple.Type == DataType.Error));
+                var (exitCode, instance) = await Instance.FinishAsync("sshpass", scpCommand, (_, tuple) => onOutput(new ProcessOutput(DateTime.UtcNow, tuple.Data, tuple.Type == DataType.Error)));
                 return exitCode == 0;
             });
         }
 
-        private async Task<int> Execute(SecureShellOptions ssh, string remoteDirectory, Action<string, bool> onOutput)
+        private async Task<int> Execute(SecureShellOptions ssh, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
             if (!string.IsNullOrEmpty(ssh.Password))
                 return await ExecuteUsingSshPass(ssh, remoteDirectory, onOutput);
@@ -71,24 +81,30 @@ namespace AgentDeploy.Services
                 throw new Exception();
         }
 
-        private async Task<int> ExecuteUsingPrivateKey(SecureShellOptions ssh, string remoteDirectory, Action<string, bool> onOutput)
+        private async Task<int> ExecuteUsingPrivateKey(SecureShellOptions ssh, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
-            var sshCommand = $"-qtti {ssh.PrivateKeyPath} -o StrictHostKeyChecking={(ssh.StrictHostKeyChecking ? "yes" : "no")} -p {ssh.Port} {ssh.Username}@{ssh.Address} \"rm -r {remoteDirectory}\"";
-            var (exitCode, instance) = await Instance.FinishAsync("ssh", sshCommand, (_, tuple) => onOutput(tuple.Data, tuple.Type == DataType.Error));
+            var scriptFilePath = _scriptTransformer.BuildScriptPath(remoteDirectory);
+            var fileArgument = _scriptTransformer.BuildScriptArgument(scriptFilePath);
+            
+            var sshCommand = $"-qtti {ssh.PrivateKeyPath} -o StrictHostKeyChecking={(ssh.StrictHostKeyChecking ? "yes" : "no")} -p {ssh.Port} {ssh.Username}@{ssh.Address} \"{_executionOptions.Shell} {fileArgument.Replace("\"", "\\\"")}\"";
+            var (exitCode, instance) = await Instance.FinishAsync("ssh", sshCommand, (_, tuple) => onOutput(new ProcessOutput(DateTime.UtcNow, tuple.Data, tuple.Type == DataType.Error)));
             return exitCode;
         }
 
-        private async Task<int> ExecuteUsingSshPass(SecureShellOptions ssh, string remoteDirectory, Action<string, bool> onOutput)
+        private async Task<int> ExecuteUsingSshPass(SecureShellOptions ssh, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
             return await UsePasswordFile(ssh, async passwordFile =>
             {
-                var sshCommand = $"-f {passwordFile} ssh -o StrictHostKeyChecking={(ssh.StrictHostKeyChecking ? "yes" : "no")} -qtt -p {ssh.Port} {ssh.Username}@{ssh.Address} \"bash {remoteDirectory}/script.sh\"";
-                var (exitCode, instance) = await Instance.FinishAsync("sshpass", sshCommand, (_, tuple) => onOutput(tuple.Data, tuple.Type == DataType.Error));
+                var scriptFilePath = _scriptTransformer.BuildScriptPath(remoteDirectory);
+                var fileArgument = _scriptTransformer.BuildScriptArgument(scriptFilePath);
+                
+                var sshCommand = $"-f {passwordFile} ssh -o StrictHostKeyChecking={(ssh.StrictHostKeyChecking ? "yes" : "no")} -qtt -p {ssh.Port} {ssh.Username}@{ssh.Address} \"{_executionOptions.Shell} {fileArgument}\"";
+                var (exitCode, instance) = await Instance.FinishAsync("sshpass", sshCommand, (_, tuple) => onOutput(new ProcessOutput(DateTime.UtcNow, tuple.Data, tuple.Type == DataType.Error)));
                 return exitCode;
             });
         }
 
-        private async Task CleanupRemoteDirectory(SecureShellOptions ssh, string remoteDirectory, Action<string, bool> onOutput)
+        private async Task CleanupRemoteDirectory(SecureShellOptions ssh, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
             if (!string.IsNullOrEmpty(ssh.Password))
                 await CleanupUsingSshPass(ssh, remoteDirectory, onOutput);
@@ -98,22 +114,22 @@ namespace AgentDeploy.Services
                 throw new Exception();
         }
 
-        private async Task CleanupUsingPrivateKey(SecureShellOptions ssh, string remoteDirectory, Action<string, bool> onOutput)
+        private async Task CleanupUsingPrivateKey(SecureShellOptions ssh, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
             var cleanupCommand = $"-o StrictHostKeyChecking={(ssh.StrictHostKeyChecking ? "yes" : "no")} -i {ssh.PrivateKeyPath} -p {ssh.Port} {ssh.Username}@{ssh.Address} \"rm -r {remoteDirectory}\"";
-            var (exitCode, instance) = await Instance.FinishAsync("ssh", cleanupCommand, (_, tuple) => onOutput(tuple.Data, tuple.Type == DataType.Error));
+            var (exitCode, instance) = await Instance.FinishAsync("ssh", cleanupCommand, (_, tuple) => onOutput(new ProcessOutput(DateTime.UtcNow, tuple.Data, tuple.Type == DataType.Error)));
             if (exitCode != 0)
             {
                 Console.WriteLine(instance);
             }
         }
 
-        private async Task CleanupUsingSshPass(SecureShellOptions ssh, string remoteDirectory, Action<string, bool> onOutput)
+        private async Task CleanupUsingSshPass(SecureShellOptions ssh, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
             await UsePasswordFile(ssh, async passwordFile =>
             {
                 var sshCommand = $"-f {passwordFile} ssh -o StrictHostKeyChecking={(ssh.StrictHostKeyChecking ? "yes" : "no")} -qtt -p {ssh.Port} {ssh.Username}@{ssh.Address} \"rm -r {remoteDirectory}\"";
-                var (exitCode, instance) = await Instance.FinishAsync("sshpass", sshCommand, (_, tuple) => onOutput(tuple.Data, tuple.Type == DataType.Error));
+                var (exitCode, instance) = await Instance.FinishAsync("sshpass", sshCommand, (_, tuple) => onOutput(new ProcessOutput(DateTime.UtcNow, tuple.Data, tuple.Type == DataType.Error)));
                 return exitCode;
             });
         }

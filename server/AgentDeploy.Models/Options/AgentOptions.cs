@@ -11,5 +11,10 @@ namespace AgentDeploy.Models.Options
         /// Whether to enable CORS policy for allowing CORS requests (non-localhost)
         /// </summary>
         public bool AllowCors { get; set; } = true;
+
+        /// <summary>
+        /// Whether to require https at authentication level
+        /// </summary>
+        public bool RequireHttps { get; set; } = false;
     }
 }
