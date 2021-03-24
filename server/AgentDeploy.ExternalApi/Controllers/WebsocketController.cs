@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
 using AgentDeploy.ExternalApi.Websocket;
+using AgentDeploy.Services.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AgentDeploy.ExternalApi.Controllers
@@ -22,7 +23,16 @@ namespace AgentDeploy.ExternalApi.Controllers
         public async Task Connect([FromRoute, Required] Guid sessionId)
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)
-                await _connectionAccepter.Accept(HttpContext, sessionId);
+            {
+                try
+                {
+                    await _connectionAccepter.Accept(HttpContext, sessionId);
+                }
+                catch (WebsocketBoothNotFoundException)
+                {
+                    HttpContext.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                }
+            }
             else
                 HttpContext.Response.StatusCode = (int) HttpStatusCode.SwitchingProtocols;
             await HttpContext.Response.CompleteAsync();

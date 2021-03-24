@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using AgentDeploy.Services.Models;
 
 namespace AgentDeploy.Services
@@ -8,13 +9,28 @@ namespace AgentDeploy.Services
     {
         private readonly ConcurrentDictionary<Guid, ConnectionContext> _connectionTable = new();
 
-        public bool FillBooth(Guid webSocketSessionId, Connection connection)
+        public async Task<bool> FillBooth(Guid webSocketSessionId, Connection connection)
         {
-            if (!_connectionTable.TryGetValue(webSocketSessionId, out var booth))
+            var booth = await AwaitBooth(webSocketSessionId, 2);
+            if (booth == null)
                 return false;
             
             booth.SetConnection(connection);
             return true;
+        }
+
+        private async Task<ConnectionContext?> AwaitBooth(Guid webSocketSessionId, int timeoutSeconds)
+        {
+            var stepSize = 100;
+            var steps = (timeoutSeconds * 1000) / stepSize;
+            for (var i = 0; i < steps; i++)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(stepSize));
+                if (_connectionTable.TryGetValue(webSocketSessionId, out var booth))
+                    return booth;
+            }
+
+            return null;
         }
 
         public ConnectionContext Prepare(Guid webSocketSessionId)

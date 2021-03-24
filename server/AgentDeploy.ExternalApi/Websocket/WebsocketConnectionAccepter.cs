@@ -15,11 +15,11 @@ namespace AgentDeploy.ExternalApi.Websocket
             _operationContext = operationContext;
         }
 
-        public override Task Accept(HttpContext httpContext, Guid sessionId)
+        public override async Task Accept(HttpContext httpContext, Guid sessionId)
         {
             var websocketConnection = new WebsocketConnection(httpContext, _operationContext);
-            Connect(sessionId, websocketConnection);
-            return websocketConnection.KeepConnectionOpen();
+            await Connect(sessionId, websocketConnection);
+            await websocketConnection.KeepConnectionOpen();
         }
     }
 }

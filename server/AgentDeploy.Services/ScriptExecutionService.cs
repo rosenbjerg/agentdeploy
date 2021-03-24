@@ -49,7 +49,7 @@ namespace AgentDeploy.Services
                 if (executionContext.WebSocketSessionId != null && executionContext.Script.ShowOutput)
                 {
                     var connection = _connectionHub.Prepare(executionContext.WebSocketSessionId.Value);
-                    var connected = await connection.AwaitConnection(3);
+                    var connected = await connection.AwaitConnection(2);
                     if (connected)
                         onOutput = (processOutput) => connection.SendOutput(processOutput);
                 }

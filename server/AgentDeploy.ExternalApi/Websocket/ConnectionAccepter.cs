@@ -15,11 +15,11 @@ namespace AgentDeploy.ExternalApi.Websocket
             _connectionHub = connectionHub;
         }
 
-        protected void Connect(Guid sessionId, Connection connection)
+        protected async Task Connect(Guid sessionId, Connection connection)
         {
-            var connected = _connectionHub.FillBooth(sessionId, connection);
+            var connected = await _connectionHub.FillBooth(sessionId, connection);
             if (!connected)
-                throw new ArgumentException(nameof(sessionId));
+                throw new WebsocketBoothNotFoundException(nameof(sessionId));
         }
 
         public abstract Task Accept(HttpContext httpContext, Guid sessionId);
