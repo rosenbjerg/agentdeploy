@@ -60,6 +60,17 @@ async function handleSuccessResponse(response) {
     process.exit(json.exitCode);
 }
 
+function listenForWebsocketCommandOuput(serverUrl, websocketId) {
+    const wsUrl = `${serverUrl}/websocket/connect/${websocketId}`.replace('https', 'wss').replace('http', 'ws');
+    const websocket = new WebSocket(wsUrl);
+    websocket.on('open', () => console.log(`--- ${chalk.bold('Output')} ------------------------------------------------------------`));
+    websocket.on('message', json => {
+        const msg = JSON.parse(json);
+        if (msg.event === 'output')
+            printFormatted(msg.data);
+    });
+}
+
 async function invokeCommand(command, serverUrl) {
     const options = program.opts();
     if (!options.token) {
@@ -73,18 +84,7 @@ async function invokeCommand(command, serverUrl) {
     const websocketId = uuidv4();
     if (options.ws) formdata.append('websocket-session-id', websocketId)
     const responsePromise = fetch(`${serverUrl}/rest/invoke`, { method: 'POST', body: formdata, headers: { 'Authorization': `Token ${options.token}` } });
-    if (options.ws) {
-        setTimeout(() => {
-            const wsUrl = `${serverUrl}/websocket/connect/${websocketId}`.replace('https', 'wss').replace('http', 'ws');
-            const websocket = new WebSocket(wsUrl);
-            websocket.on('open', () => console.log(`--- ${chalk.bold('Output')} ------------------------------------------------------------`));
-            websocket.on('message', json => {
-                const msg = JSON.parse(json);
-                if (msg.event === 'output')
-                    printFormatted(msg.data);
-            });
-        }, 500);
-    }
+    if (options.ws) listenForWebsocketCommandOuput(serverUrl, websocketId);
 
     const response = await responsePromise;
     switch (response.status) {
