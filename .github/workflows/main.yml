@@ -1,4 +1,4 @@
-name: Releases
+name: Client release
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      working-directory: ./Frontend
+      working-directory: ./client
     steps:
     - uses: actions/checkout@v1
     
@@ -35,5 +35,5 @@ jobs:
       with:
         artifacts: "agentd-client-win-x64.exe,agentd-client-linux-x64,agentd-client-mac-x64"
         body: "agentd client release"
-        tag: client-1.0.0-alpha
+        commit: $GITHUB_SHA
         token: ${{ secrets.GITHUB_TOKEN }}

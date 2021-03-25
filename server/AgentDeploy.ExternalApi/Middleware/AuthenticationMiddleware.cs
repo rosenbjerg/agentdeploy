@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using AgentDeploy.Models.Options;
 using AgentDeploy.Services;
 using AgentDeploy.Services.Models;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 
 namespace AgentDeploy.ExternalApi.Middleware
 {
@@ -16,9 +16,9 @@ namespace AgentDeploy.ExternalApi.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, OperationContext operationContext, TokenReader tokenReader)
+        public async Task Invoke(HttpContext context, OperationContext operationContext, AgentOptions agentOptions, TokenReader tokenReader)
         {
-            if (context.Request.Headers.TryGetValue("Authorization", out var headerValue))
+            if ((!agentOptions.RequireHttps || context.Request.IsHttps) && context.Request.Headers.TryGetValue("Authorization", out var headerValue))
             {
                 var tokenString = headerValue.FirstOrDefault()?.Replace("Token ", string.Empty);
                 if (!string.IsNullOrEmpty(tokenString))

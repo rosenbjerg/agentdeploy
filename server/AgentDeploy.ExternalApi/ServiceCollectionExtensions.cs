@@ -12,7 +12,7 @@ namespace AgentDeploy.ExternalApi
             serviceCollection.AddOptions<TOptions>()
                 .Bind(configuration.GetSection(typeof(TOptions).Name))
                 .ValidateDataAnnotations();
-            serviceCollection.AddSingleton(typeof(TOptions), provider => provider.GetRequiredService<IOptionsSnapshot<TOptions>>().Value);
+            serviceCollection.AddScoped(provider => provider.GetRequiredService<IOptionsSnapshot<TOptions>>().Value);
             return serviceCollection;
         }
     }

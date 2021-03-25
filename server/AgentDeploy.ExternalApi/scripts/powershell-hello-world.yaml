@@ -1,0 +1,12 @@
+﻿variables:
+  name:
+    type: string
+show_output: true
+command: |
+  Write-Host 'Hello $(name) from powershell!'
+  Start-Sleep -s 1
+  Write-Host 'Hello again $(name) from powershell!'
+  Start-Sleep -s 1
+  Write-Host 'Hello again again $(name) from powershell!'
+  Start-Sleep -s 1
+  

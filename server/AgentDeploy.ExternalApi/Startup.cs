@@ -1,4 +1,8 @@
+using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using AgentDeploy.ExternalApi.Middleware;
+using AgentDeploy.ExternalApi.Websocket;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Services;
 using AgentDeploy.Services.Models;
@@ -43,11 +47,17 @@ namespace AgentDeploy.ExternalApi
             services.AddScoped<LocalScriptExecutor>();
             services.AddScoped<SecureShellExecutor>();
             services.AddScoped<OperationContext>();
+            services.AddScoped<ConnectionAccepter, WebsocketConnectionAccepter>();
             services.AddScoped<IOperationContext>(provider => provider.GetRequiredService<OperationContext>());
+
+            services.AddSingleton<ConnectionHub>();
             services.AddSingleton(_ => new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build());
-            services.AddControllers();
+            
+            services
+                .AddControllers()
+                .AddJsonOptions(options => ConfigureJsonSerializer(options.JsonSerializerOptions));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, AgentOptions agentOptions)
@@ -55,14 +65,17 @@ namespace AgentDeploy.ExternalApi
             if (agentOptions.TrustXForwardedHeaders) app.UseForwardedHeaders();
             if (agentOptions.AllowCors) app.UseCors("Default");
 
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
             app.UseMiddleware<AuthenticationMiddleware>();
+            app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
             app.UseRouting();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
+        }
+
+        private void ConfigureJsonSerializer(JsonSerializerOptions options)
+        {
+            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.PropertyNameCaseInsensitive = true;
+            options.Converters.Add(new JsonStringEnumConverter());
         }
     }
 }
