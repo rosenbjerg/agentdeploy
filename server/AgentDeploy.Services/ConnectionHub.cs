@@ -11,7 +11,7 @@ namespace AgentDeploy.Services
 
         public async Task<bool> FillBooth(Guid webSocketSessionId, Connection connection)
         {
-            var booth = await AwaitBooth(webSocketSessionId, 2);
+            var booth = await AwaitBooth(webSocketSessionId, 0.5f);
             if (booth == null)
                 return false;
             
@@ -19,7 +19,7 @@ namespace AgentDeploy.Services
             return true;
         }
 
-        private async Task<ConnectionContext?> AwaitBooth(Guid webSocketSessionId, int timeoutSeconds)
+        private async Task<ConnectionContext?> AwaitBooth(Guid webSocketSessionId, float timeoutSeconds)
         {
             var stepSize = 100;
             var steps = (timeoutSeconds * 1000) / stepSize;
