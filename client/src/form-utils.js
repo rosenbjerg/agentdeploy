@@ -1,10 +1,9 @@
-import path from 'path';
-import fs from 'fs';
-
-import FormData from 'form-data';
+const fs = require('fs');
+const path = require('path');
+const FormData = require('form-data');
 
 const keyValuePairRegex = /^([a-zA-Z0-9-_]+)+=(.*)$/;
-export function createForm(command, options) {
+function createForm(command, options) {
     const formdata = new FormData();
     formdata.append('command', command);
 
@@ -58,3 +57,5 @@ function addFileToForm(collection, formdata) {
     }
     return error;
 }
+
+module.exports = createForm;

@@ -1,11 +1,10 @@
-import fs from 'fs';
-
-import fetch from 'node-fetch';
-import chalk from 'chalk';
-import { Command } from 'commander';
-import { createForm } from './form-utils.js';
-import { v4 as uuidv4 } from 'uuid';
-import WebSocket from 'ws';
+const fs = require('fs');
+const fetch = require('node-fetch');
+const chalk = require('chalk');
+const WebSocket = require('ws');
+const { Command } = require('commander');
+const { createForm } = require('./form-utils');
+const { v4 } = require('uuid');
 
 const TokenFilePath = './agentd.token';
 const program = new Command();
@@ -81,7 +80,7 @@ async function invokeCommand(command, serverUrl) {
     }
 
     const formdata = createForm(command, options);
-    const websocketId = uuidv4();
+    const websocketId = v4();
     if (options.ws) formdata.append('websocket-session-id', websocketId)
     const responsePromise = fetch(`${serverUrl}/rest/invoke`, { method: 'POST', body: formdata, headers: { 'Authorization': `Token ${options.token}` } });
     if (options.ws) listenForWebsocketCommandOuput(serverUrl, websocketId);
