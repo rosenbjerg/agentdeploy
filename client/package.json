@@ -5,7 +5,10 @@
   "scripts": {
     "build:windows": "nexe src -t windows-x64-14.5.0 -o agentd-client-win-x64",
     "build:linux": "nexe src -t linux-x64-14.15.3 -o agentd-client-linux-x64",
-    "build:mac": "nexe src -t mac-x64-14.9.0 -o agentd-client-mac-x64"
+    "build:mac": "nexe src -t mac-x64-14.9.0 -o agentd-client-mac-x64",
+    "build2:windows": "pkg src/index.js --targets node10-win --output agentd-client-win-x64",
+    "build2:linux": "pkg src/index.js --targets node12-linux --output agentd-client-linux-x64",
+    "build2:mac": "pkg src/index.js --targets node12-macos --output agentd-client-mac-x64"
   },
   "dependencies": {
     "chalk": "^4.1.0",
@@ -14,8 +17,5 @@
     "node-fetch": "^2.6.1",
     "uuid": "^8.3.2",
     "ws": "^7.4.4"
-  },
-  "devDependencies": {
-    "nexe": "^4.0.0-beta.18"
   }
 }
