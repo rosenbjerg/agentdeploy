@@ -11,13 +11,11 @@ namespace AgentDeploy.ExternalApi.Controllers
     [Route("rest")]
     public class InvocationController : ControllerBase
     {
-        private readonly CommandReader _commandReader;
         private readonly ExecutionContextService _executionContextService;
         private readonly ScriptExecutionService _scriptExecutionService;
 
-        public InvocationController(CommandReader commandReader, ExecutionContextService executionContextService, ScriptExecutionService scriptExecutionService)
+        public InvocationController(ExecutionContextService executionContextService, ScriptExecutionService scriptExecutionService)
         {
-            _commandReader = commandReader;
             _executionContextService = executionContextService;
             _scriptExecutionService = scriptExecutionService;
         }
