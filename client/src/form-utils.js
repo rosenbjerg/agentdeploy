@@ -58,4 +58,6 @@ function addFileToForm(collection, formdata) {
     return error;
 }
 
-module.exports = createForm;
+module.exports = {
+    createForm
+};
