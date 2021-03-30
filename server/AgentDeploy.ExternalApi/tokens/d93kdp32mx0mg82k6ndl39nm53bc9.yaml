@@ -10,7 +10,6 @@ available_commands:
   test-script:
     ssh:
       username: malte
-      password: 123
       port: 2222
     locked_variables:
       username: johndoe
