@@ -6,6 +6,7 @@ namespace AgentDeploy.Models
     {
         public string? Name { get; set; } = null!;
         public string? Description { get; set; } = null!;
+        public SecureShellOptions? Ssh { get; set; }
         public List<string>? TrustedIps { get; set; } = null!;
         public Dictionary<string, ConstrainedCommand>? AvailableCommands { get; set; } = null!;
     }

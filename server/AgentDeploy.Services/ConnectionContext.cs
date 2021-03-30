@@ -46,6 +46,10 @@ namespace AgentDeploy.Services
             return false;
         }
 
+        public void SendCommand(string command)
+        {
+            Connection?.SendMessage(new Message("command", command));
+        }
         public void SendOutput(ProcessOutput processOutput)
         {
             Connection?.SendMessage(new Message("output", processOutput));

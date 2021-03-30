@@ -45,20 +45,24 @@ namespace AgentDeploy.Services
                 _logger.LogDebug($"Executing script using {executor.GetType().Name}");
 
 
-                Action<ProcessOutput> onOutput = null;
+                Action<ProcessOutput>? onOutput = null;
                 if (executionContext.WebSocketSessionId != null && executionContext.Script.ShowOutput)
                 {
                     var connection = _connectionHub.Prepare(executionContext.WebSocketSessionId.Value);
                     var connected = await connection.AwaitConnection(2);
                     if (connected)
-                        onOutput = (processOutput) => connection.SendOutput(processOutput);
+                    {
+                        onOutput = processOutput => connection.SendOutput(processOutput);
+                        if (executionContext.Script.ShowCommand)
+                            connection.SendCommand(_scriptTransformer.HideSecrets(scriptText, executionContext));
+                    }
                 }
 
                 _operationContext.OperationCancelled.ThrowIfCancellationRequested();
                 
                 var output = new LinkedList<ProcessOutput>();
                 onOutput ??= processOutput => output.AddLast(processOutput);
-                
+
                 var exitCode = await executor.Execute(executionContext, directory, onOutput);
 
                 var visibleOutput = executionContext.Script.ShowOutput ? output : Enumerable.Empty<ProcessOutput>();

@@ -57,7 +57,7 @@ namespace AgentDeploy.Services
                 Arguments = accepted,
                 Files = acceptedFiles.ToArray(),
                 EnvironmentVariables = environmentVariables,
-                SecureShellOptions = commandConstraints?.Ssh,
+                SecureShellOptions = commandConstraints?.Ssh ?? _operationContext.Token.Ssh,
                 WebSocketSessionId = sessionId
             };
         }
