@@ -52,7 +52,7 @@ namespace AgentDeploy.Services
                     var connected = await connection.AwaitConnection(2);
                     if (connected)
                     {
-                        onOutput = processOutput => connection.SendOutput(processOutput);
+                        onOutput = processOutput => connection.SendOutput(_scriptTransformer.HideSecrets(processOutput, executionContext));
                         if (executionContext.Script.ShowCommand)
                             connection.SendCommand(_scriptTransformer.HideSecrets(scriptText, executionContext));
                     }
@@ -61,7 +61,7 @@ namespace AgentDeploy.Services
                 _operationContext.OperationCancelled.ThrowIfCancellationRequested();
                 
                 var output = new LinkedList<ProcessOutput>();
-                onOutput ??= processOutput => output.AddLast(processOutput);
+                onOutput ??= processOutput => output.AddLast(_scriptTransformer.HideSecrets(processOutput, executionContext));
 
                 var exitCode = await executor.Execute(executionContext, directory, onOutput);
 

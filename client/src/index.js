@@ -48,14 +48,12 @@ async function handleSuccessResponse(response, options) {
     const json = await response.json();
 
     if (!options.ws && !options.hideCommand && json.command) {
-        if (!options.hideHeaders)
-            console.log(`--- ${chalk.bold('Command')} -----------------------------------------------------------`);
+        if (!options.hideHeaders)      console.log(`--- ${chalk.bold('Command')} -----------------------------------------------------------`);
         console.log(json.command);
     }
 
     if (!options.ws && json.output && json.output.length) {
-        if (!options.hideHeaders)
-            console.log(`--- ${chalk.bold('Output')} ------------------------------------------------------------`);
+        if (!options.hideHeaders) console.log(`--- ${chalk.bold('Output')} ------------------------------------------------------------`);
         for (const output of json.output) {
             printFormatted(output.output, output.timestamp, output.error, options.hideTimestamps);
         }

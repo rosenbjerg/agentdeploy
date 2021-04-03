@@ -58,6 +58,16 @@ namespace AgentDeploy.Services
 
             return sb.ToString();
         }
+        public ProcessOutput HideSecrets(ProcessOutput output, ScriptExecutionContext executionContext)
+        {
+            var sb = new StringBuilder(output.Output);
+            foreach (var secret in executionContext.Arguments.Where(arg => arg.Secret))
+            {
+                sb.Replace(secret.Value, new string('*', secret.Value.Length));
+            }
+
+            return new ProcessOutput(output.Timestamp, sb.ToString(), output.Error);
+        }
 
         public string ReplaceVariables(string script, Dictionary<string, string> executionContext)
         {
