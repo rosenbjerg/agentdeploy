@@ -3,7 +3,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
 using AgentDeploy.ExternalApi.Websocket;
-using AgentDeploy.Services.Models;
+using AgentDeploy.Models.Exceptions;
+using AgentDeploy.Services.Websocket;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AgentDeploy.ExternalApi.Controllers
@@ -12,9 +13,9 @@ namespace AgentDeploy.ExternalApi.Controllers
     [Route("websocket")]
     public class WebsocketController : ControllerBase
     {
-        private readonly ConnectionAccepter _connectionAccepter;
+        private readonly IConnectionAccepter _connectionAccepter;
 
-        public WebsocketController(ConnectionAccepter connectionAccepter)
+        public WebsocketController(IConnectionAccepter connectionAccepter)
         {
             _connectionAccepter = connectionAccepter;
         }
@@ -28,13 +29,15 @@ namespace AgentDeploy.ExternalApi.Controllers
                 {
                     await _connectionAccepter.Accept(HttpContext, sessionId);
                 }
-                catch (WebsocketBoothNotFoundException)
+                catch (WebsocketSessionNotFoundException)
                 {
                     HttpContext.Response.StatusCode = (int) HttpStatusCode.BadRequest;
                 }
             }
             else
+            {
                 HttpContext.Response.StatusCode = (int) HttpStatusCode.SwitchingProtocols;
+            }
             await HttpContext.Response.CompleteAsync();
         }
     }

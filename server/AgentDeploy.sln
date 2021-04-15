@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentDeploy.Services", "Age
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentDeploy.Models", "AgentDeploy.Models\AgentDeploy.Models.csproj", "{64E00719-022F-4A3E-A97A-7683173F7672}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentDeploy.Tests", "AgentDeploy.Tests\AgentDeploy.Tests.csproj", "{47EC42C5-C8EC-4DA6-A612-C62A10A71FB1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{64E00719-022F-4A3E-A97A-7683173F7672}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64E00719-022F-4A3E-A97A-7683173F7672}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64E00719-022F-4A3E-A97A-7683173F7672}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47EC42C5-C8EC-4DA6-A612-C62A10A71FB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47EC42C5-C8EC-4DA6-A612-C62A10A71FB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47EC42C5-C8EC-4DA6-A612-C62A10A71FB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47EC42C5-C8EC-4DA6-A612-C62A10A71FB1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

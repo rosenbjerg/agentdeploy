@@ -1,10 +1,16 @@
 {
   "name": "agentd-client",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "bin": "./src/index.js",
   "pkg": {
     "targets": [ "node8-linux-x64", "node8-win-x64", "node8-macos-x64", "node8-alpine-x64" ],
     "outputPath": "dist"
+  },
+  "scripts": {
+    "build:linux-x64": "nexe src/index.js -t linux-x64-12.16.2 -n agentd-client-linux-x64",
+    "build:win-x64": "nexe src/index.js -t windows-x64-12.18.2 -n agentd-client-windows-x64",
+    "build:mac-x64": "nexe src/index.js -t mac-x64-12.18.2 -n agentd-client-mac-x64",
+    "build:all": "npm run build:linux-x64 && npm run build:win-x64 && npm run build:mac-x64"
   },
   "dependencies": {
     "chalk": "^4.1.0",

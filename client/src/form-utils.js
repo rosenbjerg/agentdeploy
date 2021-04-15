@@ -8,9 +8,9 @@ function createForm(command, options) {
     formdata.append('command', command);
 
     let error = false;
-    error = addFieldToForm(options.variables || [], formdata, 'variable', 'Variable') || error;
-    error = addFieldToForm(options.secretVariables || [], formdata, 'secretVariable', 'Secret variable') || error;
-    error = addFieldToForm(options.environmentVariables || [], formdata, 'environment', 'Environment variable') || error;
+    error = addFieldToForm(options.variables || [], formdata, 'variables', 'Variable') || error;
+    error = addFieldToForm(options.secretVariables || [], formdata, 'secretVariables', 'Secret variable') || error;
+    error = addFieldToForm(options.environmentVariables || [], formdata, 'environmentVariables', 'Environment variable') || error;
     error = addFileToForm(options.files || [], formdata) || error;
 
     if (error) {

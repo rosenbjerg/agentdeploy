@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using AgentDeploy.ExternalApi.Filters;
+using AgentDeploy.Models;
+using AgentDeploy.Models.Exceptions;
 using AgentDeploy.Services;
-using Microsoft.AspNetCore.Http;
+using AgentDeploy.Services.Script;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AgentDeploy.ExternalApi.Controllers
@@ -11,22 +13,25 @@ namespace AgentDeploy.ExternalApi.Controllers
     [Route("rest")]
     public class InvocationController : ControllerBase
     {
-        private readonly ExecutionContextService _executionContextService;
+        private readonly InvocationContextService _invocationContextService;
         private readonly ScriptExecutionService _scriptExecutionService;
+        private readonly IScriptInvocationParser _scriptInvocationParser;
 
-        public InvocationController(ExecutionContextService executionContextService, ScriptExecutionService scriptExecutionService)
+        public InvocationController(InvocationContextService invocationContextService, ScriptExecutionService scriptExecutionService, IScriptInvocationParser scriptInvocationParser)
         {
-            _executionContextService = executionContextService;
+            _invocationContextService = invocationContextService;
             _scriptExecutionService = scriptExecutionService;
+            _scriptInvocationParser = scriptInvocationParser;
         }
         
         [HttpPost("invoke")]
         [Authorized]
-        public async Task<IActionResult> InvokeCommand([FromForm, Required]string command, IFormCollection form)
+        public async Task<IActionResult> InvokeCommand([FromForm]ScriptInvocation scriptInvocation)
         {
             try
             {
-                var executionContext = await _executionContextService.Build(command, form);
+                var parsedScriptInvocation = _scriptInvocationParser.Parse(scriptInvocation);
+                var executionContext = await _invocationContextService.Build(parsedScriptInvocation);
                 if (executionContext == null)
                     return NotFound();
                 
