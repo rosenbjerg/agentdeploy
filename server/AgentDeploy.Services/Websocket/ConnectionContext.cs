@@ -47,9 +47,9 @@ namespace AgentDeploy.Services.Websocket
             return false;
         }
 
-        public void SendCommand(string command)
+        public void SendScript(string scriptContent)
         {
-            Connection?.SendMessage(new Message("command", command));
+            Connection?.SendMessage(new Message("script", scriptContent));
         }
         public void SendOutput(ProcessOutput processOutput)
         {

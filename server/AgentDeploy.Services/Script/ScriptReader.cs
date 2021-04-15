@@ -7,7 +7,7 @@ using YamlDotNet.Serialization;
 
 namespace AgentDeploy.Services.Script
 {
-    public class ScriptReader
+    public class ScriptReader : IScriptReader
     {
         private readonly IOperationContext _operationContext;
         private readonly DirectoryOptions _directoryOptions;
@@ -23,15 +23,15 @@ namespace AgentDeploy.Services.Script
             _logger = logger;
         }
 
-        public async Task<Models.Scripts.Script?> Load(string command)
+        public async Task<Models.Scripts.Script?> Load(string scriptName)
         {
-            var filePath = Path.Combine(_directoryOptions.Scripts, $"{command}.yaml");
+            var filePath = Path.Combine(_directoryOptions.Scripts, $"{scriptName}.yaml");
             _logger.LogDebug($"Attempting to read command file: {filePath}");
 
             if (!File.Exists(filePath))
                 return null;
 
-            return await PerformanceLoggingUtilities.Time($"Parsing command file {command}", _logger, async () =>
+            return await PerformanceLoggingUtilities.Time($"Parsing command file {scriptName}", _logger, async () =>
             {
                 var yaml = await File.ReadAllTextAsync(filePath, _operationContext.OperationCancelled);
                 return _deserializer.Deserialize<Models.Scripts.Script>(yaml);

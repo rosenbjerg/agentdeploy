@@ -19,11 +19,11 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace AgentDeploy.ExternalApi
 {
-    public class Startup
+    public class ApiStartup
     {
         private readonly IConfiguration _configuration;
 
-        public Startup(IConfiguration configuration)
+        public ApiStartup(IConfiguration configuration)
         {
             _configuration = configuration;
         }
@@ -37,20 +37,15 @@ namespace AgentDeploy.ExternalApi
             
             services.Configure<ForwardedHeadersOptions>(options => options.ForwardedHeaders = ForwardedHeaders.All);
 
-            services.AddValidatedOptions<ExecutionOptions>(_configuration);
-            services.AddValidatedOptions<DirectoryOptions>(_configuration);
-            services.AddValidatedOptions<AgentOptions>(_configuration);
-            
-            services.AddScoped<ScriptReader>();
+            AddOptions(services);
+
+            AddReaders(services);
+
             services.AddScoped<InvocationContextService>();
-            services.AddScoped<TokenReader>();
             services.AddScoped<ScriptExecutionService>();
             services.AddScoped<ScriptTransformer>();
             
-            services.AddScoped<LocalScriptExecutor>();
-            services.AddScoped<ExplicitPrivateKeySecureShellExecutor>();
-            services.AddScoped<ImplicitPrivateKeySecureShellExecutor>();
-            services.AddScoped<SshPassSecureShellExecutor>();
+            AddExecutors(services);
 
             services.AddHttpContextAccessor();
             services.AddScoped<OperationContextService>();
@@ -68,6 +63,27 @@ namespace AgentDeploy.ExternalApi
             services
                 .AddControllers()
                 .AddJsonOptions(options => ConfigureJsonSerializer(options.JsonSerializerOptions));
+        }
+
+        protected virtual void AddOptions(IServiceCollection services)
+        {
+            services.AddValidatedOptions<ExecutionOptions>(_configuration);
+            services.AddValidatedOptions<DirectoryOptions>(_configuration);
+            services.AddValidatedOptions<AgentOptions>(_configuration);
+        }
+
+        protected virtual void AddExecutors(IServiceCollection services)
+        {
+            services.AddScoped<LocalScriptExecutor>();
+            services.AddScoped<ExplicitPrivateKeySecureShellExecutor>();
+            services.AddScoped<ImplicitPrivateKeySecureShellExecutor>();
+            services.AddScoped<SshPassSecureShellExecutor>();
+        }
+
+        protected virtual void AddReaders(IServiceCollection services)
+        {
+            services.AddScoped<IScriptReader, ScriptReader>();
+            services.AddScoped<ITokenReader, TokenReader>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, AgentOptions agentOptions)

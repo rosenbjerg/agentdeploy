@@ -26,7 +26,7 @@ namespace AgentDeploy.ExternalApi.Controllers
         
         [HttpPost("invoke")]
         [Authorized]
-        public async Task<IActionResult> InvokeCommand([FromForm]ScriptInvocation scriptInvocation)
+        public async Task<IActionResult> InvokeScript([FromForm]ScriptInvocation scriptInvocation)
         {
             try
             {

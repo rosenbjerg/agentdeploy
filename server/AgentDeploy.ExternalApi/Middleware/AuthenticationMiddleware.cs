@@ -16,7 +16,7 @@ namespace AgentDeploy.ExternalApi.Middleware
             _next = next;
         }
         
-        public async Task Invoke(HttpContext context, OperationContext operationContext, AgentOptions agentOptions, TokenReader tokenReader)
+        public async Task Invoke(HttpContext context, OperationContext operationContext, AgentOptions agentOptions, ITokenReader tokenReader)
         {
             if (!string.IsNullOrEmpty(operationContext.TokenString))
             {

@@ -17,9 +17,9 @@ namespace AgentDeploy.Services
     public class InvocationContextService
     {
         private readonly IOperationContext _operationContext;
-        private readonly ScriptReader _scriptReader;
+        private readonly IScriptReader _scriptReader;
 
-        public InvocationContextService(IOperationContext operationContext, ScriptReader scriptReader)
+        public InvocationContextService(IOperationContext operationContext, IScriptReader scriptReader)
         {
             _operationContext = operationContext;
             _scriptReader = scriptReader;
@@ -27,6 +27,7 @@ namespace AgentDeploy.Services
         
         public async Task<ScriptInvocationContext?> Build(ParsedScriptInvocation scriptInvocation)
         {
+            VerifyScriptAccess(scriptInvocation.ScriptName);
             var script = await _scriptReader.Load(scriptInvocation.ScriptName);
             if (script == null)
                 return null;
@@ -35,10 +36,10 @@ namespace AgentDeploy.Services
             var acceptedVariables = new List<AcceptedScriptInvocationArgument>();
             var acceptedFiles = new List<AcceptedScriptInvocationFile>();
             
-            var commandConstraints = GetScriptConstraints(scriptInvocation.ScriptName);
+            var scriptAccessDeclaration = _operationContext.Token!.AvailableScript?[scriptInvocation.ScriptName];
             foreach (var inputVariable in script.Variables)
             {
-                var invocationValue = ValidateInputVariables(scriptInvocation.Variables, inputVariable, commandConstraints, failed);
+                var invocationValue = ValidateInputVariables(scriptInvocation.Variables, inputVariable, scriptAccessDeclaration, failed);
                 if (invocationValue == null) continue;
                 acceptedVariables.Add(new AcceptedScriptInvocationArgument(inputVariable.Key, inputVariable.Value.Type, invocationValue.Value, invocationValue.Secret || inputVariable.Value.Secret));
             }
@@ -58,7 +59,7 @@ namespace AgentDeploy.Services
                 Arguments = acceptedVariables,
                 Files = acceptedFiles.ToArray(),
                 EnvironmentVariables = scriptInvocation.EnvironmentVariables,
-                SecureShellOptions = commandConstraints?.Ssh ?? _operationContext.Token.Ssh,
+                SecureShellOptions = scriptAccessDeclaration?.Ssh ?? _operationContext.Token.Ssh,
                 WebSocketSessionId = scriptInvocation.WebsocketSessionId
             };
         }
@@ -99,7 +100,7 @@ namespace AgentDeploy.Services
 
             if (inputVariable.Value.Regex != null && !Regex.IsMatch(invocationValue.Value, inputVariable.Value.Regex))
             {
-                failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass command regex validation ({inputVariable.Value.Regex})"));
+                failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass script regex validation ({inputVariable.Value.Regex})"));
                 return null;
             }
 
@@ -156,22 +157,15 @@ namespace AgentDeploy.Services
             return scriptFileArgument;
         }
 
-        private ScriptAccessDeclaration? GetScriptConstraints(string command)
+        private void VerifyScriptAccess(string scriptName)
         {
-            if (_operationContext.Token.AvailableCommands != null)
+            if (_operationContext.Token.AvailableScript != null && !_operationContext.Token.AvailableScript.ContainsKey(scriptName))
             {
-                if (!_operationContext.Token.AvailableCommands.TryGetValue(command, out var commandConstraints))
+                throw new InvalidInvocationArgumentsException(new List<InvocationArgumentError>
                 {
-                    throw new InvalidInvocationArgumentsException(new List<InvocationArgumentError>
-                    {
-                        new InvocationArgumentError(command, "Command not allowed")
-                    });
-                }
-                
-                return commandConstraints;
+                    new InvocationArgumentError(scriptName, "Script not allowed")
+                });
             }
-
-            return null;
         }
 
         private static Regex IntegerRegex = new("^\\d+$", RegexOptions.Compiled);

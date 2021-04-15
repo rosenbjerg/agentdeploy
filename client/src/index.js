@@ -22,12 +22,12 @@ program
     .option('--hide-timestamps', 'Omit timestamps')
     .option('--hide-headers', 'Omit info headers')
     .option('--hide-command', 'Omit printing command (if available)')
-    .command('invoke <command> <serverUrl>')
+    .command('invoke <script> <serverUrl>')
     .description('Invoke named command on remote server')
     .action(invokeCommand);
 
 const fail = str => {
-    console.error(chalk.red(str));
+    console.error(chalk.red('error: ' + str));
     process.exit(-1);
 };
 
@@ -47,9 +47,9 @@ function printFormatted(output, time, isError, hideTimestamps) {
 async function handleSuccessResponse(response, options) {
     const json = await response.json();
 
-    if (!options.ws && !options.hideCommand && json.command) {
-        if (!options.hideHeaders)      console.log(`--- ${chalk.bold('Command')} -----------------------------------------------------------`);
-        console.log(json.command);
+    if (!options.ws && !options.hideCommand && json.script) {
+        if (!options.hideHeaders)      console.log(`--- ${chalk.bold('Script')} -----------------------------------------------------------`);
+        console.log(json.script);
     }
 
     if (!options.ws && json.output && json.output.length) {
@@ -60,8 +60,8 @@ async function handleSuccessResponse(response, options) {
     }
 
     if (!options.hideHeaders) {
-        if (json.exitCode === 0) console.log(chalk.bold.green('Command executed successfully'));
-        else console.log(chalk.bold.red(`Command exited with non-zero exit code: ${json.exitCode}`));
+        if (json.exitCode === 0) console.log(chalk.bold.green('Script executed successfully'));
+        else console.log(chalk.bold.red(`Script exited with non-zero exit code: ${json.exitCode}`));
     }
     process.exit(json.exitCode);
 }
@@ -79,8 +79,8 @@ function listenForWebsocketCommandOuput(serverUrl, websocketId, hideTimestamps, 
             }
             printFormatted(msg.data.output, msg.data.timestamp, msg.data.error, hideTimestamps);
         }
-        if (msg.event === 'command' && !hideCommand){
-            if (!hideHeaders) console.log(`--- ${chalk.bold('Command')} -----------------------------------------------------------`);
+        if (msg.event === 'script' && !hideCommand){
+            if (!hideHeaders) console.log(`--- ${chalk.bold('Script')} -----------------------------------------------------------`);
             printFormatted(msg.data, '', false, true);
         }
     });
@@ -92,7 +92,7 @@ async function invokeCommand(command, serverUrl) {
         if (fs.existsSync(TokenFilePath))
             options.token = fs.readFileSync(TokenFilePath, 'utf-8');
         else
-            fail(`Token must be provided by placing a file containing the token at the path ${TokenFilePath} or by using the token argument (-t)`);
+            fail(`token must be provided by placing a file containing the token at the path ${TokenFilePath} or by using the token argument (-t)`);
     }
 
     const formdata = createForm(command, options);
@@ -101,14 +101,18 @@ async function invokeCommand(command, serverUrl) {
     const responsePromise = fetch(`${serverUrl}/rest/invoke`, { method: 'POST', body: formdata, headers: { 'Authorization': `Token ${options.token}` } });
     if (options.ws) listenForWebsocketCommandOuput(serverUrl, websocketId, options.hideTimestamps, options.hideHeaders, options.hideCommand);
 
-    const response = await responsePromise;
-    switch (response.status) {
-        case 404: return fail(`Command ${command} not found`);
-        case 401: return fail(`Token is invalid`);
-        case 400: return await printValidationErrors(response);
-        case 200: return await handleSuccessResponse(response, options);
-        default:
-            return fail(`Unexpected status: ${response.status}`);
+    try {
+        const response = await responsePromise;
+        switch (response.status) {
+            case 404: return fail(`script '${command}' not found`);
+            case 401: return fail(`token is invalid`);
+            case 400: return await printValidationErrors(response);
+            case 200: return await handleSuccessResponse(response, options);
+            default:
+                return fail(response.status);
+        }
+    } catch (e) {
+        return fail(`${e.message}`);
     }
 }
 

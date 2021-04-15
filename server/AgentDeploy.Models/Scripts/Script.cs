@@ -22,7 +22,7 @@ namespace AgentDeploy.Models.Scripts
         /// <summary>
         /// Whether to include command in response
         /// </summary>
-        public bool ShowCommand { get; set; } = false;
+        public bool ShowScript { get; set; } = false;
         
         /// <summary>
         /// Whether to include output in response

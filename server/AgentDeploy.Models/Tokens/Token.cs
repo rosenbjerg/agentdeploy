@@ -20,6 +20,6 @@ namespace AgentDeploy.Models.Tokens
         /// <summary>
         /// Limit access to scripts for token. Optionally with further contraints
         /// </summary>
-        public Dictionary<string, ScriptAccessDeclaration>? AvailableCommands { get; set; } = null!;
+        public Dictionary<string, ScriptAccessDeclaration>? AvailableScript { get; set; } = null!;
     }
 }

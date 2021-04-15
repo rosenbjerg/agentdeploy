@@ -54,8 +54,8 @@ namespace AgentDeploy.Services.Script
                     if (connected)
                     {
                         onOutput = processOutput => connection.SendOutput(processOutput);
-                        if (invocationContext.Script.ShowCommand)
-                            connection.SendCommand(_scriptTransformer.HideSecrets(scriptText, invocationContext));
+                        if (invocationContext.Script.ShowScript)
+                            connection.SendScript(_scriptTransformer.HideSecrets(scriptText, invocationContext));
                     }
                 }
 
@@ -68,7 +68,7 @@ namespace AgentDeploy.Services.Script
                 var exitCode = await executor.Execute(invocationContext, directory, onOutput);
 
                 var visibleOutput = invocationContext.Script.ShowOutput ? output : Enumerable.Empty<ProcessOutput>();
-                var visibleCommand = invocationContext.Script.ShowCommand ? _scriptTransformer.HideSecrets(scriptText, invocationContext) : string.Empty;
+                var visibleCommand = invocationContext.Script.ShowScript ? _scriptTransformer.HideSecrets(scriptText, invocationContext) : string.Empty;
                 return new ExecutionResult(visibleOutput, visibleCommand, exitCode);
             }
             finally
