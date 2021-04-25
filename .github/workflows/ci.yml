@@ -6,13 +6,11 @@ on:
     paths:
     - server/**
     - client/**
-    - .github/workflows/ci.yml
   pull_request:
     branches: [ main, release ]
     paths:
     - server/**
     - client/**
-    - .github/workflows/ci.yml
 
 jobs:
   build:
