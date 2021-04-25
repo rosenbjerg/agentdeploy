@@ -24,13 +24,17 @@ jobs:
         dotnet-version: 5.0.x
         
     - name: Restore dependencies
+      working-directory: ${{ env.working-directory }}
       run: dotnet restore
       
     - name: Build
+      working-directory: ${{ env.working-directory }}
       run: dotnet build -c Release --no-restore
       
     - name: Run unit test suite
+      working-directory: ${{ env.working-directory }}
       run: dotnet test -c Release --filter TestCategory=Unit --no-build --verbosity normal
       
     - name: Run E2E test suite
+      working-directory: ${{ env.working-directory }}
       run: dotnet test -c Release --filter TestCategory=E2E --no-build --verbosity normal
