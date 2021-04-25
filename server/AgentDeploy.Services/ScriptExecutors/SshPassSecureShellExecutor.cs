@@ -9,9 +9,9 @@ using Instances;
 
 namespace AgentDeploy.Services.ScriptExecutors
 {
-    public class SshPassSecureShellExecutor : SecureShellExecutorBase
+    public class SshPassSecureShellExecutor : SecureShellExecutorBase, ISshPassSecureShellExecutor
     {
-        public SshPassSecureShellExecutor(ExecutionOptions executionOptions, ScriptTransformer scriptTransformer) 
+        public SshPassSecureShellExecutor(ExecutionOptions executionOptions, IScriptTransformer scriptTransformer) 
             : base(executionOptions, scriptTransformer)
         {
         }

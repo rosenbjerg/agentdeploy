@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AgentDeploy.ExternalApi.Filters;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Exceptions;
@@ -13,11 +12,11 @@ namespace AgentDeploy.ExternalApi.Controllers
     [Route("rest")]
     public class InvocationController : ControllerBase
     {
-        private readonly InvocationContextService _invocationContextService;
-        private readonly ScriptExecutionService _scriptExecutionService;
+        private readonly IInvocationContextService _invocationContextService;
+        private readonly IScriptExecutionService _scriptExecutionService;
         private readonly IScriptInvocationParser _scriptInvocationParser;
 
-        public InvocationController(InvocationContextService invocationContextService, ScriptExecutionService scriptExecutionService, IScriptInvocationParser scriptInvocationParser)
+        public InvocationController(IInvocationContextService invocationContextService, IScriptExecutionService scriptExecutionService, IScriptInvocationParser scriptInvocationParser)
         {
             _invocationContextService = invocationContextService;
             _scriptExecutionService = scriptExecutionService;

@@ -5,7 +5,11 @@ using Microsoft.AspNetCore.Http;
 
 namespace AgentDeploy.Services
 {
-    public class OperationContextService
+    public interface IOperationContextService
+    {
+        OperationContext Create();
+    }
+    public class OperationContextService : IOperationContextService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly AgentOptions _agentOptions;

@@ -11,9 +11,9 @@ namespace AgentDeploy.Services.ScriptExecutors
     public abstract class SecureShellExecutorBase : IScriptExecutor
     {
         protected readonly ExecutionOptions ExecutionOptions;
-        protected readonly ScriptTransformer ScriptTransformer;
+        protected readonly IScriptTransformer ScriptTransformer;
 
-        protected SecureShellExecutorBase(ExecutionOptions executionOptions, ScriptTransformer scriptTransformer)
+        protected SecureShellExecutorBase(ExecutionOptions executionOptions, IScriptTransformer scriptTransformer)
         {
             ExecutionOptions = executionOptions;
             ScriptTransformer = scriptTransformer;

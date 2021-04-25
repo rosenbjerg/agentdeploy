@@ -8,9 +8,9 @@ namespace AgentDeploy.Services.Websocket
 {
     public abstract class ConnectionAccepter : IConnectionAccepter
     {
-        private readonly ConnectionHub _connectionHub;
+        private readonly IConnectionHub _connectionHub;
 
-        protected ConnectionAccepter(ConnectionHub connectionHub)
+        protected ConnectionAccepter(IConnectionHub connectionHub)
         {
             _connectionHub = connectionHub;
         }

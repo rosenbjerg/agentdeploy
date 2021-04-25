@@ -8,9 +8,9 @@ using Instances;
 
 namespace AgentDeploy.Services.ScriptExecutors
 {
-    public class ExplicitPrivateKeySecureShellExecutor : SecureShellExecutorBase
+    public class ExplicitPrivateKeySecureShellExecutor : SecureShellExecutorBase, IExplicitPrivateKeySecureShellExecutor
     {
-        public ExplicitPrivateKeySecureShellExecutor(ExecutionOptions executionOptions, ScriptTransformer scriptTransformer) : base(executionOptions, scriptTransformer)
+        public ExplicitPrivateKeySecureShellExecutor(ExecutionOptions executionOptions, IScriptTransformer scriptTransformer) : base(executionOptions, scriptTransformer)
         {
         }
 

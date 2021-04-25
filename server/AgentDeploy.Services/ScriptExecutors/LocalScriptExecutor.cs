@@ -8,14 +8,14 @@ using Microsoft.Extensions.Logging;
 
 namespace AgentDeploy.Services.ScriptExecutors
 {
-    public class LocalScriptExecutor : IScriptExecutor
+    public class LocalScriptExecutor : ILocalScriptExecutor
     {
         private readonly IOperationContext _operationContext;
         private readonly ExecutionOptions _executionOptions;
-        private readonly ScriptTransformer _scriptTransformer;
+        private readonly IScriptTransformer _scriptTransformer;
         private readonly ILogger<LocalScriptExecutor> _logger;
 
-        public LocalScriptExecutor(IOperationContext operationContext, ExecutionOptions executionOptions, ScriptTransformer scriptTransformer, ILogger<LocalScriptExecutor> logger)
+        public LocalScriptExecutor(IOperationContext operationContext, ExecutionOptions executionOptions, IScriptTransformer scriptTransformer, ILogger<LocalScriptExecutor> logger)
         {
             _operationContext = operationContext;
             _executionOptions = executionOptions;

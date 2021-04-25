@@ -10,7 +10,7 @@ using AgentDeploy.Models.Options;
 
 namespace AgentDeploy.Services.Scripts
 {
-    public class ScriptTransformer
+    public class ScriptTransformer : IScriptTransformer
     {
         private static readonly Regex VariableRegex = new(@"\$\(([^)]+)\)", RegexOptions.Compiled);
         private readonly IOperationContext _operationContext;
@@ -58,7 +58,7 @@ namespace AgentDeploy.Services.Scripts
             return sb.ToString();
         }
 
-        public string ReplaceVariables(string script, Dictionary<string, string> executionContext)
+        private string ReplaceVariables(string script, Dictionary<string, string> executionContext)
         {
             var argDict = executionContext;
             return VariableRegex.Replace(script, match =>

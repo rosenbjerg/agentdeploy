@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace AgentDeploy.Services
 {
-    public class InvocationContextService
+    public class InvocationContextService : IInvocationContextService
     {
         private readonly IOperationContext _operationContext;
         private readonly IScriptReader _scriptReader;

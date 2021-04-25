@@ -5,7 +5,7 @@ using AgentDeploy.Models.Websocket;
 
 namespace AgentDeploy.Services.Websocket
 {
-    public class ConnectionHub
+    public class ConnectionHub : IConnectionHub
     {
         private readonly ConcurrentDictionary<Guid, ConnectionContext> _connectionTable = new();
 

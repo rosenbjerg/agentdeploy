@@ -43,22 +43,22 @@ namespace AgentDeploy.ExternalApi
 
             AddReaders(services);
 
-            services.AddScoped<InvocationContextService>();
-            services.AddScoped<ScriptExecutionService>();
-            services.AddScoped<ScriptTransformer>();
+            services.AddScoped<IInvocationContextService, InvocationContextService>();
+            services.AddScoped<IScriptExecutionService, ScriptExecutionService>();
+            services.AddScoped<IScriptTransformer, ScriptTransformer>();
             
             AddExecutors(services);
 
             services.AddHttpContextAccessor();
-            services.AddScoped<OperationContextService>();
-            services.AddScoped(provider => provider.GetRequiredService<OperationContextService>().Create());
+            services.AddScoped<IOperationContextService, OperationContextService>();
+            services.AddScoped(provider => provider.GetRequiredService<IOperationContextService>().Create());
             services.AddScoped<IOperationContext>(provider => provider.GetRequiredService<OperationContext>());
             
             services.AddScoped<IConnectionAccepter, WebsocketConnectionAccepter>();
 
-            services.AddScoped<IScriptInvocationParser, ScriptInvocationParser>();
+            services.AddSingleton<IScriptInvocationParser, ScriptInvocationParser>();
             services.AddSingleton<IScriptInvocationLockService, ScriptInvocationLockService>();
-            services.AddSingleton<ConnectionHub>();
+            services.AddSingleton<IConnectionHub, ConnectionHub>();
             services.AddSingleton(_ => new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build());
@@ -78,14 +78,16 @@ namespace AgentDeploy.ExternalApi
 
         protected virtual void AddExecutors(IServiceCollection services)
         {
-            services.AddScoped<LocalScriptExecutor>();
-            services.AddScoped<ExplicitPrivateKeySecureShellExecutor>();
-            services.AddScoped<ImplicitPrivateKeySecureShellExecutor>();
-            services.AddScoped<SshPassSecureShellExecutor>();
+            services.AddScoped<IScriptExecutorFactory, ScriptExecutorFactory>();
+            services.AddScoped<ILocalScriptExecutor, LocalScriptExecutor>();
+            services.AddScoped<IExplicitPrivateKeySecureShellExecutor, ExplicitPrivateKeySecureShellExecutor>();
+            services.AddScoped<IImplicitPrivateKeySecureShellExecutor, ImplicitPrivateKeySecureShellExecutor>();
+            services.AddScoped<ISshPassSecureShellExecutor, SshPassSecureShellExecutor>();
         }
 
         protected virtual void AddReaders(IServiceCollection services)
         {
+            services.AddScoped<IFileReader, FileReader>();
             services.AddScoped<IScriptReader, ScriptReader>();
             services.AddScoped<ITokenReader, TokenReader>();
         }

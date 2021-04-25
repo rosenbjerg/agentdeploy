@@ -8,33 +8,32 @@ using AgentDeploy.Models.Scripts;
 using AgentDeploy.Services.Locking;
 using AgentDeploy.Services.ScriptExecutors;
 using AgentDeploy.Services.Websocket;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace AgentDeploy.Services.Scripts
 {
-    public class ScriptExecutionService
+    public class ScriptExecutionService : IScriptExecutionService
     {
-        private readonly ScriptTransformer _scriptTransformer;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly ConnectionHub _connectionHub;
+        private readonly IScriptTransformer _scriptTransformer;
+        private readonly IConnectionHub _connectionHub;
         private readonly IScriptInvocationLockService _scriptInvocationLockService;
         private readonly ILogger<ScriptExecutionService> _logger;
         private readonly IOperationContext _operationContext;
+        private readonly IScriptExecutorFactory _scriptExecutorFactory;
 
         public ScriptExecutionService(
             IOperationContext operationContext,
-            IServiceProvider serviceProvider,
-            ScriptTransformer scriptTransformer,
-            ConnectionHub connectionHub,
+            IScriptExecutorFactory scriptExecutorFactory,
+            IScriptTransformer scriptTransformer,
+            IConnectionHub connectionHub,
             IScriptInvocationLockService scriptInvocationLockService,
             ILogger<ScriptExecutionService> logger)
         {
             _scriptTransformer = scriptTransformer;
-            _serviceProvider = serviceProvider;
             _connectionHub = connectionHub;
             _scriptInvocationLockService = scriptInvocationLockService;
             _operationContext = operationContext;
+            _scriptExecutorFactory = scriptExecutorFactory;
             _logger = logger;
         }
 
@@ -47,7 +46,7 @@ namespace AgentDeploy.Services.Scripts
                 await DownloadFiles(invocationContext, directory);
                 var scriptText = await _scriptTransformer.PrepareScriptFile(invocationContext, directory);
 
-                var executor = SelectScriptExecutor(invocationContext);
+                var executor = _scriptExecutorFactory.Build(invocationContext);
                 _logger.LogDebug($"Executing script using {executor.GetType().Name}");
 
 
@@ -80,20 +79,6 @@ namespace AgentDeploy.Services.Scripts
             {
                 Directory.Delete(directory, true);
             }
-        }
-
-        private IScriptExecutor SelectScriptExecutor(ScriptInvocationContext invocationContext)
-        {
-            if (invocationContext.SecureShellOptions == null)
-                return _serviceProvider.GetRequiredService<LocalScriptExecutor>();
-            
-            if (!string.IsNullOrEmpty(invocationContext.SecureShellOptions.Password))
-                return _serviceProvider.GetRequiredService<SshPassSecureShellExecutor>();
-            
-            if (!string.IsNullOrEmpty(invocationContext.SecureShellOptions.PrivateKeyPath))
-                return _serviceProvider.GetRequiredService<ExplicitPrivateKeySecureShellExecutor>();
-            
-            return _serviceProvider.GetRequiredService<ImplicitPrivateKeySecureShellExecutor>();
         }
 
         private async Task DownloadFiles(ScriptInvocationContext invocationContext, string directory)
