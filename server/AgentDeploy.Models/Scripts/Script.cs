@@ -4,7 +4,7 @@ namespace AgentDeploy.Models.Scripts
 {
     public class Script
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
         
         /// <summary>
         /// Variables needed for invocation of script

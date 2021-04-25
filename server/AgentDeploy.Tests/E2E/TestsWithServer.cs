@@ -18,7 +18,7 @@ namespace AgentDeploy.Tests.E2E
     [Category("E2E")]
     public class TestsWithServer
     {
-        private IHost _host;
+        private IHost _host = null!;
 
         [OneTimeSetUp]
         public async Task StartServer()

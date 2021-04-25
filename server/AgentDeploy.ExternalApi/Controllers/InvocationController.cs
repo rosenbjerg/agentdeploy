@@ -50,10 +50,6 @@ namespace AgentDeploy.ExternalApi.Controllers
             {
                 return StatusCode(423, e.Message);
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
         }
     }
 }
