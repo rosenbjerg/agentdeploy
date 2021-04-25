@@ -32,8 +32,8 @@ namespace AgentDeploy.Models.Scripts
         public bool ShowOutput { get; set; } = true;
 
         /// <summary>
-        /// Whether to ensure some script invocation isolation through locking
+        /// Specifies the level of concurrent execution that is allowed
         /// </summary>
-        public ScriptLockingLevel LockingLevel { get; set; } = ScriptLockingLevel.None;
+        public ConcurrentExecutionLevel Concurrency { get; set; } = ConcurrentExecutionLevel.Full;
     }
 }
