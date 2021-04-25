@@ -7,12 +7,12 @@ namespace AgentDeploy.Models.Scripts
         /// </summary>
         None,
         /// <summary>
-        /// Script locking; the same script cannot be invoked concurrently
-        /// </summary>
-        Script,
-        /// <summary>
         /// Token locking; the same script cannot be invoked with the same token concurrently
         /// </summary>
-        Token
+        Token,
+        /// <summary>
+        /// Script locking; the same script cannot be invoked concurrently
+        /// </summary>
+        Script
     }
 }
