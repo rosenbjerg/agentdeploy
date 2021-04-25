@@ -5,9 +5,14 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main, release ]
+    paths:
+    - 'server/**'
+    - 'client/**'
 
 jobs:
   build:
+    env:
+      working-directory: ./server
     runs-on: ubuntu-latest
     steps:
     
