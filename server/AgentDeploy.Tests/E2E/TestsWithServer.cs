@@ -130,21 +130,21 @@ namespace AgentDeploy.Tests.E2E
             Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
         }
         
-        [TestCase("test1", "test1", "tok1", "tok1", ScriptLockingLevel.None, true)]
-        [TestCase("test1", "test1", "tok1", "tok1", ScriptLockingLevel.Script, false)]
-        [TestCase("test1", "test1", "tok1", "tok1", ScriptLockingLevel.Token, false)]
+        [TestCase("test1", "test1", "tok1", "tok1", ConcurrentExecutionLevel.Full, true)]
+        [TestCase("test1", "test1", "tok1", "tok1", ConcurrentExecutionLevel.None, false)]
+        [TestCase("test1", "test1", "tok1", "tok1", ConcurrentExecutionLevel.PerToken, false)]
         
-        [TestCase("test1", "test1", "tok1", "tok2", ScriptLockingLevel.Script, false)]
-        [TestCase("test1", "test1", "tok1", "tok2", ScriptLockingLevel.Token, true)]
+        [TestCase("test1", "test1", "tok1", "tok2", ConcurrentExecutionLevel.None, false)]
+        [TestCase("test1", "test1", "tok1", "tok2", ConcurrentExecutionLevel.PerToken, true)]
 
-        [TestCase("test1", "test2", "tok1", "tok2", ScriptLockingLevel.Script, true)]
-        [TestCase("test1", "test2", "tok1", "tok2", ScriptLockingLevel.Token, true)]
-        public async Task Locking(string scriptName1, string scriptName2, string token1, string token2, ScriptLockingLevel lockingLevel, bool success)
+        [TestCase("test1", "test2", "tok1", "tok2", ConcurrentExecutionLevel.None, true)]
+        [TestCase("test1", "test2", "tok1", "tok2", ConcurrentExecutionLevel.PerToken, true)]
+        public async Task Locking(string scriptName1, string scriptName2, string token1, string token2, ConcurrentExecutionLevel concurrencyLevel, bool success)
         {
             var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
-            scriptReaderMock.Setup(s => s.Load(scriptName1)).ReturnsAsync(new Script { Command = "sleep 1", LockingLevel = lockingLevel, Name = scriptName1 });
+            scriptReaderMock.Setup(s => s.Load(scriptName1)).ReturnsAsync(new Script { Command = "sleep 1", Concurrency = concurrencyLevel, Name = scriptName1 });
             if (scriptName1 != scriptName2)
-                scriptReaderMock.Setup(s => s.Load(scriptName2)).ReturnsAsync(new Script { Command = "sleep 1", LockingLevel = lockingLevel, Name = scriptName2 });
+                scriptReaderMock.Setup(s => s.Load(scriptName2)).ReturnsAsync(new Script { Command = "sleep 1", Concurrency = concurrencyLevel, Name = scriptName2 });
             
             var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
             tokenReaderMock.Setup(s => s.ParseTokenFile(token1, It.IsAny<CancellationToken>())).ReturnsAsync(new Token());

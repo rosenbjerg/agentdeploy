@@ -20,12 +20,12 @@ namespace AgentDeploy.Services.Locking
 
         public async Task<IScriptInvocationLock> Lock(Script script, string token)
         {
-            return script.LockingLevel switch
+            return script.Concurrency switch
             {
-                ScriptLockingLevel.None => new ScriptInvocationLock(() => { }),
-                ScriptLockingLevel.Script => await LockInternal(script.Name, string.Empty),
-                ScriptLockingLevel.Token => await LockInternal(script.Name, token),
-                _ => throw new ArgumentOutOfRangeException(nameof(script.LockingLevel), "Unknown ScriptLocking level")
+                ConcurrentExecutionLevel.Full => new ScriptInvocationLock(() => { }),
+                ConcurrentExecutionLevel.None => await LockInternal(script.Name, string.Empty),
+                ConcurrentExecutionLevel.PerToken => await LockInternal(script.Name, token),
+                _ => throw new ArgumentOutOfRangeException(nameof(script.Concurrency), "Unknown ScriptLocking level")
             };
         }
 
@@ -35,12 +35,8 @@ namespace AgentDeploy.Services.Locking
 
             try
             {                
-                var current = await _distributedCache.GetStringAsync($"SL:{scriptName}");
-                if (!string.IsNullOrEmpty(current))
-                    throw new ScriptLockedException(scriptName);
-
                 var key = $"SL:{scriptName}:{token}".TrimEnd(':');
-                current = await _distributedCache.GetStringAsync(key);
+                var current = await _distributedCache.GetStringAsync(key);
                 if (!string.IsNullOrEmpty(current))
                     throw new ScriptLockedException(scriptName);
 
