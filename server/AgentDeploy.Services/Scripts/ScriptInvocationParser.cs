@@ -4,10 +4,17 @@ using AgentDeploy.Models;
 using AgentDeploy.Models.Exceptions;
 using Microsoft.AspNetCore.Http;
 
-namespace AgentDeploy.Services.Script
+namespace AgentDeploy.Services.Scripts
 {
     public class ScriptInvocationParser : IScriptInvocationParser
     {
+        private readonly IOperationContext _operationContext;
+
+        public ScriptInvocationParser(IOperationContext operationContext)
+        {
+            _operationContext = operationContext;
+        }
+        
         public ParsedScriptInvocation Parse(ScriptInvocation scriptInvocation)
         {
             var failed = new List<InvocationArgumentError>();

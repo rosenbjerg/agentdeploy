@@ -5,7 +5,7 @@ const FormData = require('form-data');
 const keyValuePairRegex = /^([a-zA-Z0-9-_]+)+=(.*)$/;
 function createForm(command, options) {
     const formdata = new FormData();
-    formdata.append('command', command);
+    formdata.append('scriptName', command);
 
     let error = false;
     error = addFieldToForm(options.variables || [], formdata, 'variables', 'Variable') || error;
@@ -51,7 +51,7 @@ function addFileToForm(collection, formdata) {
                 error = true;
             }
             else {
-                formdata.append(key, fs.createReadStream(filePath), { filename: path.basename(filePath) });
+                formdata.append('files', fs.createReadStream(filePath), { filename: `${key}=${path.basename(filePath)}` });
             }
         }
     }

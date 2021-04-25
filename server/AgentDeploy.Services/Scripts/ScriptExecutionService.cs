@@ -5,18 +5,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Scripts;
+using AgentDeploy.Services.Locking;
 using AgentDeploy.Services.ScriptExecutors;
 using AgentDeploy.Services.Websocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace AgentDeploy.Services.Script
+namespace AgentDeploy.Services.Scripts
 {
     public class ScriptExecutionService
     {
         private readonly ScriptTransformer _scriptTransformer;
         private readonly IServiceProvider _serviceProvider;
         private readonly ConnectionHub _connectionHub;
+        private readonly IScriptInvocationLockService _scriptInvocationLockService;
         private readonly ILogger<ScriptExecutionService> _logger;
         private readonly IOperationContext _operationContext;
 
@@ -25,11 +27,13 @@ namespace AgentDeploy.Services.Script
             IServiceProvider serviceProvider,
             ScriptTransformer scriptTransformer,
             ConnectionHub connectionHub,
+            IScriptInvocationLockService scriptInvocationLockService,
             ILogger<ScriptExecutionService> logger)
         {
             _scriptTransformer = scriptTransformer;
             _serviceProvider = serviceProvider;
             _connectionHub = connectionHub;
+            _scriptInvocationLockService = scriptInvocationLockService;
             _operationContext = operationContext;
             _logger = logger;
         }
@@ -39,6 +43,7 @@ namespace AgentDeploy.Services.Script
             var directory = CreateTemporaryDirectory();
             try
             {
+                using var scriptLock = await _scriptInvocationLockService.Lock(invocationContext.Script, _operationContext.TokenString);
                 await DownloadFiles(invocationContext, directory);
                 var scriptText = await _scriptTransformer.PrepareScriptFile(invocationContext, directory);
 
@@ -49,7 +54,7 @@ namespace AgentDeploy.Services.Script
                 Action<ProcessOutput>? onOutput = null;
                 if (invocationContext.WebSocketSessionId != null && invocationContext.Script.ShowOutput)
                 {
-                    var connection = _connectionHub.Prepare(invocationContext.WebSocketSessionId.Value);
+                    var connection = _connectionHub.PrepareSession(invocationContext.WebSocketSessionId.Value);
                     var connected = await connection.AwaitConnection(2);
                     if (connected)
                     {
@@ -108,7 +113,7 @@ namespace AgentDeploy.Services.Script
 
         private static string CreateTemporaryDirectory()
         {
-            var directory = Path.Combine(Path.GetTempPath(), $"agentd_job_{DateTime.Now:yyyyMMddhhmmssfff}");
+            var directory = Path.Combine(Path.GetTempPath(), $"agentd_job_{DateTime.Now:yyyyMMddhhmmssfff}_{Guid.NewGuid()}");
             Directory.CreateDirectory(directory);
             return directory;
         }

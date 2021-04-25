@@ -28,4 +28,10 @@
       <ProjectReference Include="..\AgentDeploy.ExternalApi\AgentDeploy.ExternalApi.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="E2E\Files\testfile.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
-using AgentDeploy.ExternalApi.Websocket;
 using AgentDeploy.Models.Exceptions;
 using AgentDeploy.Services.Websocket;
 using Microsoft.AspNetCore.Mvc;

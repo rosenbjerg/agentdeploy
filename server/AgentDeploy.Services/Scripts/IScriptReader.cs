@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace AgentDeploy.Services.Script
+namespace AgentDeploy.Services.Scripts
 {
     public interface IScriptReader
     {

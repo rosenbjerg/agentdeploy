@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
-using AgentDeploy.Services;
 using AgentDeploy.Services.Websocket;
 using Microsoft.AspNetCore.Http;
 

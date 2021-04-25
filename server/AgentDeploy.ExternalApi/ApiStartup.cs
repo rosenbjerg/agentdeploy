@@ -6,8 +6,9 @@ using AgentDeploy.ExternalApi.Websocket;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Services;
-using AgentDeploy.Services.Script;
+using AgentDeploy.Services.Locking;
 using AgentDeploy.Services.ScriptExecutors;
+using AgentDeploy.Services.Scripts;
 using AgentDeploy.Services.Websocket;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -36,6 +37,7 @@ namespace AgentDeploy.ExternalApi
                     .WithMethods("POST")));
             
             services.Configure<ForwardedHeadersOptions>(options => options.ForwardedHeaders = ForwardedHeaders.All);
+            services.AddDistributedMemoryCache();
 
             AddOptions(services);
 
@@ -54,7 +56,8 @@ namespace AgentDeploy.ExternalApi
             
             services.AddScoped<IConnectionAccepter, WebsocketConnectionAccepter>();
 
-            services.AddSingleton<IScriptInvocationParser, ScriptInvocationParser>();
+            services.AddScoped<IScriptInvocationParser, ScriptInvocationParser>();
+            services.AddSingleton<IScriptInvocationLockService, ScriptInvocationLockService>();
             services.AddSingleton<ConnectionHub>();
             services.AddSingleton(_ => new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
@@ -62,6 +65,7 @@ namespace AgentDeploy.ExternalApi
             
             services
                 .AddControllers()
+                .AddApplicationPart(typeof(ApiStartup).Assembly)
                 .AddJsonOptions(options => ConfigureJsonSerializer(options.JsonSerializerOptions));
         }
 

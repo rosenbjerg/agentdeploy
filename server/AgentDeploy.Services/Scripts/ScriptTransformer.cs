@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
 
-namespace AgentDeploy.Services.Script
+namespace AgentDeploy.Services.Scripts
 {
     public class ScriptTransformer
     {

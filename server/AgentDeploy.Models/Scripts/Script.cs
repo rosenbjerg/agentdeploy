@@ -4,6 +4,8 @@ namespace AgentDeploy.Models.Scripts
 {
     public class Script
     {
+        public string Name { get; set; }
+        
         /// <summary>
         /// Variables needed for invocation of script
         /// </summary>
@@ -28,5 +30,10 @@ namespace AgentDeploy.Models.Scripts
         /// Whether to include output in response
         /// </summary>
         public bool ShowOutput { get; set; } = true;
+
+        /// <summary>
+        /// Whether to ensure some script invocation isolation through locking
+        /// </summary>
+        public ScriptLockingLevel LockingLevel { get; set; } = ScriptLockingLevel.None;
     }
 }

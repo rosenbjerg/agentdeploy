@@ -1,6 +1,6 @@
 using AgentDeploy.ExternalApi;
 using AgentDeploy.Services;
-using AgentDeploy.Services.Script;
+using AgentDeploy.Services.Scripts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

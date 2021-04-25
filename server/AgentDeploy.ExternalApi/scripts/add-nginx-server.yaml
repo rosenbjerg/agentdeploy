@@ -20,7 +20,7 @@
   nginx_confd:
     type: string
 
-show_command: true
+show_script: true
 show_output: true
 command: |
   WEBSOCKETS="

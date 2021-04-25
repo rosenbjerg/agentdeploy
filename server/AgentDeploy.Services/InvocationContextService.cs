@@ -8,9 +8,8 @@ using AgentDeploy.Models;
 using AgentDeploy.Models.Exceptions;
 using AgentDeploy.Models.Scripts;
 using AgentDeploy.Models.Tokens;
-using AgentDeploy.Services.Script;
+using AgentDeploy.Services.Scripts;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 
 namespace AgentDeploy.Services
 {
@@ -27,8 +26,9 @@ namespace AgentDeploy.Services
         
         public async Task<ScriptInvocationContext?> Build(ParsedScriptInvocation scriptInvocation)
         {
-            VerifyScriptAccess(scriptInvocation.ScriptName);
-            var script = await _scriptReader.Load(scriptInvocation.ScriptName);
+            var script = HasAccessToScript(scriptInvocation.ScriptName)
+                ? await _scriptReader.Load(scriptInvocation.ScriptName)
+                : null;
             if (script == null)
                 return null;
             
@@ -36,7 +36,7 @@ namespace AgentDeploy.Services
             var acceptedVariables = new List<AcceptedScriptInvocationArgument>();
             var acceptedFiles = new List<AcceptedScriptInvocationFile>();
             
-            var scriptAccessDeclaration = _operationContext.Token!.AvailableScript?[scriptInvocation.ScriptName];
+            var scriptAccessDeclaration = _operationContext.Token!.AvailableScripts?[scriptInvocation.ScriptName];
             foreach (var inputVariable in script.Variables)
             {
                 var invocationValue = ValidateInputVariables(scriptInvocation.Variables, inputVariable, scriptAccessDeclaration, failed);
@@ -157,15 +157,9 @@ namespace AgentDeploy.Services
             return scriptFileArgument;
         }
 
-        private void VerifyScriptAccess(string scriptName)
+        private bool HasAccessToScript(string scriptName)
         {
-            if (_operationContext.Token.AvailableScript != null && !_operationContext.Token.AvailableScript.ContainsKey(scriptName))
-            {
-                throw new InvalidInvocationArgumentsException(new List<InvocationArgumentError>
-                {
-                    new InvocationArgumentError(scriptName, "Script not allowed")
-                });
-            }
+            return _operationContext.Token.AvailableScripts == null || _operationContext.Token.AvailableScripts.ContainsKey(scriptName);
         }
 
         private static Regex IntegerRegex = new("^\\d+$", RegexOptions.Compiled);

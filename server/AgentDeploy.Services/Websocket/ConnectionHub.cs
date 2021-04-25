@@ -9,31 +9,31 @@ namespace AgentDeploy.Services.Websocket
     {
         private readonly ConcurrentDictionary<Guid, ConnectionContext> _connectionTable = new();
 
-        public async Task<bool> FillBooth(Guid webSocketSessionId, Connection connection)
+        public async Task<bool> JoinSession(Guid webSocketSessionId, Connection connection)
         {
-            var booth = await AwaitBooth(webSocketSessionId, 0.5f);
-            if (booth == null)
+            var session = await AwaitSession(webSocketSessionId, 0.5f);
+            if (session == null)
                 return false;
             
-            booth.SetConnection(connection);
+            session.SetConnection(connection);
             return true;
         }
 
-        private async Task<ConnectionContext?> AwaitBooth(Guid webSocketSessionId, float timeoutSeconds)
+        private async Task<ConnectionContext?> AwaitSession(Guid webSocketSessionId, float timeoutSeconds)
         {
             var stepSize = 100;
             var steps = (timeoutSeconds * 1000) / stepSize;
             for (var i = 0; i < steps; i++)
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(stepSize));
-                if (_connectionTable.TryGetValue(webSocketSessionId, out var booth))
-                    return booth;
+                if (_connectionTable.TryGetValue(webSocketSessionId, out var session))
+                    return session;
             }
 
             return null;
         }
 
-        public ConnectionContext Prepare(Guid webSocketSessionId)
+        public ConnectionContext PrepareSession(Guid webSocketSessionId)
         {
             var ctx = new ConnectionContext();
             _connectionTable[webSocketSessionId] = ctx;

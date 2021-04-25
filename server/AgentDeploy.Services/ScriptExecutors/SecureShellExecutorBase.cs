@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Models.Tokens;
-using AgentDeploy.Services.Script;
+using AgentDeploy.Services.Scripts;
 
 namespace AgentDeploy.Services.ScriptExecutors
 {

@@ -21,8 +21,8 @@ program
     .option('--ws', 'enable websocket connection for receiving output')
     .option('--hide-timestamps', 'Omit timestamps')
     .option('--hide-headers', 'Omit info headers')
-    .option('--hide-command', 'Omit printing command (if available)')
-    .command('invoke <script> <serverUrl>')
+    .option('--hide-script', 'Omit printing script (if available)')
+    .command('invoke <scriptName> <serverUrl>')
     .description('Invoke named command on remote server')
     .action(invokeCommand);
 
@@ -32,7 +32,10 @@ const fail = str => {
 };
 
 async function printValidationErrors(response) {
-    const json = await response.json();
+    const text = await response.text();
+
+    const json = JSON.parse(text);
+    if (!json.errors.length) console.error(text);
     const message = `${chalk.bold(json.message)}\n${json.errors.map(e => `${e.name} failed: ${e.error}`).join('\n')}`;
     fail(message);
 }
@@ -40,15 +43,15 @@ async function printValidationErrors(response) {
 function printFormatted(output, time, isError, hideTimestamps) {
     const timestamp = hideTimestamps ? '' : chalk.dim(dateFormat(new Date(time), "yyyy-mm-dd HH:MM:ss:l o").padEnd(30, ' ') + '| ');
     const formatted = `${timestamp}${output}`;
-    if (isError) console.log(chalk.red(formatted));
+    if (isError) console.error(chalk.red(formatted));
     else console.log(formatted);
 }
 
 async function handleSuccessResponse(response, options) {
     const json = await response.json();
 
-    if (!options.ws && !options.hideCommand && json.script) {
-        if (!options.hideHeaders)      console.log(`--- ${chalk.bold('Script')} -----------------------------------------------------------`);
+    if (!options.ws && !options.hideScript && json.script) {
+        if (!options.hideHeaders) console.log(`--- ${chalk.bold('Script')} -----------------------------------------------------------`);
         console.log(json.script);
     }
 
@@ -66,7 +69,7 @@ async function handleSuccessResponse(response, options) {
     process.exit(json.exitCode);
 }
 
-function listenForWebsocketCommandOuput(serverUrl, websocketId, hideTimestamps, hideHeaders, hideCommand) {
+function listenForWebsocketCommandOuput(serverUrl, websocketId, hideTimestamps, hideHeaders, hideScript) {
     const wsUrl = `${serverUrl}/websocket/connect/${websocketId}`.replace('https', 'wss').replace('http', 'ws');
     const websocket = new WebSocket(wsUrl);
     let outputHeaderWritten = false;
@@ -79,14 +82,14 @@ function listenForWebsocketCommandOuput(serverUrl, websocketId, hideTimestamps, 
             }
             printFormatted(msg.data.output, msg.data.timestamp, msg.data.error, hideTimestamps);
         }
-        if (msg.event === 'script' && !hideCommand){
+        if (msg.event === 'script' && !hideScript){
             if (!hideHeaders) console.log(`--- ${chalk.bold('Script')} -----------------------------------------------------------`);
             printFormatted(msg.data, '', false, true);
         }
     });
 }
 
-async function invokeCommand(command, serverUrl) {
+async function invokeCommand(scriptName, serverUrl) {
     const options = program.opts();
     if (!options.token) {
         if (fs.existsSync(TokenFilePath))
@@ -95,7 +98,7 @@ async function invokeCommand(command, serverUrl) {
             fail(`token must be provided by placing a file containing the token at the path ${TokenFilePath} or by using the token argument (-t)`);
     }
 
-    const formdata = createForm(command, options);
+    const formdata = createForm(scriptName, options);
     const websocketId = v4();
     if (options.ws) formdata.append('websocket-session-id', websocketId)
     const responsePromise = fetch(`${serverUrl}/rest/invoke`, { method: 'POST', body: formdata, headers: { 'Authorization': `Token ${options.token}` } });
@@ -104,9 +107,10 @@ async function invokeCommand(command, serverUrl) {
     try {
         const response = await responsePromise;
         switch (response.status) {
-            case 404: return fail(`script '${command}' not found`);
-            case 401: return fail(`token is invalid`);
             case 400: return await printValidationErrors(response);
+            case 401: return fail(`token is invalid`);
+            case 404: return fail(`script '${scriptName}' not found`);
+            case 423: return fail(await response.text());
             case 200: return await handleSuccessResponse(response, options);
             default:
                 return fail(response.status);

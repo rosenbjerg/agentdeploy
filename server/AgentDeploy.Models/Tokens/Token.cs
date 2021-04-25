@@ -18,8 +18,8 @@ namespace AgentDeploy.Models.Tokens
         public List<string>? TrustedIps { get; set; } = null!;
         
         /// <summary>
-        /// Limit access to scripts for token. Optionally with further contraints
+        /// Limit access to scripts for token. Optionally with further constraints
         /// </summary>
-        public Dictionary<string, ScriptAccessDeclaration>? AvailableScript { get; set; } = null!;
+        public Dictionary<string, ScriptAccessDeclaration>? AvailableScripts { get; set; } = null!;
     }
 }

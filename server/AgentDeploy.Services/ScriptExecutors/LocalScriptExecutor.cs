@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
-using AgentDeploy.Services.Script;
+using AgentDeploy.Services.Scripts;
 using Instances;
 using Microsoft.Extensions.Logging;
 

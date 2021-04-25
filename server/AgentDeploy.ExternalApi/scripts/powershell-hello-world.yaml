@@ -1,7 +1,7 @@
 ﻿variables:
   name:
     type: string
-show_command: true
+show_script: true
 show_output: true
 command: |
   Write-Host 'Hello $(name) from powershell!'

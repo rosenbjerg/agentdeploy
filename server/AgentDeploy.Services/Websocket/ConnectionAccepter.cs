@@ -17,7 +17,7 @@ namespace AgentDeploy.Services.Websocket
 
         protected async Task Connect(Guid sessionId, Connection connection)
         {
-            var connected = await _connectionHub.FillBooth(sessionId, connection);
+            var connected = await _connectionHub.JoinSession(sessionId, connection);
             if (!connected)
                 throw new WebsocketSessionNotFoundException(nameof(sessionId));
         }
