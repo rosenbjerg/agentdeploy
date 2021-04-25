@@ -3,7 +3,7 @@
 An agent for managing execution of [taco bell programming](http://widgetsandshit.com/teddziuba/2010/10/taco-bell-programming.html) style deployment and server management scripts
 
 [![CI](https://github.com/rosenbjerg/AgentDeploy/actions/workflows/ci.yml/badge.svg)](https://github.com/rosenbjerg/AgentDeploy/actions/workflows/ci.yml)
-[![GitHub](https://img.shields.io/github/license/rosenbjerg/NxPlx)](https://github.com/rosenbjerg/NxPlx/blob/master/LICENSE)
+[![GitHub](https://img.shields.io/github/license/rosenbjerg/AgentDeploy)](https://github.com/rosenbjerg/AgentDeploy/blob/main/LICENSE)
 [![Server Docker Pulls](https://img.shields.io/docker/pulls/mrosenbjerg/agentd-server?label=server%20docker%20pulls)](https://hub.docker.com/r/mrosenbjerg/agentd-server)
 [![Client Docker Pulls](https://img.shields.io/docker/pulls/mrosenbjerg/agentd-client?label=client%20docker%20pulls)](https://hub.docker.com/r/mrosenbjerg/agentd-client)
 
