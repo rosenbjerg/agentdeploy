@@ -24,7 +24,7 @@ program
     .option('--hide-script', 'Omit printing script (if available)')
     .command('invoke <scriptName> <serverUrl>')
     .description('Invoke named command on remote server')
-    .action(invokeCommand);
+    .action(invokeScript);
 
 const fail = str => {
     console.error(chalk.red('error: ' + str));
@@ -33,7 +33,6 @@ const fail = str => {
 
 async function printValidationErrors(response) {
     const text = await response.text();
-
     const json = JSON.parse(text);
     if (!json.errors.length) console.error(text);
     const message = `${chalk.bold(json.message)}\n${json.errors.map(e => `${e.name} failed: ${e.error}`).join('\n')}`;
@@ -89,7 +88,20 @@ function listenForWebsocketCommandOuput(serverUrl, websocketId, hideTimestamps, 
     });
 }
 
-async function invokeCommand(scriptName, serverUrl) {
+function invoke(scriptName, options, serverUrl) {
+    const formdata = createForm(scriptName, options);
+    const websocketId = v4();
+    if (options.ws) formdata.append('websocket-session-id', websocketId)
+    const responsePromise = fetch(`${serverUrl}/rest/invoke`, {
+        method: 'POST',
+        body: formdata,
+        headers: {'Authorization': `Token ${options.token}`}
+    });
+    if (options.ws) listenForWebsocketCommandOuput(serverUrl, websocketId, options.hideTimestamps, options.hideHeaders, options.hideCommand);
+    return responsePromise;
+}
+
+async function invokeScript(scriptName, serverUrl) {
     const options = program.opts();
     if (!options.token) {
         if (fs.existsSync(TokenFilePath))
@@ -97,12 +109,7 @@ async function invokeCommand(scriptName, serverUrl) {
         else
             fail(`token must be provided by placing a file containing the token at the path ${TokenFilePath} or by using the token argument (-t)`);
     }
-
-    const formdata = createForm(scriptName, options);
-    const websocketId = v4();
-    if (options.ws) formdata.append('websocket-session-id', websocketId)
-    const responsePromise = fetch(`${serverUrl}/rest/invoke`, { method: 'POST', body: formdata, headers: { 'Authorization': `Token ${options.token}` } });
-    if (options.ws) listenForWebsocketCommandOuput(serverUrl, websocketId, options.hideTimestamps, options.hideHeaders, options.hideCommand);
+    const responsePromise = invoke(scriptName, options, serverUrl);
 
     try {
         const response = await responsePromise;
