@@ -1,0 +1,28 @@
+name: Docker
+
+on:
+  push:
+    branches: [ release ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Build agentd server image
+      run: docker build -f container/Dockerfile.server -t mrosenbjerg/agentd-server server
+    
+    - name: Build agentd client image
+      run: docker build -f container/Dockerfile.client -t mrosenbjerg/agentd-client client
+    
+    - name: Login to Docker Hub
+      run: docker login --username mrosenbjerg --password ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Push agentd server image
+      run: docker push mrosenbjerg/agentd-server
+    
+    - name: Push agentd client image
+      run: docker push mrosenbjerg/agentd-client

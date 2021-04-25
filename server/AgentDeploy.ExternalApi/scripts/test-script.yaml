@@ -3,19 +3,8 @@
     type: string
   password:
     type: 'string'
-files:
-  test_file:
-    min_size: 10
-    max_size: 1_000
-    accepted_extensions:
-      - txt
-      - c
-show_command: true
+show_script: true
 show_output: true
 command: |
   echo "$(hello) $WORLD"
   echo "hidden password is $(password)"
-  echo "The file path is: $(test_file)"
-  cat $(test_file)
-  
-  

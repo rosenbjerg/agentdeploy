@@ -1,17 +1,16 @@
 ﻿name: test-token
 description: just a token used for testing agentd
+ssh:
+  username: malte
+  port: 2222
 trusted_ips:
   - 127.0.0.1
   - ::1
   - ::ffff:172.18.0.1
-available_commands:
+available_scripts:
   cmd-hello-world:
   powershell-hello-world:
   test-script:
-    ssh:
-      username: malte
-      password: 123
-      port: 2222
     locked_variables:
       username: johndoe
     variable_contraints:

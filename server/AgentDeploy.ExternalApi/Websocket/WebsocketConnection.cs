@@ -5,8 +5,8 @@ using System.Net.WebSockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using AgentDeploy.Services;
-using AgentDeploy.Services.Models;
+using AgentDeploy.Models;
+using AgentDeploy.Models.Websocket;
 using Microsoft.AspNetCore.Http;
 
 namespace AgentDeploy.ExternalApi.Websocket

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using AgentDeploy.Services;
-using AgentDeploy.Services.Models;
+using AgentDeploy.Models;
+using AgentDeploy.Services.Websocket;
 using Microsoft.AspNetCore.Http;
 
 namespace AgentDeploy.ExternalApi.Websocket
@@ -10,7 +10,7 @@ namespace AgentDeploy.ExternalApi.Websocket
     {
         private readonly IOperationContext _operationContext;
 
-        public WebsocketConnectionAccepter(IOperationContext operationContext, ConnectionHub connectionHub) : base(connectionHub)
+        public WebsocketConnectionAccepter(IOperationContext operationContext, IConnectionHub connectionHub) : base(connectionHub)
         {
             _operationContext = operationContext;
         }

@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using AgentDeploy.Services.Models;
+using AgentDeploy.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
@@ -20,16 +20,15 @@ namespace AgentDeploy.ExternalApi.Filters
         
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            if (_operationContext.Token != null)
+            if (_operationContext.Token != null!)
             {
-                var clientIp = context.HttpContext.Connection.RemoteIpAddress;
                 var trusted = _operationContext.Token.TrustedIps == null || 
-                              _operationContext.Token.TrustedIps.Any(trustedIpRange => IPAddressRange.Parse(trustedIpRange).Contains(clientIp));
+                              _operationContext.Token.TrustedIps.Any(trustedIpRange => IPAddressRange.Parse(trustedIpRange).Contains(_operationContext.ClientIp));
 
                 if (trusted)
                     return;
                 else
-                    _logger.LogInformation($"Denying access to token {_operationContext.TokenString} from IP {clientIp}");
+                    _logger.LogWarning($"Denying access to token {_operationContext.TokenString} from IP {_operationContext.ClientIp}");
             }
             
             context.Result = new UnauthorizedResult();

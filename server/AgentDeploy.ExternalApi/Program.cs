@@ -9,17 +9,17 @@ namespace AgentDeploy.ExternalApi
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            CreateHostBuilder<ApiStartup>(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        public static IHostBuilder CreateHostBuilder<TStartup>(string[] args) where TStartup : class =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((_, builder) => builder.AddEnvironmentVariables("AGENTD_"))
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
                         .UseKestrel(o => o.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(30))
-                        .UseStartup<Startup>();
+                        .UseStartup<TStartup>();
                 });
     }
 }

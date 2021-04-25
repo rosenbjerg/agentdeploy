@@ -1,17 +1,16 @@
-import path from 'path';
-import fs from 'fs';
-
-import FormData from 'form-data';
+const fs = require('fs');
+const path = require('path');
+const FormData = require('form-data');
 
 const keyValuePairRegex = /^([a-zA-Z0-9-_]+)+=(.*)$/;
-export function createForm(command, options) {
+function createForm(command, options) {
     const formdata = new FormData();
-    formdata.append('command', command);
+    formdata.append('scriptName', command);
 
     let error = false;
-    error = addFieldToForm(options.variables || [], formdata, 'variable', 'Variable') || error;
-    error = addFieldToForm(options.secretVariables || [], formdata, 'secretVariable', 'Secret variable') || error;
-    error = addFieldToForm(options.environmentVariables || [], formdata, 'environment', 'Environment variable') || error;
+    error = addFieldToForm(options.variables || [], formdata, 'variables', 'Variable') || error;
+    error = addFieldToForm(options.secretVariables || [], formdata, 'secretVariables', 'Secret variable') || error;
+    error = addFieldToForm(options.environmentVariables || [], formdata, 'environmentVariables', 'Environment variable') || error;
     error = addFileToForm(options.files || [], formdata) || error;
 
     if (error) {
@@ -52,9 +51,13 @@ function addFileToForm(collection, formdata) {
                 error = true;
             }
             else {
-                formdata.append(key, fs.createReadStream(filePath), { filename: path.basename(filePath) });
+                formdata.append('files', fs.createReadStream(filePath), { filename: `${key}=${path.basename(filePath)}` });
             }
         }
     }
     return error;
 }
+
+module.exports = {
+    createForm
+};
