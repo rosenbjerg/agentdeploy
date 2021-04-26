@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -9,7 +8,6 @@ using AgentDeploy.Models.Exceptions;
 using AgentDeploy.Models.Scripts;
 using AgentDeploy.Models.Tokens;
 using AgentDeploy.Services.Scripts;
-using Microsoft.AspNetCore.Http;
 
 namespace AgentDeploy.Services
 {
@@ -35,18 +33,22 @@ namespace AgentDeploy.Services
             var failed = new List<InvocationArgumentError>();
             var acceptedVariables = new List<AcceptedScriptInvocationArgument>();
             var acceptedFiles = new List<AcceptedScriptInvocationFile>();
-            
-            var scriptAccessDeclaration = _operationContext.Token!.AvailableScripts?[scriptInvocation.ScriptName];
+
+            var scriptAccessDeclaration = _operationContext.Token!.AvailableScripts != null
+                ? _operationContext.Token.AvailableScripts[scriptInvocation.ScriptName] ?? new ScriptAccessDeclaration()
+                : null;
             foreach (var inputVariable in script.Variables)
             {
-                var invocationValue = ValidateInputVariables(scriptInvocation.Variables, inputVariable, scriptAccessDeclaration, failed);
+                var scriptVariableDefinition = inputVariable.Value ?? new ScriptVariableDefinition();
+                var invocationValue = ValidateInputVariables(scriptInvocation.Variables, inputVariable.Key, scriptVariableDefinition, scriptAccessDeclaration, failed);
                 if (invocationValue == null) continue;
-                acceptedVariables.Add(new AcceptedScriptInvocationArgument(inputVariable.Key, inputVariable.Value.Type, invocationValue.Value, invocationValue.Secret || inputVariable.Value.Secret));
+                acceptedVariables.Add(new AcceptedScriptInvocationArgument(inputVariable.Key, scriptVariableDefinition.Type, invocationValue.Value, invocationValue.Secret || scriptVariableDefinition.Secret));
             }
 
             foreach (var inputFile in script.Files)
             {
-                var providedFile = ValidateFileInput(scriptInvocation.Files, inputFile, failed);
+                var scriptFileArgument = inputFile.Value ?? new ScriptFileDefinition();
+                var providedFile = ValidateFileInput(scriptInvocation.Files, inputFile.Key, scriptFileArgument, failed);
                 if (providedFile == null) continue;
                 acceptedFiles.Add(new AcceptedScriptInvocationFile(inputFile.Key, Path.GetFileName(providedFile.FileName), providedFile.Read));
             }
@@ -64,93 +66,84 @@ namespace AgentDeploy.Services
             };
         }
 
-        private static Guid? ExtractWebsocketToken(IFormCollection formCollection)
-        {
-            if (formCollection.TryGetValue("websocket-session-id", out var sessionIdString) &&
-                Guid.TryParse(sessionIdString, out var sessionId))
-                return sessionId;
-            return null;
-        }
-
-        private static ScriptInvocationVariable? ValidateInputVariables(Dictionary<string, ScriptInvocationVariable> scriptInvocationVariables, KeyValuePair<string, ScriptArgumentDefinition> inputVariable,
+        private static ScriptInvocationVariable? ValidateInputVariables(Dictionary<string, ScriptInvocationVariable> scriptInvocationVariables, string scriptVariableKey, ScriptVariableDefinition scriptVariableDefinition,
             ScriptAccessDeclaration? scriptAccess, List<InvocationArgumentError> failed)
         {
-            if (!scriptInvocationVariables.TryGetValue(inputVariable.Key, out var invocationValue))
+            if (!scriptInvocationVariables.TryGetValue(scriptVariableKey, out var invocationValue))
             {
-                if (scriptAccess != null &&
-                    scriptAccess.LockedVariables.TryGetValue(inputVariable.Key, out var lockedValue))
+                if (scriptAccess != null && scriptAccess.LockedVariables.TryGetValue(scriptVariableKey, out var lockedValue))
                 {
-                    invocationValue = new ScriptInvocationVariable(inputVariable.Key, lockedValue, false);
+                    invocationValue = new ScriptInvocationVariable(scriptVariableKey, lockedValue, false);
                 }
-                else if (inputVariable.Value.DefaultValue != null)
+                else if (scriptVariableDefinition.DefaultValue != null)
                 {
-                    invocationValue = new ScriptInvocationVariable(inputVariable.Key, inputVariable.Value.DefaultValue, false);
+                    invocationValue = new ScriptInvocationVariable(scriptVariableKey, scriptVariableDefinition.DefaultValue, false);
                 }
                 else
                 {
-                    failed.Add(new InvocationArgumentError(inputVariable.Key, "No value provided"));
+                    failed.Add(new InvocationArgumentError(scriptVariableKey, "No value provided"));
                     return null;
                 }
             }
-            else if (scriptAccess != null && scriptAccess.LockedVariables.ContainsKey(inputVariable.Key))
+            else if (scriptAccess != null && scriptAccess.LockedVariables.ContainsKey(scriptVariableKey))
             {
-                failed.Add(new InvocationArgumentError(inputVariable.Key, "Variable is locked and can not be provided"));
+                failed.Add(new InvocationArgumentError(scriptVariableKey, "Variable is locked and can not be provided"));
                 return null;
             }
 
-            if (inputVariable.Value.Regex != null && !Regex.IsMatch(invocationValue.Value, inputVariable.Value.Regex))
+            if (scriptVariableDefinition.Regex != null && !Regex.IsMatch(invocationValue.Value, scriptVariableDefinition.Regex))
             {
-                failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass script regex validation ({inputVariable.Value.Regex})"));
+                failed.Add(new InvocationArgumentError(scriptVariableKey, $"Provided value does not pass script regex validation ({scriptVariableDefinition.Regex})"));
                 return null;
             }
 
             if (scriptAccess != null &&
-                scriptAccess.VariableContraints.TryGetValue(inputVariable.Key, out var profileArgumentConstraint) &&
+                scriptAccess.VariableContraints.TryGetValue(scriptVariableKey, out var profileArgumentConstraint) &&
                 !Regex.IsMatch(invocationValue.Value, profileArgumentConstraint))
             {
-                failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass profile constraint regex validation ({profileArgumentConstraint})"));
+                failed.Add(new InvocationArgumentError(scriptVariableKey, $"Provided value does not pass profile constraint regex validation ({profileArgumentConstraint})"));
                 return null;
             }
 
-            if (inputVariable.Value.Type == ScriptArgumentType.Integer && !IntegerRegex.IsMatch(invocationValue.Value))
+            if (scriptVariableDefinition.Type == ScriptArgumentType.Integer && !IntegerRegex.IsMatch(invocationValue.Value))
             {
-                failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass type validation ({IntegerRegex})"));
+                failed.Add(new InvocationArgumentError(scriptVariableKey, $"Provided value does not pass type validation ({IntegerRegex})"));
                 return null;
             }
 
-            if (inputVariable.Value.Type == ScriptArgumentType.Float && !FloatRegex.IsMatch(invocationValue.Value))
+            if (scriptVariableDefinition.Type == ScriptArgumentType.Float && !FloatRegex.IsMatch(invocationValue.Value))
             {
-                failed.Add(new InvocationArgumentError(inputVariable.Key, $"Provided value does not pass type validation ({FloatRegex})"));
+                failed.Add(new InvocationArgumentError(scriptVariableKey, $"Provided value does not pass type validation ({FloatRegex})"));
                 return null;
             }
 
             return invocationValue;
         }
 
-        private static ScriptInvocationFile? ValidateFileInput(Dictionary<string, ScriptInvocationFile> scriptInvocationFiles, KeyValuePair<string, ScriptFileArgument> inputFile, List<InvocationArgumentError> failed)
+        private static ScriptInvocationFile? ValidateFileInput(Dictionary<string, ScriptInvocationFile> scriptInvocationFiles, string scriptFileKey, ScriptFileDefinition scriptFileDefinition, List<InvocationArgumentError> failed)
         {
-            if (!scriptInvocationFiles.TryGetValue(inputFile.Key, out var scriptFileArgument))
+            if (!scriptInvocationFiles.TryGetValue(scriptFileKey, out var scriptFileArgument))
             {
-                failed.Add(new InvocationArgumentError(inputFile.Key, "No file provided"));
+                failed.Add(new InvocationArgumentError(scriptFileKey, "No file provided"));
                 return null;
             }
 
-            if (scriptFileArgument.FileSize < inputFile.Value.MinSize)
+            if (scriptFileArgument.FileSize < scriptFileDefinition.MinSize)
             {
-                failed.Add(new InvocationArgumentError(inputFile.Key, $"File contains too few bytes (min. {inputFile.Value.MinSize})"));
+                failed.Add(new InvocationArgumentError(scriptFileKey, $"File contains too few bytes (min. {scriptFileDefinition.MinSize})"));
                 return null;
             }
 
-            if (scriptFileArgument.FileSize > inputFile.Value.MaxSize)
+            if (scriptFileArgument.FileSize > scriptFileDefinition.MaxSize)
             {
-                failed.Add(new InvocationArgumentError(inputFile.Key, $"File contains too many bytes (max. {inputFile.Value.MaxSize})"));
+                failed.Add(new InvocationArgumentError(scriptFileKey, $"File contains too many bytes (max. {scriptFileDefinition.MaxSize})"));
                 return null;
             }
 
             var ext = Path.GetExtension(scriptFileArgument.FileName).TrimStart('.').ToLowerInvariant();
-            if (inputFile.Value.AcceptedExtensions != null && !inputFile.Value.AcceptedExtensions.Contains(ext))
+            if (scriptFileDefinition.AcceptedExtensions != null && !scriptFileDefinition.AcceptedExtensions.Contains(ext))
             {
-                failed.Add(new InvocationArgumentError(inputFile.Key, $"File extension '{ext}' is not accepted (accepted: {string.Join(", ", inputFile.Value.AcceptedExtensions)})"));
+                failed.Add(new InvocationArgumentError(scriptFileKey, $"File extension '{ext}' is not accepted (accepted: {string.Join(", ", scriptFileDefinition.AcceptedExtensions)})"));
                 return null;
             }
 

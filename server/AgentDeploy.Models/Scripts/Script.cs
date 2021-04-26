@@ -9,12 +9,12 @@ namespace AgentDeploy.Models.Scripts
         /// <summary>
         /// Variables needed for invocation of script
         /// </summary>
-        public Dictionary<string, ScriptArgumentDefinition> Variables { get; set; } = new();
+        public Dictionary<string, ScriptVariableDefinition?> Variables { get; set; } = new();
         
         /// <summary>
         /// Files needed for invocation of script
         /// </summary>
-        public Dictionary<string, ScriptFileArgument> Files { get; set; } = new();
+        public Dictionary<string, ScriptFileDefinition?> Files { get; set; } = new();
         
         /// <summary>
         /// The command to run when executing this script
