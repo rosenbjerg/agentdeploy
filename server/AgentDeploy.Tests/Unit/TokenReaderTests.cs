@@ -33,7 +33,7 @@ namespace AgentDeploy.Tests.Unit
             var token = await tokenReader.ParseTokenFile("test", CancellationToken.None);
             
             Assert.NotNull(token);
-            Assert.AreEqual("test-token", token.Name);
+            Assert.AreEqual("test-token", token!.Name);
             Assert.AreEqual("a test token", token.Description);
         }
     }
@@ -58,7 +58,7 @@ namespace AgentDeploy.Tests.Unit
             var script = await scriptReader.Load("test");
             
             Assert.NotNull(script);
-            Assert.AreEqual("test", script.Name);
+            Assert.AreEqual("test", script!.Name);
             Assert.AreEqual("echo test", script.Command);
             Assert.AreEqual(ConcurrentExecutionLevel.PerToken, script.Concurrency);
         }

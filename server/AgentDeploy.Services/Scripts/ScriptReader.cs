@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
 using Microsoft.Extensions.Logging;

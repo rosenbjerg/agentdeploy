@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Models.Tokens;

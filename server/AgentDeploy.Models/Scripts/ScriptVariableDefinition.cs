@@ -1,6 +1,6 @@
 ﻿namespace AgentDeploy.Models.Scripts
 {
-    public class ScriptArgumentDefinition
+    public class ScriptVariableDefinition
     {
         public ScriptArgumentType Type { get; set; } = ScriptArgumentType.String;
         public string? DefaultValue { get; set; }

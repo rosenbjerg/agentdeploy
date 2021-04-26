@@ -1,6 +1,6 @@
 namespace AgentDeploy.Models.Scripts
 {
-    public class ScriptFileArgument
+    public class ScriptFileDefinition
     {
         public long MinSize { get; set; } = 0;
         public long MaxSize { get; set; } = long.MaxValue;
