@@ -511,7 +511,7 @@ namespace AgentDeploy.Tests.E2E
             {
                 Command = "echo $(test_var)",
                 ShowOutput = true,
-                ShowScript = true,
+                ShowCommand = true,
                 Variables = new Dictionary<string, ScriptArgumentDefinition>
                 {
                     { "test_var", new ScriptArgumentDefinition { Secret = definedAsSecret } }
