@@ -50,7 +50,7 @@ namespace AgentDeploy.Services.Scripts
         public string HideSecrets(string text, ScriptInvocationContext invocationContext)
         {
             var sb = new StringBuilder(text);
-            foreach (var secret in invocationContext.Arguments.Where(arg => arg.Secret))
+            foreach (var secret in invocationContext.Arguments.Where(arg => arg.Secret && !string.IsNullOrWhiteSpace(arg.Value)))
             {
                 sb.Replace(secret.Value, new string('*', secret.Value.Length));
             }
