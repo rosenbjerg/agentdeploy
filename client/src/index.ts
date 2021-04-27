@@ -1,11 +1,15 @@
-const fs = require('fs');
-const fetch = require('node-fetch');
-const chalk = require('chalk');
-const WebSocket = require('ws');
-const { Command } = require('commander');
-const { createForm } = require('./form-utils');
-const { v4 } = require('uuid');
-const dateFormat = require("dateformat");
+import {readFileSync, existsSync} from 'fs';
+import * as chalk from 'chalk';
+import {Command} from 'commander';
+import * as dateFormat from "dateFormat";
+
+import {
+    AgentDeployOptions,
+    invokeScript,
+    ProcessOutput,
+    ProcessOutputHandler,
+    ScriptReceivedHandler
+} from "./agentd-client";
 
 const TokenFilePath = './agentd.token';
 const program = new Command();
@@ -23,8 +27,8 @@ program
     .option('--hide-headers', 'Omit info headers')
     .option('--hide-script', 'Omit printing script (if available)')
     .command('invoke <scriptName> <serverUrl>')
-    .description('Invoke named command on remote server')
-    .action(invokeScript);
+    .description('Invoke named script on remote server')
+    .action(onInvokeCommandCalled);
 
 const fail = str => {
     console.error(chalk.red('error: ' + str));
@@ -68,68 +72,61 @@ async function handleSuccessResponse(response, options) {
     process.exit(json.exitCode);
 }
 
-function listenForWebsocketCommandOuput(serverUrl, websocketId, hideTimestamps, hideHeaders, hideScript) {
-    const wsUrl = `${serverUrl}/websocket/connect/${websocketId}`.replace('https', 'wss').replace('http', 'ws');
-    const websocket = new WebSocket(wsUrl);
+function prepareWebsocketOutputHandler(options: AgentDeployOptions): [ProcessOutputHandler, ScriptReceivedHandler] {
     let outputHeaderWritten = false;
-    websocket.on('message', json => {
-        const msg = JSON.parse(json);
-        if (msg.event === 'output'){
-            if (!outputHeaderWritten){
-                outputHeaderWritten = true;
-                if (!hideHeaders) console.log(`--- ${chalk.bold('Output')} ------------------------------------------------------------`);
-            }
-            printFormatted(msg.data.output, msg.data.timestamp, msg.data.error, hideTimestamps);
+    const onOutput = (event: ProcessOutput) => {
+        if (!outputHeaderWritten && !options.hideHeaders) {
+            outputHeaderWritten = true;
+            console.log(`--- ${chalk.bold('Output')} ------------------------------------------------------------`);
         }
-        if (msg.event === 'script' && !hideScript){
-            if (!hideHeaders) console.log(`--- ${chalk.bold('Script')} -----------------------------------------------------------`);
-            printFormatted(msg.data, '', false, true);
-        }
-    });
+        printFormatted(event.output, event.timestamp, event.error, options.hideTimestamps);
+    };
+
+    const onScript = (event: string) => {
+        if (options.hideScript) return;
+        if (!options.hideHeaders) console.log(`--- ${chalk.bold('Script')} ------------------------------------------------------------`);
+        printFormatted(event, '', false, true);
+    }
+
+    return [onOutput, onScript];
 }
 
-function invoke(scriptName, options, serverUrl) {
-    const formdata = createForm(scriptName, options);
-    const websocketId = v4();
-    if (options.ws) formdata.append('websocket-session-id', websocketId)
-    const responsePromise = fetch(`${serverUrl}/rest/invoke`, {
-        method: 'POST',
-        body: formdata,
-        headers: {'Authorization': `Token ${options.token}`}
-    });
-    if (options.ws) listenForWebsocketCommandOuput(serverUrl, websocketId, options.hideTimestamps, options.hideHeaders, options.hideCommand);
-    return responsePromise;
-}
-
-async function invokeScript(scriptName, serverUrl) {
-    const options = program.opts();
+async function onInvokeCommandCalled(scriptName, serverUrl) {
+    const options = <AgentDeployOptions> program.opts();
     if (!options.token) {
-        if (fs.existsSync(TokenFilePath))
-            options.token = fs.readFileSync(TokenFilePath, 'utf-8');
+        if (existsSync(TokenFilePath))
+            options.token = readFileSync(TokenFilePath, 'utf-8');
         else
             fail(`token must be provided by placing a file containing the token at the path ${TokenFilePath} or by using the token argument (-t)`);
     }
-    const responsePromise = invoke(scriptName, options, serverUrl);
 
+    const [onOutputReceived, onScriptReceived] = prepareWebsocketOutputHandler(options);
     try {
-        const response = await responsePromise;
+        const response = await invokeScript(scriptName, serverUrl, options, onOutputReceived, onScriptReceived);
         switch (response.status) {
             case 400: return await printValidationErrors(response);
             case 401: return fail(`token is invalid`);
             case 404: return fail(`script '${scriptName}' not found`);
             case 423: return fail(await response.text());
             case 200: return await handleSuccessResponse(response, options);
-            default:
-                return fail(response.status);
+            default: return fail(response.status);
         }
     } catch (e) {
-        return fail(`${e.message}`);
+        if (e.name === 'InputValidationError') {
+            console.error(chalk.red(`error: ${e.message}`));
+            for (const validationError of e.errors) {
+                console.error(validationError);
+            }
+            process.exit(-1);
+        } else {
+            fail(`${e.message}`);
+        }
     }
 }
-
 
 
 async function main() {
     await program.parseAsync(process.argv);
 }
+
 main().catch(console.error);
