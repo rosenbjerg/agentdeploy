@@ -47,6 +47,10 @@ jobs:
       uses: actions/setup-node@v2.1.5
       with: 
         node-version: 8.x
+
+    - name: Install TypeScript
+      working-directory: ${{ env.client_dir }}
+      run: npm install -g typescript
         
     - name: Install NPM packages
       working-directory: ${{ env.client_dir }}
