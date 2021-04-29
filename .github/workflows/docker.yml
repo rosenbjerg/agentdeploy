@@ -13,10 +13,10 @@ jobs:
     - uses: actions/checkout@v2
       
     - name: Build agentd server image
-      run: docker build -f container/Dockerfile.server -t mrosenbjerg/agentd-server server
+      run: docker build -f container/server/Dockerfile -t mrosenbjerg/agentd-server server
     
     - name: Build agentd client image
-      run: docker build -f container/Dockerfile.client -t mrosenbjerg/agentd-client client
+      run: docker build -f container/client/Dockerfile -t mrosenbjerg/agentd-client client
     
     - name: Login to Docker Hub
       run: docker login --username mrosenbjerg --password ${{ secrets.DOCKER_TOKEN }}
