@@ -4,12 +4,13 @@ import {Command} from 'commander';
 import * as dateFormat from "dateFormat";
 
 import {
-    AgentDeployOptions,
-    invokeScript,
+    AgentDeployOptions, ErrorCollection,
+    ExecutionResult,
     ProcessOutput,
     ProcessOutputHandler,
     ScriptReceivedHandler
-} from "./agentd-client";
+} from "./types";
+import invokeScript from "./client";
 
 const TokenFilePath = './agentd.token';
 const program = new Command();
@@ -30,49 +31,45 @@ program
     .description('Invoke named script on remote server')
     .action(onInvokeCommandCalled);
 
-const fail = str => {
-    console.error(chalk.red('error: ' + str));
+const fail = error => {
+    console.error(chalk.red(error));
     process.exit(-1);
 };
 
-async function printValidationErrors(response) {
-    const text = await response.text();
-    const json = JSON.parse(text);
-    if (!json.errors.length) console.error(text);
-    const message = `${chalk.bold(json.message)}\n${json.errors.map(e => `${e.name} failed: ${e.error}`).join('\n')}`;
+function printErrors(title: string, errors: ErrorCollection): void {
+    const errorString = Object.keys(errors).map(prop => `${prop}:\n  ${errors[prop].join('  \n')}`).join('\n');
+    const message = `${chalk.bold(title)}\n${errorString}`;
     fail(message);
 }
 
-function printFormatted(output, time, isError, hideTimestamps) {
+function printFormatted(output: string, time: string, isError: boolean, hideTimestamps: boolean): void {
     const timestamp = hideTimestamps ? '' : chalk.dim(dateFormat(new Date(time), "yyyy-mm-dd HH:MM:ss:l o").padEnd(30, ' ') + '| ');
     const formatted = `${timestamp}${output}`;
     if (isError) console.error(chalk.red(formatted));
     else console.log(formatted);
 }
 
-async function handleSuccessResponse(response, options) {
-    const json = await response.json();
-
-    if (!options.ws && !options.hideScript && json.script) {
-        if (!options.hideHeaders) console.log(`--- ${chalk.bold('Script')} -----------------------------------------------------------`);
-        console.log(json.script);
+async function printExecutionResult(executionResult: ExecutionResult, options: AgentDeployOptions): Promise<void> {
+    if (!options.ws && !options.hideScript && executionResult.script) {
+        if (!options.hideHeaders) console.log(`--- ${chalk.bold('Script')} ------------------------------------------------------------`);
+        console.log(executionResult.script);
     }
 
-    if (!options.ws && json.output && json.output.length) {
+    if (!options.ws && executionResult.output && executionResult.output.length) {
         if (!options.hideHeaders) console.log(`--- ${chalk.bold('Output')} ------------------------------------------------------------`);
-        for (const output of json.output) {
+        for (const output of executionResult.output) {
             printFormatted(output.output, output.timestamp, output.error, options.hideTimestamps);
         }
     }
 
     if (!options.hideHeaders) {
-        if (json.exitCode === 0) console.log(chalk.bold.green('Script executed successfully'));
-        else console.log(chalk.bold.red(`Script exited with non-zero exit code: ${json.exitCode}`));
+        if (executionResult.exitCode === 0) console.log(chalk.bold.green('Script executed successfully'));
+        else console.log(chalk.bold.red(`Script exited with non-zero exit code: ${executionResult.exitCode}`));
     }
-    process.exit(json.exitCode);
+    process.exit(executionResult.exitCode);
 }
 
-function prepareWebsocketOutputHandler(options: AgentDeployOptions): [ProcessOutputHandler, ScriptReceivedHandler] {
+function prepareWebsocketOutputHandlers(options: AgentDeployOptions): [ProcessOutputHandler, ScriptReceivedHandler] {
     let outputHeaderWritten = false;
     const onOutput = (event: ProcessOutput) => {
         if (!outputHeaderWritten && !options.hideHeaders) {
@@ -91,33 +88,22 @@ function prepareWebsocketOutputHandler(options: AgentDeployOptions): [ProcessOut
     return [onOutput, onScript];
 }
 
-async function onInvokeCommandCalled(scriptName, serverUrl) {
-    const options = <AgentDeployOptions> program.opts();
+async function onInvokeCommandCalled(scriptName: string, serverUrl: string) {
+    const options = program.opts() as AgentDeployOptions;
     if (!options.token) {
         if (existsSync(TokenFilePath))
             options.token = readFileSync(TokenFilePath, 'utf-8');
         else
-            fail(`token must be provided by placing a file containing the token at the path ${TokenFilePath} or by using the token argument (-t)`);
+            fail(`The token must either be provided by placing a file containing the token at the path ${TokenFilePath} or by using the token argument (-t)`);
     }
 
-    const [onOutputReceived, onScriptReceived] = prepareWebsocketOutputHandler(options);
+    const [onOutputReceived, onScriptReceived] = prepareWebsocketOutputHandlers(options);
     try {
-        const response = await invokeScript(scriptName, serverUrl, options, onOutputReceived, onScriptReceived);
-        switch (response.status) {
-            case 400: return await printValidationErrors(response);
-            case 401: return fail(`token is invalid`);
-            case 404: return fail(`script '${scriptName}' not found`);
-            case 423: return fail(await response.text());
-            case 200: return await handleSuccessResponse(response, options);
-            default: return fail(response.status);
-        }
+        const executionResult = await invokeScript(scriptName, serverUrl, options, onOutputReceived, onScriptReceived);
+        await printExecutionResult(executionResult, options);
     } catch (e) {
-        if (e.name === 'InputValidationError') {
-            console.error(chalk.red(`error: ${e.message}`));
-            for (const validationError of e.errors) {
-                console.error(validationError);
-            }
-            process.exit(-1);
+        if (e.name === 'InvocationError') {
+            printErrors(e.message, e.errors)
         } else {
             fail(`${e.message}`);
         }

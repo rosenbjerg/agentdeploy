@@ -1,46 +1,44 @@
 import { createReadStream, existsSync } from 'fs';
 import { basename } from 'path';
 import * as FormData from 'form-data';
-import {AgentDeployOptions} from "./agentd-client";
+import {AgentDeployOptions, ErrorCollection, InvocationError} from "./types";
 
 const keyValuePairRegex = /^([a-zA-Z0-9-_]+)+=(.*)$/;
 
-class InputValidationError extends Error {
-    public errors: string[];
-    constructor(message: string, errors: string[]) {
-        super(message);
-        this.name = "InputValidationError";
-        this.errors = errors;
-    }
-}
-
-function createForm(scriptName: string, options: AgentDeployOptions) {
+function createForm(scriptName: string, options: AgentDeployOptions): FormData {
     const formdata = new FormData();
     formdata.append('scriptName', scriptName);
 
-    const errors = [];
-    addFieldToForm(options.variables || [], formdata, 'variables', 'Variable', errors.push);
-    addFieldToForm(options.secretVariables || [], formdata, 'secretVariables', 'Secret variable', errors.push);
-    addFieldToForm(options.environmentVariables || [], formdata, 'environmentVariables', 'Environment variable', errors.push);
-    addFileToForm(options.files || [], formdata, errors.push);
+    const errors: ErrorCollection = {};
+    const addError = (name, error) => {
+        if (!errors[name]) errors[name] = [];
+        errors[name].push(error);
+    }
 
-    if (errors.length > 0)
-        throw new InputValidationError('Argument validation failed', errors)
+    addFieldToForm(options.variables || [], formdata, 'variables', 'Variable', addError);
+    addFieldToForm(options.secretVariables || [], formdata, 'secretVariables', 'Secret variable', addError);
+    addFieldToForm(options.environmentVariables || [], formdata, 'environmentVariables', 'Environment variable', addError);
+    addFileToForm(options.files || [], formdata, addError);
+
+    if (Object.keys(errors).length > 0)
+        throw new InvocationError('Argument validation failed', errors)
 
     return formdata;
 }
 
-function addFieldToForm(collection: string[], formdata: FormData, formKey: string, formattedKey: string, onError: (error: string)=>void) {
+
+
+function addFieldToForm(collection: string[], formdata: FormData, formKey: string, formattedKey: string, onError: (name, error: string)=>void): void {
     for (const variable of collection) {
         if (keyValuePairRegex.test(variable)) {
             formdata.append(formKey, variable);
         } else {
-            onError(`${formattedKey} is not in correct key-value-pair format ${keyValuePairRegex}`);
+            onError(formattedKey, `'${variable}' did not pass client-side input validation (${keyValuePairRegex})`);
         }
     }
 }
 
-function addFileToForm(collection: string[], formdata: FormData, onError: (error: string)=>void) {
+function addFileToForm(collection: string[], formdata: FormData, onError: (name, error: string)=>void): void {
     for (const fileArgument of collection) {
         if (keyValuePairRegex.test(fileArgument)) {
             const match = fileArgument.match(keyValuePairRegex);
@@ -49,10 +47,10 @@ function addFileToForm(collection: string[], formdata: FormData, onError: (error
             if (filePath && existsSync(filePath)) {
                 formdata.append('files', createReadStream(filePath), {filename: `${key}=${basename(filePath)}`});
             } else {
-                onError(`Provided file does not exist: ${filePath}`);
+                onError('File', `'${key}' does not exist at the path '${filePath}'`);
             }
         } else {
-            onError(`File argument is not in correct key-value-pair format ${keyValuePairRegex}`);
+            onError('File', `'${fileArgument}' did not pass client-side input validation (${keyValuePairRegex})`);
         }
     }
 }
