@@ -46,7 +46,7 @@ namespace AgentDeploy.Tests.E2E
         {
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke script http://localhost:5000 -t test");
             Assert.NotZero(exitCode);
-            Assert.AreEqual("error: token is invalid", instance.ErrorData[0]);
+            Assert.AreEqual("The provided token is invalid", instance.ErrorData[0]);
         }
         
         [Test]
@@ -60,7 +60,7 @@ namespace AgentDeploy.Tests.E2E
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
             Assert.NotZero(exitCode);
-            Assert.AreEqual("error: script 'test' not found", instance.ErrorData[0]);
+            Assert.AreEqual("No script named 'test' is available", instance.ErrorData[0]);
         }
 
         [Test]
@@ -72,7 +72,7 @@ namespace AgentDeploy.Tests.E2E
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
             Assert.NotZero(exitCode);
-            Assert.AreEqual("error: script 'test' not found", instance.ErrorData[0]);
+            Assert.AreEqual("No script named 'test' is available", instance.ErrorData[0]);
         }
 
         [Test]
@@ -84,7 +84,7 @@ namespace AgentDeploy.Tests.E2E
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
             Assert.NotZero(exitCode);
-            Assert.AreEqual("error: script 'test' not found", instance.ErrorData[0]);
+            Assert.AreEqual("No script named 'test' is available", instance.ErrorData[0]);
         }
 
         [Test]
@@ -139,7 +139,7 @@ namespace AgentDeploy.Tests.E2E
 
         [TestCase("test1", "test2", "tok1", "tok2", ConcurrentExecutionLevel.None, true)]
         [TestCase("test1", "test2", "tok1", "tok2", ConcurrentExecutionLevel.PerToken, true)]
-        public async Task Locking(string scriptName1, string scriptName2, string token1, string token2, ConcurrentExecutionLevel concurrencyLevel, bool success)
+        public async Task ConcurrentExecution(string scriptName1, string scriptName2, string token1, string token2, ConcurrentExecutionLevel concurrencyLevel, bool success)
         {
             var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load(scriptName1)).ReturnsAsync(new Script { Command = "sleep 1", Concurrency = concurrencyLevel, Name = scriptName1 });
@@ -152,7 +152,7 @@ namespace AgentDeploy.Tests.E2E
                 tokenReaderMock.Setup(s => s.ParseTokenFile(token2, It.IsAny<CancellationToken>())).ReturnsAsync(new Token());
             
             var task1 = E2ETestUtils.ClientOutput($"invoke {scriptName1} http://localhost:5000 -t {token1}");
-            await Task.Delay(50);
+            await Task.Delay(100);
             var task2 = E2ETestUtils.ClientOutput($"invoke {scriptName2} http://localhost:5000 -t {token2}");
 
             var result = await Task.WhenAll(task1, task2);
@@ -167,7 +167,7 @@ namespace AgentDeploy.Tests.E2E
             else
             {
                 Assert.NotZero(task2Result.exitCode);
-                Assert.AreEqual($"error: The script '{scriptName2}' is currently locked. Try again later", task2Result.instance.ErrorData[0]);
+                Assert.AreEqual($"The script '{scriptName2}' is currently locked. Try again later", task2Result.instance.ErrorData[0]);
             }
         }
         
@@ -192,7 +192,7 @@ namespace AgentDeploy.Tests.E2E
             else
             {
                 Assert.NotZero(exitCode);
-                Assert.IsTrue(instance.ErrorData[0].EndsWith("error: token is invalid"));
+                Assert.AreEqual("The provided token is invalid", instance.ErrorData[0]);
             }
         }
         
@@ -273,8 +273,8 @@ namespace AgentDeploy.Tests.E2E
             else
             {
                 Assert.NotZero(exitCode);
-                Assert.AreEqual(2, instance.ErrorData.Count);
-                Assert.IsTrue(instance.ErrorData[1].StartsWith("test_file failed:"));
+                Assert.AreEqual(3, instance.ErrorData.Count);
+                Assert.AreEqual("test_file:", instance.ErrorData[1]);
             }
         }
 
@@ -296,9 +296,10 @@ namespace AgentDeploy.Tests.E2E
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
             Assert.NotZero(exitCode);
-            Assert.AreEqual(2, instance.ErrorData.Count);
-            Assert.AreEqual("error: One or more validation errors occured", instance.ErrorData[0]);
-            Assert.AreEqual("test_var failed: No value provided", instance.ErrorData[1]);
+            Assert.AreEqual(3, instance.ErrorData.Count);
+            Assert.AreEqual("One or more validation errors occured:", instance.ErrorData[0]);
+            Assert.AreEqual("test_var:", instance.ErrorData[1]);
+            Assert.AreEqual("  No value provided", instance.ErrorData[2]);
         }
 
         [Test]
@@ -355,9 +356,10 @@ namespace AgentDeploy.Tests.E2E
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps -v test_var=testing-123");
             
             Assert.NotZero(exitCode);
-            Assert.AreEqual(2, instance.ErrorData.Count);
-            Assert.AreEqual("error: One or more validation errors occured", instance.ErrorData[0]);
-            Assert.AreEqual("test_var failed: Variable is locked and can not be provided", instance.ErrorData[1]);
+            Assert.AreEqual(3, instance.ErrorData.Count);
+            Assert.AreEqual("One or more validation errors occured:", instance.ErrorData[0]);
+            Assert.AreEqual("test_var:", instance.ErrorData[1]);
+            Assert.AreEqual("  Variable is locked and can not be provided", instance.ErrorData[2]);
         }
         
         [Test]
@@ -486,15 +488,16 @@ namespace AgentDeploy.Tests.E2E
             else
             {
                 Assert.NotZero(exitCode);
-                Assert.AreEqual(2, instance.ErrorData.Count);
-                Assert.AreEqual("error: One or more validation errors occured", instance.ErrorData[0]);
+                Assert.AreEqual(3, instance.ErrorData.Count);
+                Assert.AreEqual("One or more validation errors occured:", instance.ErrorData[0]);
+                Assert.AreEqual("test_var:", instance.ErrorData[1]);
                 if (string.IsNullOrEmpty(scriptConstraint) && !string.IsNullOrEmpty(tokenConstraint))
                 {
-                    Assert.AreEqual($"test_var failed: Provided value does not pass profile constraint regex validation ({tokenConstraint})", instance.ErrorData[1]);
+                    Assert.AreEqual($"  Provided value does not pass profile constraint regex validation ({tokenConstraint})", instance.ErrorData[2]);
                 }
                 else if (!string.IsNullOrEmpty(scriptConstraint))
                 {
-                    Assert.AreEqual($"test_var failed: Provided value does not pass script regex validation ({scriptConstraint})", instance.ErrorData[1]);
+                    Assert.AreEqual($"  Provided value does not pass script regex validation ({scriptConstraint})", instance.ErrorData[2]);
                 }
             }
         }
@@ -533,7 +536,12 @@ namespace AgentDeploy.Tests.E2E
             var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 --hide-timestamps -t test -v test_var={variableValue}");
 
             Assert.AreEqual(success, exitCode == 0);
-            if (!success) Assert.IsTrue(instance.ErrorData[1].StartsWith("test_var failed: Provided value does not pass type validation"));
+            if (!success)
+            {
+                Assert.AreEqual(3, instance.ErrorData.Count);
+                Assert.AreEqual("test_var:", instance.ErrorData[1]);
+                Assert.IsTrue(instance.ErrorData[2].StartsWith("  Provided value does not pass type validation"));
+            }
             else Assert.AreEqual(variableValue, instance.OutputData[1]);
         }
         
