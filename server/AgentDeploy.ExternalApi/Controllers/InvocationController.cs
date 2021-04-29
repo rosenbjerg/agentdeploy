@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using AgentDeploy.ExternalApi.Filters;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Exceptions;
@@ -39,10 +41,10 @@ namespace AgentDeploy.ExternalApi.Controllers
             }
             catch (InvalidInvocationArgumentsException e)
             {
-                return BadRequest(new
+                return BadRequest(new FailedInvocation
                 {
-                    Message = "One or more validation errors occured",
-                    Errors = e.Errors
+                    Title = "One or more validation errors occured:",
+                    Errors = e.Errors.GroupBy(error => error.Name, error => error.Error).ToDictionary(g => g.Key, g => g.ToArray())
                 });
             }
             catch (ScriptLockedException e)
