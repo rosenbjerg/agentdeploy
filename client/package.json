@@ -13,6 +13,12 @@
     "outputPath": "dist"
   },
   "dependencies": {
+    "@types/commander": "^2.12.2",
+    "@types/dateformat": "^3.0.1",
+    "@types/node": "^15.0.1",
+    "@types/node-fetch": "^2.5.10",
+    "@types/uuid": "^8.3.0",
+    "@types/ws": "^7.4.2",
     "chalk": "^4.1.0",
     "commander": "^7.1.0",
     "dateformat": "^4.5.1",
@@ -20,13 +26,5 @@
     "node-fetch": "^2.6.1",
     "uuid": "^8.3.2",
     "ws": "^7.4.4"
-  },
-  "devDependencies": {
-    "@types/commander": "^2.12.2",
-    "@types/dateformat": "^3.0.1",
-    "@types/node": "^15.0.1",
-    "@types/node-fetch": "^2.5.10",
-    "@types/uuid": "^8.3.0",
-    "@types/ws": "^7.4.2"
   }
 }
