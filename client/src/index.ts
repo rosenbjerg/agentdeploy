@@ -1,7 +1,7 @@
 import {readFileSync, existsSync} from 'fs';
 import * as chalk from 'chalk';
 import {Command} from 'commander';
-import * as dateFormat from "dateFormat";
+import * as dateformat from "dateformat";
 
 import {
     AgentDeployOptions, ErrorCollection,
@@ -43,7 +43,7 @@ function printErrors(title: string, errors: ErrorCollection): void {
 }
 
 function printFormatted(output: string, time: string, isError: boolean, hideTimestamps: boolean): void {
-    const timestamp = hideTimestamps ? '' : chalk.dim(dateFormat(new Date(time), "yyyy-mm-dd HH:MM:ss:l o").padEnd(30, ' ') + '| ');
+    const timestamp = hideTimestamps ? '' : chalk.dim(dateformat(new Date(time), "yyyy-mm-dd HH:MM:ss:l o").padEnd(30, ' ') + '| ');
     const formatted = `${timestamp}${output}`;
     if (isError) console.error(chalk.red(formatted));
     else console.log(formatted);
