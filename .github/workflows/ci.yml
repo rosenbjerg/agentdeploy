@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
+    - .github/workflows/**
     - server/**
     - client/**
   pull_request:
