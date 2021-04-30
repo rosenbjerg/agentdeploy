@@ -7,7 +7,7 @@ RUN npm install -g typescript
 RUN npm install -g pkg
 RUN npm ci
 COPY src/ ./src/
-RUN tsc src/index.js
+RUN tsc src/index.ts
 ARG PKG_TARGET=node8-alpine-x64
 RUN pkg src/index.js --targets node8-alpine-x64 --output /app/agentd-client
 
