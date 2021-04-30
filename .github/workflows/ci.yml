@@ -63,3 +63,9 @@ jobs:
     - name: Run E2E test suite
       working-directory: ${{ env.server_dir }}
       run: dotnet test -c Release --filter TestCategory=E2E --collect "XPlat Code Coverage" --logger GitHubActions --no-build --verbosity normal
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        directory: server\AgentDeploy.Tests\TestResults
+        fail_ci_if_error: true
