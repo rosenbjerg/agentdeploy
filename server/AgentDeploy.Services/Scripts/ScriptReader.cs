@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
 using Microsoft.Extensions.Logging;
@@ -27,7 +26,7 @@ namespace AgentDeploy.Services.Scripts
 
         public async Task<Models.Scripts.Script?> Load(string scriptName)
         {
-            var filePath = Path.Combine(_directoryOptions.Scripts, $"{scriptName}.yaml");
+            var filePath = _fileReader.FindFile(_directoryOptions.Scripts, scriptName, "yaml", "yml");
             _logger.LogDebug($"Attempting to read command file: {filePath}");
 
             var content = await _fileReader.ReadAsync(filePath, _operationContext.OperationCancelled);

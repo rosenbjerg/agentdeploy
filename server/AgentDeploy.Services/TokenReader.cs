@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Models.Tokens;
@@ -25,7 +24,7 @@ namespace AgentDeploy.Services
 
         public async Task<Token?> ParseTokenFile(string token, CancellationToken cancellationToken)
         {
-            var filePath = Path.Combine(_directoryOptions.Tokens, $"{token}.yaml");
+            var filePath = _fileReader.FindFile(_directoryOptions.Tokens, token, "yaml", "yml");
             _logger.LogDebug($"Attempting to read token file: {filePath}");
             var content = await _fileReader.ReadAsync(filePath, cancellationToken);
             if (content == null)

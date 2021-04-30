@@ -34,7 +34,7 @@ namespace AgentDeploy.Tests.Unit
                 .Setup(s => s.GetService(It.IsAny<Type>())).Returns<Type>(t =>
                 {
                     var creator = typeof(Mock<>).MakeGenericType(t);
-                    return ((Mock)Activator.CreateInstance(creator)).Object;
+                    return ((Mock)Activator.CreateInstance(creator)!).Object;
                 })
                 .Callback<Type>(type => Assert.AreEqual(scriptExecutorName, type.Name));
             
