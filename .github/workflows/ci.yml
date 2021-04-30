@@ -55,6 +55,10 @@ jobs:
     - name: Install NPM packages
       working-directory: ${{ env.client_dir }}
       run: npm ci
+        
+    - name: Compile Typescript client to Javascript
+      working-directory: ${{ env.client_dir }}
+      run: tsc src/index.ts
       
     - name: Run E2E test suite
       working-directory: ${{ env.server_dir }}
