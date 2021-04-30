@@ -6,6 +6,7 @@ An agent for managing execution of [taco bell programming](http://widgetsandshit
 [![GitHub](https://img.shields.io/github/license/rosenbjerg/AgentDeploy)](https://github.com/rosenbjerg/AgentDeploy/blob/main/LICENSE)
 [![Server Docker Pulls](https://img.shields.io/docker/pulls/mrosenbjerg/agentd-server?label=server%20docker%20pulls)](https://hub.docker.com/r/mrosenbjerg/agentd-server)
 [![Client Docker Pulls](https://img.shields.io/docker/pulls/mrosenbjerg/agentd-client?label=client%20docker%20pulls)](https://hub.docker.com/r/mrosenbjerg/agentd-client)
+[![codecov.io](https://codecov.io/github/rosenbjerg/AgentDeploy/coverage.svg?branch=main)]
 
 
 
