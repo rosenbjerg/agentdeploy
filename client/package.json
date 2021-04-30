@@ -1,9 +1,15 @@
 {
   "name": "agentd-client",
-  "version": "2.0.0",
+  "version": "3.0.0",
+  "license": "MIT",
   "bin": "./src/index.js",
   "pkg": {
-    "targets": [ "node8-linux-x64", "node8-win-x64", "node8-macos-x64", "node8-alpine-x64" ],
+    "targets": [
+      "node8-linux-x64",
+      "node8-win-x64",
+      "node8-macos-x64",
+      "node8-alpine-x64"
+    ],
     "outputPath": "dist"
   },
   "dependencies": {
@@ -14,5 +20,13 @@
     "node-fetch": "^2.6.1",
     "uuid": "^8.3.2",
     "ws": "^7.4.4"
+  },
+  "devDependencies": {
+    "@types/commander": "^2.12.2",
+    "@types/dateformat": "^3.0.1",
+    "@types/node": "^15.0.1",
+    "@types/node-fetch": "^2.5.10",
+    "@types/uuid": "^8.3.0",
+    "@types/ws": "^7.4.2"
   }
 }
