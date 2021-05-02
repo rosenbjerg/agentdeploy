@@ -1,5 +1,6 @@
 **/.idea/**
 
+client/src/*.js
 client/dist/*
 # Created by https://www.toptal.com/developers/gitignore/api/rider,visualstudio
 # Edit at https://www.toptal.com/developers/gitignore?templates=rider,visualstudio
