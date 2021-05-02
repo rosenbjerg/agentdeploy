@@ -42,7 +42,7 @@ namespace AgentDeploy.Services
                 var scriptVariableDefinition = inputVariable.Value ?? new ScriptVariableDefinition();
                 var invocationValue = ValidateInputVariables(scriptInvocation.Variables, inputVariable.Key, scriptVariableDefinition, scriptAccessDeclaration, failed);
                 if (invocationValue == null) continue;
-                acceptedVariables.Add(new AcceptedScriptInvocationArgument(inputVariable.Key, scriptVariableDefinition.Type, invocationValue.Value, invocationValue.Secret || scriptVariableDefinition.Secret));
+                acceptedVariables.Add(new AcceptedScriptInvocationArgument(inputVariable.Key, invocationValue.Value, invocationValue.Secret || scriptVariableDefinition.Secret));
             }
 
             foreach (var inputFile in script.Files)

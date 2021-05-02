@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
-using AgentDeploy.Models.Scripts;
 using AgentDeploy.Services.Locking;
 using AgentDeploy.Services.ScriptExecutors;
 using AgentDeploy.Services.Websocket;
@@ -92,7 +91,7 @@ namespace AgentDeploy.Services.Scripts
                 await using var outputFile = File.Create(filePath);
                 await using var inputStream = file.OpenRead();
                 await inputStream.CopyToAsync(outputFile, _operationContext.OperationCancelled);
-                invocationContext.Arguments.Add(new AcceptedScriptInvocationArgument(file.Name, ScriptArgumentType.String, filePath, false));
+                invocationContext.Arguments.Add(new AcceptedScriptInvocationArgument(file.Name, filePath, false));
             }
         }
 

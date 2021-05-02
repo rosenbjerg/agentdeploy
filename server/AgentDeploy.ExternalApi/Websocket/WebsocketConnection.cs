@@ -47,7 +47,7 @@ namespace AgentDeploy.ExternalApi.Websocket
             {
                 _websocket = await _httpContext.WebSockets.AcceptWebSocketAsync();
                 var buffer = ArrayPool<byte>.Shared.Rent(4096);
-                while (!_operationContext.OperationCancelled.IsCancellationRequested && (_websocket.State == WebSocketState.Connecting || _websocket.State == WebSocketState.Open))
+                while (!_operationContext.OperationCancelled.IsCancellationRequested && _websocket.State is WebSocketState.Connecting or WebSocketState.Open)
                 {
                     WebSocketReceiveResult message;
                     try
