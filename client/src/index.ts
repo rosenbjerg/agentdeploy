@@ -23,7 +23,7 @@ program
     .option('-s, --secret-variables <keyValuePair...>', 'Add secret variable')
     .option('-e, --environment-variables <keyValuePair...>', 'Add environment variable')
     .option('-f, --files <keyValuePair...>', 'Add file')
-    .option('--ws', 'enable websocket connection for receiving output')
+    .option('--ws', 'Enable websocket connection for receiving output')
     .option('--hide-timestamps', 'Omit timestamps')
     .option('--hide-headers', 'Omit info headers')
     .option('--hide-script', 'Omit printing script (if available)')

@@ -33,7 +33,7 @@ export interface FailedInvocation {
 }
 
 export class InvocationError extends Error {
-    public errors: { [name: string] : string[] };
+    public errors: ErrorCollection;
     constructor(message: string, errors: ErrorCollection) {
         super(message);
         this.name = "InvocationError";
