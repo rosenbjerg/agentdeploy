@@ -114,6 +114,75 @@ namespace AgentDeploy.Tests.E2E
             Assert.Zero(exitCode);
             Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
         }
+        
+        [Test]
+        public async Task ScriptInvocation_DuplicateVariables()
+        {
+            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            scriptReaderMock.Setup(s => s.Load("test")).ReturnsAsync(new Script
+            {
+                Command = "echo $(test_var)",
+                Variables = new Dictionary<string, ScriptVariableDefinition?>
+                {
+                    { "test_var", new ScriptVariableDefinition() }
+                }
+            });
+            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token());
+            
+            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -v test_var=test test_var=test2");
+            
+            Assert.NotZero(exitCode);
+            Assert.AreEqual("One or more validation errors occured:", instance.ErrorData[0]);
+            Assert.AreEqual("test_var:", instance.ErrorData[1]);
+            Assert.AreEqual("  Variable with same key already provided", instance.ErrorData[2]);
+        }
+        
+        [Test]
+        public async Task ScriptInvocation_DuplicateSecretVariables()
+        {
+            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            scriptReaderMock.Setup(s => s.Load("test")).ReturnsAsync(new Script
+            {
+                Command = "echo $(test_var)",
+                Variables = new Dictionary<string, ScriptVariableDefinition?>
+                {
+                    { "test_var", new ScriptVariableDefinition() }
+                }
+            });
+            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token());
+            
+            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -s test_var=test test_var=test2");
+            
+            Assert.NotZero(exitCode);
+            Assert.AreEqual("One or more validation errors occured:", instance.ErrorData[0]);
+            Assert.AreEqual("test_var:", instance.ErrorData[1]);
+            Assert.AreEqual("  Secret variable with same key already provided", instance.ErrorData[2]);
+        }
+        
+        [Test]
+        public async Task ScriptInvocation_DuplicateEnvironmentVariables()
+        {
+            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            scriptReaderMock.Setup(s => s.Load("test")).ReturnsAsync(new Script
+            {
+                Command = "echo $(test_var)",
+                Variables = new Dictionary<string, ScriptVariableDefinition?>
+                {
+                    { "test_var", new ScriptVariableDefinition() }
+                }
+            });
+            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token());
+            
+            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -s test_var=test -e test=123 test=321");
+            
+            Assert.NotZero(exitCode);
+            Assert.AreEqual("One or more validation errors occured:", instance.ErrorData[0]);
+            Assert.AreEqual("test:", instance.ErrorData[1]);
+            Assert.AreEqual("  Environment variable with same key already provided", instance.ErrorData[2]);
+        }
 
         [Test]
         public async Task Websocket_Output()
