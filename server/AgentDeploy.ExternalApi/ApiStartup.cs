@@ -55,6 +55,7 @@ namespace AgentDeploy.ExternalApi
             
             services.AddScoped<IConnectionAccepter, WebsocketConnectionAccepter>();
 
+            services.AddSingleton<IProcessExecutionService, ProcessExecutionService>();
             services.AddSingleton<IScriptInvocationParser, ScriptInvocationParser>();
             services.AddSingleton<IScriptInvocationLockService, ScriptInvocationLockService>();
             services.AddSingleton<IConnectionHub, ConnectionHub>();
