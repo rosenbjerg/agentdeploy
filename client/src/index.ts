@@ -1,7 +1,9 @@
 import {readFileSync, existsSync} from 'fs';
 import * as chalk from 'chalk';
 import {Command} from 'commander';
-import * as dateformat from "dateformat";
+import * as dateformat from 'dateformat';
+import * as prompt from 'prompt';
+const pkg = require('../package.json');
 
 import {
     AgentDeployOptions, ErrorCollection,
@@ -11,14 +13,16 @@ import {
     ScriptReceivedHandler
 } from "./types";
 import invokeScript from "./client";
+import AbortController from "abort-controller";
 
 const TokenFilePath = './agentd.token';
 const program = new Command();
 
 program
-    .name('agentd client')
-    .version('0.0.2')
+    .name(pkg.name)
+    .version(pkg.version)
     .option('-t, --token <token>', 'Authentication token')
+    .option('-i, --interactive', 'Enable providing token through stdin')
     .option('-v, --variables <keyValuePair...>', 'Add variable')
     .option('-s, --secret-variables <keyValuePair...>', 'Add secret variable')
     .option('-e, --environment-variables <keyValuePair...>', 'Add environment variable')
@@ -88,18 +92,48 @@ function prepareWebsocketOutputHandlers(options: AgentDeployOptions): [ProcessOu
     return [onOutput, onScript];
 }
 
+async function promptForToken(): Promise<string> {
+    const schema = {
+        properties: {
+            token: {
+                pattern: /^[\w\-. ]+$/,
+                message: 'Token may only contain characters valid in a filename',
+                required: true,
+                hidden: true,
+                replace: '*'
+            }
+        }
+    };
+    prompt.start();
+    // @ts-ignore
+    const { token } = await prompt.get(schema);
+    return token as string;
+}
+
+function prepareAbortController() {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    process.on('SIGINT', controller.abort);
+    process.on('SIGTERM', controller.abort);
+    return signal;
+}
+
 async function onInvokeCommandCalled(scriptName: string, serverUrl: string) {
     const options = program.opts() as AgentDeployOptions;
     if (!options.token) {
-        if (existsSync(TokenFilePath))
-            options.token = readFileSync(TokenFilePath, 'utf-8');
-        else
+        if (existsSync(TokenFilePath)) {
+            options.token = readFileSync(TokenFilePath, 'utf-8').trim();
+        } else if (options.interactive) {
+            options.token = await promptForToken();
+        } else {
             fail(`The token must either be provided by placing a file containing the token at the path ${TokenFilePath} or by using the token argument (-t)`);
+        }
     }
+    const signal = prepareAbortController();
 
     const [onOutputReceived, onScriptReceived] = prepareWebsocketOutputHandlers(options);
     try {
-        const executionResult = await invokeScript(scriptName, serverUrl, options, onOutputReceived, onScriptReceived);
+        const executionResult = await invokeScript(scriptName, serverUrl, options, onOutputReceived, onScriptReceived, signal);
         await printExecutionResult(executionResult, options);
     } catch (e) {
         if (e.name === 'InvocationError') {

@@ -10,6 +10,7 @@ export interface AgentDeployOptions {
     environmentVariables: string[]
     files: string[]
     ws: boolean
+    interactive: boolean
     hideTimestamps: boolean
     hideHeaders: boolean
     hideScript: boolean
