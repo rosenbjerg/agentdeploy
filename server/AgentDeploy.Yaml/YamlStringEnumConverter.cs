@@ -47,6 +47,7 @@ namespace AgentDeploy.Yaml
             // var enumMember = type.GetMember(value.ToString()).FirstOrDefault();
             // var yamlValue =
             //     enumMember?.GetCustomAttributes<YamlEnumMemberAliasAttribute>(true).Select(ema => ema.Name).FirstOrDefault() ??
+            //     enumMember?.Name.ToLowerInvariant() ??
             //     value.ToString();
             // emitter.Emit(new Scalar(yamlValue));
         }
