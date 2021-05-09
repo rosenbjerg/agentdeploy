@@ -10,19 +10,21 @@ namespace AgentDeploy.Services.ScriptExecutors
 {
     public abstract class SecureShellExecutorBase : IScriptExecutor
     {
-        protected readonly ExecutionOptions ExecutionOptions;
-        protected readonly IScriptTransformer ScriptTransformer;
+        private readonly ExecutionOptions _executionOptions;
+        private readonly IScriptTransformer _scriptTransformer;
+        protected readonly IProcessExecutionService ProcessExecutionService;
 
-        protected SecureShellExecutorBase(ExecutionOptions executionOptions, IScriptTransformer scriptTransformer)
+        protected SecureShellExecutorBase(ExecutionOptions executionOptions, IScriptTransformer scriptTransformer, IProcessExecutionService processExecutionService)
         {
-            ExecutionOptions = executionOptions;
-            ScriptTransformer = scriptTransformer;
+            _executionOptions = executionOptions;
+            _scriptTransformer = scriptTransformer;
+            ProcessExecutionService = processExecutionService;
         }
         
         public async Task<int> Execute(ScriptInvocationContext invocationContext, string directory, Action<ProcessOutput> onOutput)
         {
             var ssh = invocationContext.SecureShellOptions!;
-            void OnUnprocessedOutput(ProcessOutput output) => onOutput(new ProcessOutput(output.Timestamp, ScriptTransformer.HideSecrets(output.Output, invocationContext), output.Error));
+            void OnUnprocessedOutput(ProcessOutput output) => onOutput(new ProcessOutput(output.Timestamp, _scriptTransformer.HideSecrets(output.Output, invocationContext), output.Error));
 
             var remoteDirectory = await CopyInternal(directory, ssh, OnUnprocessedOutput);
             if (remoteDirectory == null)
@@ -30,26 +32,36 @@ namespace AgentDeploy.Services.ScriptExecutors
             
             try
             {
-                return await ExecuteInternal(ssh, remoteDirectory, OnUnprocessedOutput);
+                return await ExecuteInternal(ssh, directory, remoteDirectory, OnUnprocessedOutput);
             }
             finally
             {
-                await Cleanup(ssh, remoteDirectory, OnUnprocessedOutput);
+                await Cleanup(ssh, directory, remoteDirectory, OnUnprocessedOutput);
             }
+        }
+
+        protected string StrictHostKeyChecking(SecureShellOptions secureShellOptions)
+        {
+            return $"-o StrictHostKeyChecking={(secureShellOptions.StrictHostKeyChecking ? "yes" : "no")}";
+        }
+
+        protected string Credentials(SecureShellOptions secureShellOptions)
+        {
+            return $"{secureShellOptions.Username}@{secureShellOptions.Address}";
         }
         
         public abstract Task<bool> Copy(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput);
-        public abstract Task<int> Execute(SecureShellOptions ssh, string fileArgument, Action<ProcessOutput> onOutput);
-        public abstract Task Cleanup(SecureShellOptions ssh, string remoteDirectory, Action<ProcessOutput> onOutput);
+        public abstract Task<int> Execute(SecureShellOptions ssh, string sourceDirectory, string fileArgument, Action<ProcessOutput> onOutput);
+        public abstract Task Cleanup(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput);
 
-        protected string GetExecuteCommand(string fileArgument) => $"{ExecutionOptions.Shell} {fileArgument}";
-        protected string GetCleanupCommand(string remoteDirectory) => $"rm -r {remoteDirectory}";
+        protected string GetExecuteCommand(string fileArgument) => $"{_executionOptions.Shell} {fileArgument}";
+        protected string GetCleanupCommand(string remoteDirectory) => $"rm -r {_scriptTransformer.EscapeWhitespaceInPath(remoteDirectory, '\'')}";
 
-        private async Task<int> ExecuteInternal(SecureShellOptions ssh, string remoteDirectory, Action<ProcessOutput> onOutput)
+        private async Task<int> ExecuteInternal(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
-            var scriptFilePath = ScriptTransformer.BuildScriptPath(remoteDirectory);
-            var fileArgument = ScriptTransformer.BuildScriptArgument(scriptFilePath);
-            return await Execute(ssh, fileArgument, onOutput);
+            var scriptFilePath = _scriptTransformer.BuildScriptPath(remoteDirectory);
+            var fileArgument = _scriptTransformer.BuildScriptArgument(scriptFilePath);
+            return await Execute(ssh, sourceDirectory, fileArgument, onOutput);
         }
 
         private async Task<string?> CopyInternal(string directory, SecureShellOptions ssh, Action<ProcessOutput> onOutput)

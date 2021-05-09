@@ -11,8 +11,16 @@ using AgentDeploy.Services.Scripts;
 
 namespace AgentDeploy.Services
 {
-    public class InvocationContextService : IInvocationContextService
+    public sealed class InvocationContextService : IInvocationContextService
     {
+        private static readonly Dictionary<ScriptArgumentType, Regex?> TypeValidation = new()
+        {
+            { ScriptArgumentType.Integer, new Regex("^\\d+$", RegexOptions.Compiled) },
+            { ScriptArgumentType.Float, new Regex("^\\d+\\.\\d+$", RegexOptions.Compiled) },
+            { ScriptArgumentType.Boolean, new Regex("^true|false$", RegexOptions.Compiled) },
+            { ScriptArgumentType.String, null },
+        };
+        
         private readonly IOperationContext _operationContext;
         private readonly IScriptReader _scriptReader;
 
@@ -105,18 +113,13 @@ namespace AgentDeploy.Services
                 return null;
             }
 
-            if (scriptVariableDefinition.Type == ScriptArgumentType.Integer && !IntegerRegex.IsMatch(invocationValue.Value))
+            var regex = TypeValidation[scriptVariableDefinition.Type];
+            if (regex != null && !regex.IsMatch(invocationValue.Value))
             {
-                failed.Add(new InvocationArgumentError(scriptVariableKey, $"Provided value does not pass type validation ({IntegerRegex})"));
+                failed.Add(new InvocationArgumentError(scriptVariableKey, $"Provided value does not pass type validation ({regex})"));
                 return null;
             }
-
-            if (scriptVariableDefinition.Type == ScriptArgumentType.Float && !FloatRegex.IsMatch(invocationValue.Value))
-            {
-                failed.Add(new InvocationArgumentError(scriptVariableKey, $"Provided value does not pass type validation ({FloatRegex})"));
-                return null;
-            }
-
+            
             return invocationValue;
         }
 
@@ -154,8 +157,5 @@ namespace AgentDeploy.Services
         {
             return _operationContext.Token.AvailableScripts == null || _operationContext.Token.AvailableScripts.ContainsKey(scriptName);
         }
-
-        private static Regex IntegerRegex = new("^\\d+$", RegexOptions.Compiled);
-        private static Regex FloatRegex = new("^\\d+\\.\\d+$", RegexOptions.Compiled);
     }
 }

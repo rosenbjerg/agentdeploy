@@ -1,62 +1,77 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Models.Tokens;
 using AgentDeploy.Services.Scripts;
-using Instances;
 
 namespace AgentDeploy.Services.ScriptExecutors
 {
-    public class SshPassSecureShellExecutor : SecureShellExecutorBase, ISshPassSecureShellExecutor
+    public sealed class SshPassSecureShellExecutor : SecureShellExecutorBase, ISshPassSecureShellExecutor
     {
-        public SshPassSecureShellExecutor(ExecutionOptions executionOptions, IScriptTransformer scriptTransformer) 
-            : base(executionOptions, scriptTransformer)
+        private readonly ExecutionOptions _executionOptions;
+        private readonly IScriptTransformer _scriptTransformer;
+        private readonly IFileService _fileService;
+
+        public SshPassSecureShellExecutor(ExecutionOptions executionOptions, IScriptTransformer scriptTransformer, IProcessExecutionService processExecutionService, IFileService fileService) 
+            : base(executionOptions, scriptTransformer, processExecutionService)
         {
+            _executionOptions = executionOptions;
+            _scriptTransformer = scriptTransformer;
+            _fileService = fileService;
         }
         
         public override async Task<bool> Copy(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
-            return await UsePasswordFile(ssh, async passwordFile =>
+            var sourceDir = $"{_executionOptions.TempDir.TrimEnd('/')}{_executionOptions.DirectorySeparatorChar}{sourceDirectory.TrimStart('/')}";
+            var remoteDir = _scriptTransformer.EscapeWhitespaceInPath(remoteDirectory, '\'');
+            return await UsePasswordFile(ssh, sourceDir, async passwordFile =>
             {
-                var scpCommand = $"-f {passwordFile} scp -rq -o StrictHostKeyChecking={(ssh.StrictHostKeyChecking ? "yes" : "no")} -P {ssh.Port} {sourceDirectory} {ssh.Username}@{ssh.Address}:{remoteDirectory}";
-                var (exitCode, instance) = await Instance.FinishAsync("sshpass", scpCommand, (_, tuple) => onOutput(new ProcessOutput(DateTime.UtcNow, tuple.Data, tuple.Type == DataType.Error)));
-                return exitCode == 0;
+                var passwordFilePath = _scriptTransformer.EscapeWhitespaceInPath(passwordFile);
+                var scpCommand = $"-f {passwordFilePath} scp -rq {StrictHostKeyChecking(ssh)} -P {ssh.Port} {sourceDirectory} {Credentials(ssh)}:{remoteDir}";
+                var result = await ProcessExecutionService.Invoke("sshpass", scpCommand, (data, error) => onOutput(new ProcessOutput(DateTime.UtcNow, data, error)));
+                return result.ExitCode == 0;
             });
         }
 
-        public override async Task<int> Execute(SecureShellOptions ssh, string fileArgument, Action<ProcessOutput> onOutput)
+        public override async Task<int> Execute(SecureShellOptions ssh, string sourceDirectory, string fileArgument, Action<ProcessOutput> onOutput)
         {
-            return await UsePasswordFile(ssh, async passwordFile =>
+            var sourceDir = $"{_executionOptions.TempDir.TrimEnd('/')}{_executionOptions.DirectorySeparatorChar}{sourceDirectory.TrimStart('/')}";
+            return await UsePasswordFile(ssh, sourceDir, async passwordFile =>
             {
-                var sshCommand = $"-f {passwordFile} ssh -o StrictHostKeyChecking={(ssh.StrictHostKeyChecking ? "yes" : "no")} -qtt -p {ssh.Port} {ssh.Username}@{ssh.Address} \"{GetExecuteCommand(fileArgument)}\"";
-                var (exitCode, instance) = await Instance.FinishAsync("sshpass", sshCommand, (_, tuple) => onOutput(new ProcessOutput(DateTime.UtcNow, tuple.Data, tuple.Type == DataType.Error)));
-                return exitCode;
+                var passwordFilePath = _scriptTransformer.EscapeWhitespaceInPath(passwordFile);
+                var sshCommand = $"-f {passwordFilePath} ssh -qtt {StrictHostKeyChecking(ssh)} -p {ssh.Port} {Credentials(ssh)} \"{GetExecuteCommand(fileArgument)}\"";
+                var result = await ProcessExecutionService.Invoke("sshpass", sshCommand, (data, error) => onOutput(new ProcessOutput(DateTime.UtcNow, data, error)));
+                return result.ExitCode;
             });
         }
 
-        public override async Task Cleanup(SecureShellOptions ssh, string remoteDirectory, Action<ProcessOutput> onOutput)
+        public override async Task Cleanup(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
-            await UsePasswordFile(ssh, async passwordFile =>
+            var sourceDir = $"{_executionOptions.TempDir.TrimEnd('/')}{_executionOptions.DirectorySeparatorChar}{sourceDirectory.TrimStart('/')}";
+            await UsePasswordFile(ssh, sourceDir, async passwordFile =>
             {
-                var sshCommand = $"-f {passwordFile} ssh -o StrictHostKeyChecking={(ssh.StrictHostKeyChecking ? "yes" : "no")} -qtt -p {ssh.Port} {ssh.Username}@{ssh.Address} \"{GetCleanupCommand(remoteDirectory)}\"";
-                var (exitCode, instance) = await Instance.FinishAsync("sshpass", sshCommand, (_, tuple) => onOutput(new ProcessOutput(DateTime.UtcNow, tuple.Data, tuple.Type == DataType.Error)));
-                return exitCode;
+                var passwordFilePath = _scriptTransformer.EscapeWhitespaceInPath(passwordFile);
+                var sshCommand = $"-f {passwordFilePath} ssh {StrictHostKeyChecking(ssh)} -p {ssh.Port} {Credentials(ssh)} \"{GetCleanupCommand(remoteDirectory)}\"";
+                var result = await ProcessExecutionService.Invoke("sshpass", sshCommand, (data, error) => onOutput(new ProcessOutput(DateTime.UtcNow, data, error)));
+                return result.ExitCode;
             });
         }
 
-        private static async Task<T> UsePasswordFile<T>(SecureShellOptions ssh, Func<string, Task<T>> task)
+        private async Task<T> UsePasswordFile<T>(SecureShellOptions ssh, string directory, Func<string, Task<T>> task)
         {
-            var passwordFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.txt");
-            await File.WriteAllTextAsync(passwordFile, ssh.Password);
+            var passwordFile = $"{directory}{_executionOptions.DirectorySeparatorChar}sshpass.txt";
+            await _fileService.WriteText(passwordFile, ssh.Password!, CancellationToken.None);
             try
             {
                 return await task(passwordFile);
             }
             finally
             {
-                File.Delete(passwordFile);
+                if (File.Exists(passwordFile))
+                    File.Delete(passwordFile);
             }
         }
     }

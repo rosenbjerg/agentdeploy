@@ -5,11 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace AgentDeploy.Services
 {
-    public interface IOperationContextService
-    {
-        OperationContext Create();
-    }
-    public class OperationContextService : IOperationContextService
+    public sealed class OperationContextService : IOperationContextService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly AgentOptions _agentOptions;
@@ -22,7 +18,7 @@ namespace AgentDeploy.Services
 
         public OperationContext Create()
         {
-            return new OperationContext
+            return new()
             {
                 ClientIp = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress,
                 TokenString = ExtractTokenString(_httpContextAccessor.HttpContext),

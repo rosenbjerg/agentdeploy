@@ -7,7 +7,7 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace AgentDeploy.Services.Locking
 {
-    public class ScriptInvocationLockService : IScriptInvocationLockService
+    public sealed class ScriptInvocationLockService : IScriptInvocationLockService
     {
         private readonly IDistributedCache _distributedCache;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1,1);

@@ -5,5 +5,6 @@
         Integer,
         Float,
         String,
+        Boolean
     }
 }
