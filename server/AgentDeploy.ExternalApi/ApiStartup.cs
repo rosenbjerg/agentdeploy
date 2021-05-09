@@ -7,16 +7,14 @@ using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Services;
 using AgentDeploy.Services.Locking;
-using AgentDeploy.Services.ScriptExecutors;
 using AgentDeploy.Services.Scripts;
 using AgentDeploy.Services.Websocket;
+using AgentDeploy.Yaml;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace AgentDeploy.ExternalApi
 {
@@ -28,6 +26,7 @@ namespace AgentDeploy.ExternalApi
         {
             _configuration = configuration;
         }
+        
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors(options => options
@@ -59,9 +58,7 @@ namespace AgentDeploy.ExternalApi
             services.AddSingleton<IScriptInvocationParser, ScriptInvocationParser>();
             services.AddSingleton<IScriptInvocationLockService, ScriptInvocationLockService>();
             services.AddSingleton<IConnectionHub, ConnectionHub>();
-            services.AddSingleton(_ => new DeserializerBuilder()
-                .WithNamingConvention(UnderscoredNamingConvention.Instance)
-                .Build());
+            services.AddYamlParser();
             
             services
                 .AddControllers()

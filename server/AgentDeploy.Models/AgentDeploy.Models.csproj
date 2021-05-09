@@ -9,4 +9,8 @@
       <PackageReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="2.2.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\AgentDeploy.Yaml\AgentDeploy.Yaml.csproj" />
+    </ItemGroup>
+
 </Project>
