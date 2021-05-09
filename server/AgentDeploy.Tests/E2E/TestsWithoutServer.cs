@@ -11,7 +11,7 @@ namespace AgentDeploy.Tests.E2E
         {
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("--help");
             Assert.Zero(exitCode);
-            Assert.AreEqual("Usage: agentd client [options] [command]", instance.OutputData[0]);
+            Assert.AreEqual("Usage: agentd-client [options] [command]", instance.OutputData[0]);
         }
         
         [Test]
@@ -19,7 +19,7 @@ namespace AgentDeploy.Tests.E2E
         {
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("nope");
             Assert.NotZero(exitCode);
-            Assert.AreEqual("error: unknown command 'nope'. See 'agentd client --help'.", instance.ErrorData[0]);
+            Assert.AreEqual("error: unknown command 'nope'. See 'agentd-client --help'.", instance.ErrorData[0]);
         }
         
         [Test]

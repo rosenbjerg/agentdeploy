@@ -2,17 +2,20 @@ import * as WebSocket from "ws";
 import createForm from "./form-utils";
 import { v4 } from "uuid";
 import fetch from "node-fetch";
+
 import {
     AgentDeployOptions,
-    ExecutionResult, FailedInvocation, InvocationError,
+    ExecutionResult,
+    FailedInvocation,
+    InvocationError,
     ProcessOutputHandler,
     ScriptReceivedHandler
 } from "./types";
 
 function subscribeToWebsocketEvents(wsUrl: string, onOutput: ProcessOutputHandler, onScript: ScriptReceivedHandler): void {
     const websocket = new WebSocket(wsUrl);
-    websocket.onmessage = json => {
-        const msg = JSON.parse(json.data.toString());
+    websocket.onmessage = event => {
+        const msg = JSON.parse(event.data.toString());
         switch (msg.event) {
             case 'output': return onOutput(msg.data);
             case 'script': return onScript(msg.data);
@@ -20,15 +23,18 @@ function subscribeToWebsocketEvents(wsUrl: string, onOutput: ProcessOutputHandle
     };
 }
 
-export default async function invokeScript(scriptName: string, serverUrl: string, options: AgentDeployOptions, onOutput: ProcessOutputHandler, onScript: ScriptReceivedHandler): Promise<ExecutionResult> {
+export default async function invokeScript(scriptName: string, serverUrl: string, options: AgentDeployOptions, onOutput: ProcessOutputHandler, onScript: ScriptReceivedHandler, abortSignal?: AbortSignal | null): Promise<ExecutionResult> {
     const formdata = createForm(scriptName, options);
     const websocketId = v4();
-    if (options.ws) formdata.append('websocket-session-id', websocketId)
+    if (options.ws) formdata.append('websocket-session-id', websocketId);
+
     const responsePromise = fetch(`${serverUrl}/rest/invoke`, {
         method: 'POST',
         body: formdata,
+        signal: abortSignal,
         headers: {'Authorization': `Token ${options.token}`}
     });
+
     if (options.ws) {
         const wsUrl = `${serverUrl}/websocket/connect/${websocketId}`.replace('https', 'wss').replace('http', 'ws');
         subscribeToWebsocketEvents(wsUrl, onOutput, onScript);

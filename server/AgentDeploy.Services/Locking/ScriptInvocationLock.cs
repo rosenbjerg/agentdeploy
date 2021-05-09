@@ -2,35 +2,23 @@ using System;
 
 namespace AgentDeploy.Services.Locking
 {
-    public class ScriptInvocationLock : IScriptInvocationLock
+    public sealed class ScriptInvocationLock : IScriptInvocationLock
     {
         private readonly Action _onDispose;
-        private bool _disposed = false;
+        private bool _disposed;
 
         public ScriptInvocationLock(Action onDispose)
         {
             _onDispose = onDispose;
         }
         
-        protected virtual void Dispose(bool disposing)
+        public void Dispose()
         {
             if (!_disposed)
             {
-                if (disposing) 
-                    _onDispose();
+                _onDispose();
                 _disposed = true;
             }
-        }
-        
-        public void Dispose() // Implement IDisposable
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        ~ScriptInvocationLock() // the finalizer
-        {
-            Dispose(false);
         }
     }
 }

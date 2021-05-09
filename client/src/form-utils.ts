@@ -3,7 +3,7 @@ import { basename } from 'path';
 import * as FormData from 'form-data';
 import {AgentDeployOptions, ErrorCollection, InvocationError} from "./types";
 
-const keyValuePairRegex = /^([a-zA-Z0-9-_]+)+=(.*)$/;
+const keyValuePairRegex = /^([a-zA-Z0-9-_]+)=(.*)$/;
 
 function createForm(scriptName: string, options: AgentDeployOptions): FormData {
     const formdata = new FormData();

@@ -7,26 +7,26 @@ using YamlDotNet.Serialization;
 
 namespace AgentDeploy.Services
 {
-    public class TokenReader : ITokenReader
+    public sealed class TokenReader : ITokenReader
     {
         private readonly DirectoryOptions _directoryOptions;
         private readonly ILogger<TokenReader> _logger;
         private readonly IDeserializer _deserializer;
-        private readonly IFileReader _fileReader;
+        private readonly IFileService _fileService;
 
-        public TokenReader(DirectoryOptions directoryOptions, IDeserializer deserializer, IFileReader fileReader, ILogger<TokenReader> logger)
+        public TokenReader(DirectoryOptions directoryOptions, IDeserializer deserializer, IFileService fileService, ILogger<TokenReader> logger)
         {
             _directoryOptions = directoryOptions;
             _deserializer = deserializer;
-            _fileReader = fileReader;
+            _fileService = fileService;
             _logger = logger;
         }
 
         public async Task<Token?> ParseTokenFile(string token, CancellationToken cancellationToken)
         {
-            var filePath = _fileReader.FindFile(_directoryOptions.Tokens, token, "yaml", "yml");
+            var filePath = _fileService.FindFile(_directoryOptions.Tokens, token, "yaml", "yml");
             _logger.LogDebug($"Attempting to read token file: {filePath}");
-            var content = await _fileReader.ReadAsync(filePath, cancellationToken);
+            var content = await _fileService.ReadAsync(filePath, cancellationToken);
             if (content == null)
                 return null;
             

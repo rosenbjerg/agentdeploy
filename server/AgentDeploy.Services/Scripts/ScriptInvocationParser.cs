@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace AgentDeploy.Services.Scripts
 {
-    public class ScriptInvocationParser : IScriptInvocationParser
+    public sealed class ScriptInvocationParser : IScriptInvocationParser
     {
         public ParsedScriptInvocation Parse(ScriptInvocation scriptInvocation)
         {

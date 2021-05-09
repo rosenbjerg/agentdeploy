@@ -7,16 +7,14 @@ using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Services;
 using AgentDeploy.Services.Locking;
-using AgentDeploy.Services.ScriptExecutors;
 using AgentDeploy.Services.Scripts;
 using AgentDeploy.Services.Websocket;
+using AgentDeploy.Yaml;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace AgentDeploy.ExternalApi
 {
@@ -28,6 +26,7 @@ namespace AgentDeploy.ExternalApi
         {
             _configuration = configuration;
         }
+        
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors(options => options
@@ -39,15 +38,15 @@ namespace AgentDeploy.ExternalApi
             services.Configure<ForwardedHeadersOptions>(options => options.ForwardedHeaders = ForwardedHeaders.All);
             services.AddDistributedMemoryCache();
 
-            AddOptions(services);
+            services.AddAgentDeployOptions(_configuration);
 
             AddReaders(services);
 
             services.AddScoped<IInvocationContextService, InvocationContextService>();
             services.AddScoped<IScriptExecutionService, ScriptExecutionService>();
             services.AddScoped<IScriptTransformer, ScriptTransformer>();
-            
-            AddExecutors(services);
+
+            services.AddScriptExecutors();
 
             services.AddHttpContextAccessor();
             services.AddScoped<IOperationContextService, OperationContextService>();
@@ -56,38 +55,21 @@ namespace AgentDeploy.ExternalApi
             
             services.AddScoped<IConnectionAccepter, WebsocketConnectionAccepter>();
 
+            services.AddSingleton<IProcessExecutionService, ProcessExecutionService>();
             services.AddSingleton<IScriptInvocationParser, ScriptInvocationParser>();
             services.AddSingleton<IScriptInvocationLockService, ScriptInvocationLockService>();
             services.AddSingleton<IConnectionHub, ConnectionHub>();
-            services.AddSingleton(_ => new DeserializerBuilder()
-                .WithNamingConvention(UnderscoredNamingConvention.Instance)
-                .Build());
+            services.AddYamlParser();
             
             services
                 .AddControllers()
                 .AddApplicationPart(typeof(ApiStartup).Assembly)
                 .AddJsonOptions(options => ConfigureJsonSerializer(options.JsonSerializerOptions));
         }
-
-        protected virtual void AddOptions(IServiceCollection services)
-        {
-            services.AddValidatedOptions<ExecutionOptions>(_configuration);
-            services.AddValidatedOptions<DirectoryOptions>(_configuration);
-            services.AddValidatedOptions<AgentOptions>(_configuration);
-        }
-
-        protected virtual void AddExecutors(IServiceCollection services)
-        {
-            services.AddScoped<IScriptExecutorFactory, ScriptExecutorFactory>();
-            services.AddScoped<ILocalScriptExecutor, LocalScriptExecutor>();
-            services.AddScoped<IExplicitPrivateKeySecureShellExecutor, ExplicitPrivateKeySecureShellExecutor>();
-            services.AddScoped<IImplicitPrivateKeySecureShellExecutor, ImplicitPrivateKeySecureShellExecutor>();
-            services.AddScoped<ISshPassSecureShellExecutor, SshPassSecureShellExecutor>();
-        }
-
+        
         protected virtual void AddReaders(IServiceCollection services)
         {
-            services.AddScoped<IFileReader, FileReader>();
+            services.AddScoped<IFileService, FileService>();
             services.AddScoped<IScriptReader, ScriptReader>();
             services.AddScoped<ITokenReader, TokenReader>();
         }

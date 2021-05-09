@@ -19,7 +19,7 @@ namespace AgentDeploy.Tests.Unit
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
-            var fileReaderMock = new Mock<IFileReader>();
+            var fileReaderMock = new Mock<IFileService>();
             fileReaderMock.Setup(s => s.FindFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>())).Returns("test");
             fileReaderMock.Setup(s => s.ReadAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync("name: test-token\ndescription: a test token");
             var tokenReaderLoggerMock = new Mock<ILogger<TokenReader>>();
@@ -40,7 +40,7 @@ namespace AgentDeploy.Tests.Unit
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
-            var fileReaderMock = new Mock<IFileReader>();
+            var fileReaderMock = new Mock<IFileService>();
             fileReaderMock.Setup(s => s.FindFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>())).Returns(default(string));
             var tokenReaderLoggerMock = new Mock<ILogger<TokenReader>>();
             
