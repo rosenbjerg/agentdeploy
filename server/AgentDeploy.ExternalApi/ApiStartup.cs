@@ -71,7 +71,7 @@ namespace AgentDeploy.ExternalApi
         
         protected virtual void AddReaders(IServiceCollection services)
         {
-            services.AddScoped<IFileReader, FileReader>();
+            services.AddScoped<IFileService, FileService>();
             services.AddScoped<IScriptReader, ScriptReader>();
             services.AddScoped<ITokenReader, TokenReader>();
         }
