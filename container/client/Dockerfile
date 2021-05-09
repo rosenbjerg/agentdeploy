@@ -13,8 +13,8 @@ RUN pkg src/index.js --targets node8-alpine-x64 --output /app/agentd-client
 
 
 FROM $BASE_IMAGE as runtime
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
+RUN addgroup -S agentd && adduser -S agentd -G agentd
+USER agentd
 WORKDIR /app
 
 ARG TINI_VERSION=v0.19.0

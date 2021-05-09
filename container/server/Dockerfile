@@ -10,8 +10,8 @@ RUN dotnet publish -r ${DOTNET_RID} /p:PublishTrimmed=true -o /app/build src/Age
 
 FROM $BASE_IMAGE as runtime
 RUN apk add --update --no-cache icu-libs openssh sshpass
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
+RUN addgroup -S agentd && adduser -S agentd -G agentd
+USER agentd
 EXPOSE 5000
 ENV ASPNETCORE_URLS=http://*:5000
 WORKDIR /app
