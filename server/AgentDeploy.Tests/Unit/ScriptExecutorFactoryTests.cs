@@ -73,7 +73,7 @@ namespace AgentDeploy.Tests.Unit
             {
                 DirectorySeparatorChar = '/'
             };
-            var scriptTransformer = new ScriptTransformer(new OperationContext(), executionOptions, null);
+            var scriptTransformer = new ScriptTransformer(new OperationContext(), executionOptions, null!);
             var processExecutionServiceMock = new Mock<IProcessExecutionService>();
             processExecutionServiceMock
                 .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>()))
@@ -105,7 +105,7 @@ namespace AgentDeploy.Tests.Unit
             {
                 DirectorySeparatorChar = '/'
             };
-            var scriptTransformer = new ScriptTransformer(new OperationContext(), executionOptions, null);
+            var scriptTransformer = new ScriptTransformer(new OperationContext(), executionOptions, null!);
             var processExecutionServiceMock = new Mock<IProcessExecutionService>();
             processExecutionServiceMock
                 .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>()))
