@@ -5,18 +5,19 @@ using AgentDeploy.Models.Websocket;
 
 namespace AgentDeploy.Services.Websocket
 {
-    public class ConnectionContext
+    public sealed class ConnectionContext
     {
-        private object _lock = new();
+        private readonly object _lock = new();
 
-        public bool IsConnected()
+        private bool IsConnected()
         {
             bool connected;
             lock (_lock)
                 connected = Connection != null;
             return connected;
         }
-        public Connection? Connection { get; private set; }
+
+        private Connection? Connection { get; set; }
 
         public event EventHandler? Disconnected;
 
