@@ -49,7 +49,7 @@ command: |
 </details>
 
 
-### Token example
+### Token examples
 #### Minimal example
 ```yaml
 available_scripts:
