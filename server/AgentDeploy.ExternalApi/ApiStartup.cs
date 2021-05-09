@@ -39,15 +39,15 @@ namespace AgentDeploy.ExternalApi
             services.Configure<ForwardedHeadersOptions>(options => options.ForwardedHeaders = ForwardedHeaders.All);
             services.AddDistributedMemoryCache();
 
-            AddOptions(services);
+            services.AddAgentDeployOptions(_configuration);
 
             AddReaders(services);
 
             services.AddScoped<IInvocationContextService, InvocationContextService>();
             services.AddScoped<IScriptExecutionService, ScriptExecutionService>();
             services.AddScoped<IScriptTransformer, ScriptTransformer>();
-            
-            AddExecutors(services);
+
+            services.AddScriptExecutors();
 
             services.AddHttpContextAccessor();
             services.AddScoped<IOperationContextService, OperationContextService>();
@@ -68,23 +68,7 @@ namespace AgentDeploy.ExternalApi
                 .AddApplicationPart(typeof(ApiStartup).Assembly)
                 .AddJsonOptions(options => ConfigureJsonSerializer(options.JsonSerializerOptions));
         }
-
-        protected virtual void AddOptions(IServiceCollection services)
-        {
-            services.AddValidatedOptions<ExecutionOptions>(_configuration);
-            services.AddValidatedOptions<DirectoryOptions>(_configuration);
-            services.AddValidatedOptions<AgentOptions>(_configuration);
-        }
-
-        protected virtual void AddExecutors(IServiceCollection services)
-        {
-            services.AddScoped<IScriptExecutorFactory, ScriptExecutorFactory>();
-            services.AddScoped<ILocalScriptExecutor, LocalScriptExecutor>();
-            services.AddScoped<IExplicitPrivateKeySecureShellExecutor, ExplicitPrivateKeySecureShellExecutor>();
-            services.AddScoped<IImplicitPrivateKeySecureShellExecutor, ImplicitPrivateKeySecureShellExecutor>();
-            services.AddScoped<ISshPassSecureShellExecutor, SshPassSecureShellExecutor>();
-        }
-
+        
         protected virtual void AddReaders(IServiceCollection services)
         {
             services.AddScoped<IFileReader, FileReader>();
