@@ -25,8 +25,7 @@ Permission to invoke a **script** is granted through a **token**, which is also 
 ```yaml
 variables:
   name:
-command: |
-  echo "Hello $(name)!"
+command: echo "Hello $(name)!"
 ```
 
 <details>
