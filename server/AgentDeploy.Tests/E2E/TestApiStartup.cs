@@ -1,4 +1,5 @@
 using AgentDeploy.ExternalApi;
+using AgentDeploy.Models.Options;
 using AgentDeploy.Services;
 using AgentDeploy.Services.Scripts;
 using Microsoft.Extensions.Configuration;
@@ -18,10 +19,11 @@ namespace AgentDeploy.Tests.E2E
             var mockScriptReader = new Mock<IScriptReader>();
             var mockTokenReader = new Mock<ITokenReader>();
             
-            services.AddSingleton<Mock<IScriptReader>>(mockScriptReader);
-            services.AddSingleton<Mock<ITokenReader>>(mockTokenReader);
-            services.AddSingleton<IScriptReader>(mockScriptReader.Object);
-            services.AddSingleton<ITokenReader>(mockTokenReader.Object);
+            services.AddSingleton<IFileService>(new FileService(new ExecutionOptions()));
+            services.AddSingleton(mockScriptReader);
+            services.AddSingleton(mockTokenReader);
+            services.AddSingleton(mockScriptReader.Object);
+            services.AddSingleton(mockTokenReader.Object);
         }
     }
 }
