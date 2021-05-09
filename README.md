@@ -17,7 +17,8 @@ Running the `agentd` server, either in a container or directly using an executab
 Permission to invoke a **script** is granted through a **token**, which is also specified by a yaml file. A **token** can also limit which of the availabe **script**-files should be invocable with a given **token**. **Tokens** can also further constrain the input *variables* to a given **script** or even lock a *variable* to a specific value.
 
 ### Script examples
-#### Minimal example 
+
+#### Minimal example
 ```yaml
 variables:
   name:
@@ -25,7 +26,9 @@ command: |
   echo "Hello $(name)!"
 ```
 
-#### Advanced example
+<details>
+  <summary>Advanced example</summary>
+ 
 ```yaml
 variables:
   username:
@@ -40,17 +43,20 @@ command: |
   echo "logging in $(username):$(password)"
   cat $(test_file)
 ```
+</details>
 
 
 ### Token example
-#### Minimal example 
+#### Minimal example
 ```yaml
 available_scripts:
   minimal-example:
   advanced-example:
 ```
 
-#### Advanced example 
+<details>
+  <summary>Advanced example</summary>
+ 
 ```yaml
 name: advanced example
 description: just an advanced example with more stuff in it
@@ -71,19 +77,23 @@ available_scripts:
     variable_constraints:
       password ^[a-zA-Z0-9_-]{18,32}$
 ```
+</details>
+
 
 ## Client
 To simplify usage, the `agentd` CLI client can be used. The client provides functionality to utilize all functionality provided by the `agentd` server. This includes using WebSockets to allow for process output to be sent as soon as the process emits it, so it can be output in the CLI client.
 
-
-#### Example
-Basic example of invoking a script with the CLI client:
+#### Minimal example
 ```
-agentd-client invoke test-script http://localhost:5000 -i -v name=John
+agentd-client invoke minimal-example http://localhost:5000 -i -v name=John
 ```
 
+#### Advanced example
+```
+agentd-client invoke advanced-example http://localhost:5000 -i -v username=johndoe password=longbutveryweakpassword -f test_file=./the-test-file.txt
+```
 
-#### Help:
+#### Help
 ```
 Usage: agentd-client [options] [command]
 
