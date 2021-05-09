@@ -93,7 +93,9 @@ agentd-client invoke minimal-example http://localhost:5000 -i -v name=John
 agentd-client invoke advanced-example http://localhost:5000 -iw -v username=johndoe password=longbutveryweakpassword -f test_file=./the-test-file.txt
 ```
 
-#### Help (for version 3.x)
+#### Help
+Use `--help` to print the CLI help.
+For version 3.x:  
 ```
 Usage: agentd-client [options] [command]
 
