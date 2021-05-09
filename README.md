@@ -12,9 +12,12 @@ An agent for managing execution of [taco bell programming](http://widgetsandshit
 
 ## Server
 Running the `agentd` server, either in a container or directly using an executable, exposes a REST endpoint that can be used to invoke **scripts**. These **scripts** are either executed locally relative to the executable, or remotely through SSH.
+
 **Scripts** are defined using yaml files that specify which *variables* the **script** require for invocation. Both *variables*, *secret variables* and *files* are declared and optionally constrained to certain values using regular expressions. *Files* can be constrained on size (maximum and minimum) and file extension.
 
-Permission to invoke a **script** is granted through a **token**, which is also specified by a yaml file. A **token** can also limit which of the availabe **script**-files should be invocable with a given **token**. **Tokens** can also further constrain the input *variables* to a given **script** or even lock a *variable* to a specific value.
+Permission to invoke a **script** is granted through a **token**, which is also specified by a yaml file. A **token** can also limit which of the availabe **script**-files should be invocable with a given **token**.
+
+**Tokens** can also further constrain the input *variables* to a given **script** or even lock a *variable* to a specific value.
 
 ### Script examples
 
