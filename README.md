@@ -90,10 +90,10 @@ agentd-client invoke minimal-example http://localhost:5000 -i -v name=John
 
 #### Advanced example
 ```
-agentd-client invoke advanced-example http://localhost:5000 -i -v username=johndoe password=longbutveryweakpassword -f test_file=./the-test-file.txt
+agentd-client invoke advanced-example http://localhost:5000 -iw -v username=johndoe password=longbutveryweakpassword -f test_file=./the-test-file.txt
 ```
 
-#### Help
+#### Help (for version 3.x)
 ```
 Usage: agentd-client [options] [command]
 
@@ -101,13 +101,13 @@ Options:
   -V, --version                                  output the version number
   -t, --token <token>                            Authentication token
   -i, --interactive                              Enable providing token through stdin
+  -w, --ws                                       Enable websocket connection for receiving output
   -v, --variables <keyValuePair...>              Add variable
   -s, --secret-variables <keyValuePair...>       Add secret variable
   -e, --environment-variables <keyValuePair...>  Add environment variable
   -f, --files <keyValuePair...>                  Add file
-  --ws                                           Enable websocket connection for receiving output
-  --hide-timestamps                              Omit timestamps
-  --hide-headers                                 Omit info headers
+  --hide-timestamps                              Omit printing timestamps
+  --hide-headers                                 Omit printing info headers
   --hide-script                                  Omit printing script (if available)
   -h, --help                                     display help for command
 
