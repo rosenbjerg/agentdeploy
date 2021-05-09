@@ -44,11 +44,11 @@ namespace AgentDeploy.Yaml
         {
             throw new NotImplementedException();
             
-            var enumMember = type.GetMember(value.ToString()).FirstOrDefault();
-            var yamlValue =
-                enumMember?.GetCustomAttributes<YamlEnumMemberAliasAttribute>(true).Select(ema => ema.Name).FirstOrDefault() ??
-                value.ToString();
-            emitter.Emit(new Scalar(yamlValue));
+            // var enumMember = type.GetMember(value.ToString()).FirstOrDefault();
+            // var yamlValue =
+            //     enumMember?.GetCustomAttributes<YamlEnumMemberAliasAttribute>(true).Select(ema => ema.Name).FirstOrDefault() ??
+            //     value.ToString();
+            // emitter.Emit(new Scalar(yamlValue));
         }
     }
 }
