@@ -78,7 +78,7 @@ available_scripts:
     locked_variables:
       username: john
     variable_constraints:
-      password ^[a-zA-Z0-9_-]{18,32}$
+      password: ^[a-zA-Z0-9_-]{18,32}$
 ```
 </details>
 
