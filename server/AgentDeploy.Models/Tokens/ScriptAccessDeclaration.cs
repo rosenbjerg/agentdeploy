@@ -4,8 +4,8 @@ namespace AgentDeploy.Models.Tokens
 {
     public class ScriptAccessDeclaration
     {
-        public SecureShellOptions? Ssh { get; set; }
-        public Dictionary<string, string> VariableContraints { get; set; } = new();
-        public Dictionary<string, string> LockedVariables { get; set; } = new();
+        public SecureShellOptions? Ssh { get; init; }
+        public Dictionary<string, string> VariableContraints { get; init; } = new();
+        public Dictionary<string, string> LockedVariables { get; init; } = new();
     }
 }

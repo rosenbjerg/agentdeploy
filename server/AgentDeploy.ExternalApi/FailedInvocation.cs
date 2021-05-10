@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace AgentDeploy.ExternalApi.Controllers
+namespace AgentDeploy.ExternalApi
 {
     public record FailedInvocation
     {

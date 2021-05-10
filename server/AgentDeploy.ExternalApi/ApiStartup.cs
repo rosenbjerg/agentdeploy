@@ -44,7 +44,10 @@ namespace AgentDeploy.ExternalApi
 
             services.AddScoped<IInvocationContextService, InvocationContextService>();
             services.AddScoped<IScriptExecutionService, ScriptExecutionService>();
+            services.AddScoped<IScriptExecutionFileService, ScriptExecutionFileService>();
             services.AddScoped<IScriptTransformer, ScriptTransformer>();
+            services.AddSingleton<IScriptInvocationParser, ScriptInvocationParser>();
+            services.AddSingleton<IScriptInvocationLockService, ScriptInvocationLockService>();
 
             services.AddScriptExecutors();
 
@@ -54,11 +57,9 @@ namespace AgentDeploy.ExternalApi
             services.AddScoped<IOperationContext>(provider => provider.GetRequiredService<OperationContext>());
             
             services.AddScoped<IConnectionAccepter, WebsocketConnectionAccepter>();
+            services.AddSingleton<IConnectionHub, ConnectionHub>();
 
             services.AddSingleton<IProcessExecutionService, ProcessExecutionService>();
-            services.AddSingleton<IScriptInvocationParser, ScriptInvocationParser>();
-            services.AddSingleton<IScriptInvocationLockService, ScriptInvocationLockService>();
-            services.AddSingleton<IConnectionHub, ConnectionHub>();
             services.AddYamlParser();
             
             services

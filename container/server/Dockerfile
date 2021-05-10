@@ -10,14 +10,16 @@ RUN dotnet publish -r ${DOTNET_RID} /p:PublishTrimmed=true -o /app/build src/Age
 
 FROM $BASE_IMAGE as runtime
 RUN apk add --update --no-cache icu-libs openssh sshpass
-RUN addgroup -S agentd && adduser -S agentd -G agentd
-USER agentd
 EXPOSE 5000
 ENV ASPNETCORE_URLS=http://*:5000
 WORKDIR /app
 
 ARG TINI_VERSION=v0.19.0
 RUN wget -O /tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static && chmod +x /tini
+
+RUN addgroup -S agentd && adduser -S agentd -G agentd
+USER agentd
+
 ENTRYPOINT ["/tini", "-g", "--"]
 
 COPY --from=builder /app/build /app
