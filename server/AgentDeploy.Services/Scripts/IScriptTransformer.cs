@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 
@@ -10,5 +11,6 @@ namespace AgentDeploy.Services.Scripts
         string BuildScriptArgument(string scriptFilePath);
         string EscapeWhitespaceInPath(string path, char escapeChar = '"');
         string HideSecrets(string text, ScriptInvocationContext invocationContext);
+        string ReplaceVariables(string script, Dictionary<string, string> executionContext);
     }
 }

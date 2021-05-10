@@ -75,7 +75,7 @@ namespace AgentDeploy.Services.Scripts
             });
         }
 
-        private string ReplaceVariables(string script, Dictionary<string, string> executionContext)
+        public string ReplaceVariables(string script, Dictionary<string, string> executionContext)
         {
             var argDict = executionContext;
             return VariableRegex.Replace(script, match =>
