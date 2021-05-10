@@ -142,8 +142,5 @@ namespace AgentDeploy.Services.Scripts
                 invocationContext.Arguments.Add(new AcceptedScriptInvocationArgument(file.Name, filePath, false));
             }
         }
-
-        {
-        }
     }
 }
