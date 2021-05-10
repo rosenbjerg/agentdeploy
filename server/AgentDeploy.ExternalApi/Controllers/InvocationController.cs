@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AgentDeploy.ExternalApi.Filters;
 using AgentDeploy.Models;
@@ -44,6 +45,17 @@ namespace AgentDeploy.ExternalApi.Controllers
                 {
                     Title = "One or more validation errors occured:",
                     Errors = e.Errors.GroupBy(error => error.Name, error => error.Error).ToDictionary(g => g.Key, g => g.ToArray())
+                });
+            }
+            catch (FilePreprocessingFailedException e)
+            {
+                return BadRequest(new FailedInvocation
+                {
+                    Title = $"File preprocessing failed with non-zero exit-code: {e.ExitCode}",
+                    Errors = new Dictionary<string, string[]>
+                    {
+                        { e.Name, e.ErrorOutput.ToArray() }
+                    }
                 });
             }
             catch (ScriptLockedException e)

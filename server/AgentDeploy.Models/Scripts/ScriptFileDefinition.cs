@@ -11,5 +11,7 @@ namespace AgentDeploy.Models.Scripts
         /// Array of acceptable file extensions
         /// </summary>
         public string[]? AcceptedExtensions { get; init; }
+
+        public string? FilePreprocessing { get; init; }
     }
 }

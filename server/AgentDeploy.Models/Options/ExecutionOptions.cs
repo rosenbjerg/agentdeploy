@@ -1,11 +1,18 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace AgentDeploy.Models.Options
 {
     public class ExecutionOptions
     {
+        private static readonly bool ClamAvEnabled = Environment.GetEnvironmentVariable("CLAMAV") == "true";
+
         public char DirectorySeparatorChar { get; set; } = Path.DirectorySeparatorChar;
         public string TempDir { get; set; } = Path.GetTempPath();
+        
+        public string? DefaultFilePreprocessing { get; set; } = ClamAvEnabled
+            ? "clamscan -i $(FilePath)" 
+            : null;
         
         /// <summary>
         /// Which shell to execute the command file with

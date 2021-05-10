@@ -58,7 +58,7 @@ namespace AgentDeploy.Services
                 var scriptFileArgument = inputFile.Value ?? new ScriptFileDefinition();
                 var providedFile = ValidateFileInput(scriptInvocation.Files, inputFile.Key, scriptFileArgument, failed);
                 if (providedFile == null) continue;
-                acceptedFiles.Add(new AcceptedScriptInvocationFile(inputFile.Key, Path.GetFileName(providedFile.FileName), providedFile.Read));
+                acceptedFiles.Add(new AcceptedScriptInvocationFile(inputFile.Key, Path.GetFileName(providedFile.FileName), scriptFileArgument.FilePreprocessing, providedFile.Read));
             }
             
             if (failed.Any()) throw new InvalidInvocationArgumentsException(failed);

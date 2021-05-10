@@ -139,11 +139,28 @@ namespace AgentDeploy.Services.Scripts
                 await using var outputFile = File.Create(filePath);
                 await using var inputStream = file.OpenRead();
                 await inputStream.CopyToAsync(outputFile, _operationContext.OperationCancelled);
+                await ExecuteFilePreprocessing(file, filePath);
                 invocationContext.Arguments.Add(new AcceptedScriptInvocationArgument(file.Name, filePath, false));
             }
         }
 
+        private async Task ExecuteFilePreprocessing(AcceptedScriptInvocationFile file, string filePath)
         {
+            var preprocessing = file.Preprocessing ?? _executionOptions.DefaultFilePreprocessing;
+            if (!string.IsNullOrEmpty(preprocessing))
+            {
+                _logger.LogDebug("Preprocessing {File} with {Preprocessor}", filePath, preprocessing);
+                var preprocess = _scriptTransformer.ReplaceVariables(preprocessing, new Dictionary<string, string>
+                {
+                    { "FilePath", _scriptTransformer.EscapeWhitespaceInPath(filePath) }
+                });
+                var preprocessResult = await _processExecutionService.Invoke(_executionOptions.Shell, preprocess, delegate { });
+                if (preprocessResult.ExitCode != 0)
+                {
+                    _logger.LogWarning("Preprocessing of {File} failed with non-zero exit-code {ExitCode}: {Errors}", preprocessResult.ExitCode, preprocessResult.Errors);
+                    throw new FilePreprocessingFailedException(file.Name, preprocessResult.ExitCode, preprocessResult.Errors);
+                }
+            }
         }
     }
 }
