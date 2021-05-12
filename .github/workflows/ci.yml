@@ -4,97 +4,65 @@ on:
   push:
     branches: [ main ]
     paths:
-      - .github/workflows/ci.yml
-      - server/**
-      - client/**
+    - .github/workflows/ci.yml
+    - server/**
+    - client/**
   pull_request:
     branches: [ main, release ]
     paths:
-      - server/**
-      - client/**
+    - server/**
+    - client/**
 
 jobs:
-  scan:
-    env:
-      client_dir: ./client
-    runs-on: ubuntu-latest
-    steps:
-
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: SonarScan of client sources
-        uses: sonarsource/sonarcloud-github-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          projectBaseDir: ${{ env.client_dir }}
-          args: >
-            -Dsonar.organization=rosenbjerg
-            -Dsonar.projectKey=rosenbjerg_AgentDeploy
-
-  analyze:
+  build:
     env:
       server_dir: ./server
       client_dir: ./client
     runs-on: ubuntu-latest
     steps:
+    
+    - uses: actions/checkout@v2
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+        
+    - name: Restore NuGet packages
+      working-directory: ${{ env.server_dir }}
+      run: dotnet restore
+      
+    - name: Build
+      working-directory: ${{ env.server_dir }}
+      run: dotnet build -c Release --no-restore
+      
+    - name: Run unit test suite
+      working-directory: ${{ env.server_dir }}
+      run: dotnet test -c Release --filter TestCategory=Unit --collect "XPlat Code Coverage" --logger GitHubActions --no-build --verbosity normal
+      
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v2.1.5
+      with: 
+        node-version: 8.x
 
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+    - name: Install TypeScript
+      working-directory: ${{ env.client_dir }}
+      run: npm install -g typescript
+        
+    - name: Install NPM packages
+      working-directory: ${{ env.client_dir }}
+      run: npm ci
+        
+    - name: Compile Typescript client to Javascript
+      working-directory: ${{ env.client_dir }}
+      run: tsc src/index.ts
+      
+    - name: Run E2E test suite
+      working-directory: ${{ env.server_dir }}
+      run: dotnet test -c Release --filter TestCategory=E2E --collect "XPlat Code Coverage" --logger GitHubActions --no-build --verbosity normal
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.1.5
-        with:
-          node-version: 8.x
-
-      - name: Install TypeScript
-        working-directory: ${{ env.client_dir }}
-        run: npm install -g typescript
-
-      - name: Install NPM packages
-        working-directory: ${{ env.client_dir }}
-        run: npm ci
-
-      - name: Compile Typescript client to Javascript
-        working-directory: ${{ env.client_dir }}
-        run: tsc src/index.ts
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 5.0.x
-
-      - name: Restore NuGet packages
-        working-directory: ${{ env.server_dir }}
-        run: dotnet restore
-
-      - name: Install SonarScanner
-        run: dotnet tool install dotnet-sonarscanner --global
-
-      - name: Start SonarScan
-        run: dotnet sonarscanner begin /k:rosenbjerg_AgentDeploy /n:AgentDeploy /o:rosenbjerg /d:sonar.login=${{ secrets.SONAR_TOKEN }}
-
-      - name: Build
-        working-directory: ${{ env.server_dir }}
-        run: dotnet build -c Release --no-restore
-
-      - name: Run unit test suite
-        working-directory: ${{ env.server_dir }}
-        run: dotnet test -c Release --filter TestCategory=Unit --collect "XPlat Code Coverage" --logger GitHubActions --no-build --verbosity normal
-
-      - name: Run E2E test suite
-        working-directory: ${{ env.server_dir }}
-        run: dotnet test -c Release --filter TestCategory=E2E --collect "XPlat Code Coverage" --logger GitHubActions --no-build --verbosity normal
-
-      - name: Start SonarScan
-        run: dotnet sonarscanner /dotnet-sonarscanner end /d:sonar.login=${{ secrets.SONAR_TOKEN }}
-
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          directory: server/AgentDeploy.Tests/TestResults
-          fail_ci_if_error: true
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        directory: server/AgentDeploy.Tests/TestResults
+        fail_ci_if_error: true
