@@ -29,3 +29,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectBaseDir: ${{ env.client_dir }}
+          args: >
+            -Dsonar.organization=rosenbjerg
+            -Dsonar.projectKey=rosenbjerg_AgentDeploy
