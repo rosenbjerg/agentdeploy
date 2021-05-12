@@ -22,6 +22,36 @@ jobs:
     steps:
     
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    
+    - name: SonarScan of client sources
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        projectBaseDir: ${{ env.client_dir }}
+        args: >
+          -Dsonar.organization=rosenbjerg
+          -Dsonar.projectKey=rosenbjerg_AgentDeploy
+
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v2.1.5
+      with:
+        node-version: 8.x
+
+    - name: Install TypeScript
+      working-directory: ${{ env.client_dir }}
+      run: npm install -g typescript
+
+    - name: Install NPM packages
+      working-directory: ${{ env.client_dir }}
+      run: npm ci
+
+    - name: Compile Typescript client to Javascript
+      working-directory: ${{ env.client_dir }}
+      run: tsc src/index.ts
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
@@ -32,9 +62,11 @@ jobs:
       working-directory: ${{ env.server_dir }}
       run: dotnet restore
         
-    - name: Restore dependencies
-      working-directory: ${{ env.server_dir }}
-      run: dotnet restore
+    - name: Install SonarScanner
+      run: dotnet tool install dotnet-sonarscanner
+      
+    - name: Start SonarScan
+      run: dotnet-sonarscanner begin /k:rosenbjerg_AgentDeploy /n:AgentDeploy /o:rosenbjerg /d:sonar.login=${{ secrets.SONAR_TOKEN }}
       
     - name: Build
       working-directory: ${{ env.server_dir }}
@@ -44,26 +76,12 @@ jobs:
       working-directory: ${{ env.server_dir }}
       run: dotnet test -c Release --filter TestCategory=Unit --collect "XPlat Code Coverage" --logger GitHubActions --no-build --verbosity normal
       
-    - name: Setup Node.js environment
-      uses: actions/setup-node@v2.1.5
-      with: 
-        node-version: 8.x
-
-    - name: Install TypeScript
-      working-directory: ${{ env.client_dir }}
-      run: npm install -g typescript
-        
-    - name: Install NPM packages
-      working-directory: ${{ env.client_dir }}
-      run: npm ci
-        
-    - name: Compile Typescript client to Javascript
-      working-directory: ${{ env.client_dir }}
-      run: tsc src/index.ts
-      
     - name: Run E2E test suite
       working-directory: ${{ env.server_dir }}
       run: dotnet test -c Release --filter TestCategory=E2E --collect "XPlat Code Coverage" --logger GitHubActions --no-build --verbosity normal
+
+    - name: Start SonarScan
+      run: dotnet-sonarscanner /dotnet-sonarscanner end /d:sonar.login=${{ secrets.SONAR_TOKEN }}
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v1
