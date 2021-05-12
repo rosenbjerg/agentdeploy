@@ -23,16 +23,28 @@ namespace AgentDeploy.Services
             return await File.ReadAllTextAsync(filePath, cancellationToken);
         }
 
-        public string? FindFile(string directory, string filename, params string[] extensions)
+        public string? FindFile(string directoryPath, string fileName, params string[] extensions)
         {
             return extensions
-                .Select(extension => $"{directory}{_executionOptions.DirectorySeparatorChar}{filename}.{extension}")
+                .Select(extension => PathUtils.Combine(_executionOptions.DirectorySeparatorChar, directoryPath, $"{fileName}.{extension}"))
                 .FirstOrDefault(File.Exists);
         }
 
-        public async Task WriteText(string filePath, string content, CancellationToken cancellationToken)
-        {
+        public async Task WriteText(string filePath, string content, CancellationToken cancellationToken) =>
             await File.WriteAllTextAsync(filePath, content, cancellationToken);
+
+        public async Task Write(Stream inputStream, string filePath, CancellationToken cancellationToken)
+        {
+            await using var fileStream = File.Create(filePath);
+            await inputStream.CopyToAsync(fileStream, cancellationToken);
         }
+
+        public void CreateDirectory(string directoryPath) => Directory.CreateDirectory(directoryPath);
+
+        public void DeleteDirectory(string directoryPath, bool recursive) => Directory.Delete(directoryPath, recursive);
+
+        public bool FileExists(string filePath) => File.Exists(filePath);
+
+        public void DeleteFile(string filePath) => File.Delete(filePath);
     }
 }
