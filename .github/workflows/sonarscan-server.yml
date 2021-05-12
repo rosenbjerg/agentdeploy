@@ -4,32 +4,51 @@ on:
   push:
     branches: [ main ]
     paths:
-    - .github/workflows/**
-    - server/**
+      - .github/workflows/**
+      - server/**
   pull_request:
     branches: [ main, release ]
     paths:
-    - server/**
+      - server/**
 
 jobs:
   scan:
+    env:
+      server_dir: ./server
+      client_dir: ./client
     runs-on: ubuntu-latest
     steps:
-    
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-        
-    - name: SonarScan of server sources
-      uses: highbyte/sonarscan-dotnet@2.0
-      env:
-        SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        sonarProjectKey: AgentDeploy
-        sonarProjectName:  AgentDeploy
-        sonarOrganization: rosenbjerg
-        dotnetBuildArguments: ./server
-        dotnetTestArguments: ./server --logger trx --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-        sonarBeginArguments: /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" -d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx"
 
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 8.x
+
+      - name: Install TypeScript
+        working-directory: ${{ env.client_dir }}
+        run: npm install -g typescript
+
+      - name: Install NPM packages
+        working-directory: ${{ env.client_dir }}
+        run: npm ci
+
+      - name: Compile Typescript client to Javascript
+        working-directory: ${{ env.client_dir }}
+        run: tsc src/index.ts
+
+      - name: SonarScan of server sources
+        uses: highbyte/sonarscan-dotnet@2.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          sonarProjectKey: rosenbjerg_AgentDeploy
+          sonarProjectName:  AgentDeploy
+          sonarOrganization: rosenbjerg
+          dotnetBuildArguments: ${{ env.server_dir }}
+          dotnetTestArguments: ./server --logger trx --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          sonarBeginArguments: /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" -d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx"
