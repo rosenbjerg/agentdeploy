@@ -56,6 +56,9 @@ jobs:
 
       - name: Build with SonarScan
         working-directory: ${{ env.server_dir }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           dotnet sonarscanner begin /k:rosenbjerg_AgentDeploy /n:AgentDeploy /o:rosenbjerg /d:sonar.login=${{ secrets.SONAR_TOKEN }} /d:sonar.host.url=https://sonarcloud.io &&
           dotnet build -c Release --no-restore &&
