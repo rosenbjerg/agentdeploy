@@ -41,6 +41,7 @@ jobs:
         run: tsc src/index.ts
 
       - name: SonarScan of server sources
+        working-directory: ${{ env.server_dir }}
         uses: highbyte/sonarscan-dotnet@2.0
         env:
           SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
@@ -49,6 +50,5 @@ jobs:
           sonarProjectKey: rosenbjerg_AgentDeploy
           sonarProjectName:  AgentDeploy
           sonarOrganization: rosenbjerg
-          dotnetBuildArguments: ${{ env.server_dir }}
           dotnetTestArguments: ./server --logger trx --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
           sonarBeginArguments: /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" -d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx"
