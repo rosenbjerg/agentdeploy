@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Websocket;
@@ -35,13 +36,13 @@ namespace AgentDeploy.Services.Websocket
             Disconnected?.Invoke(this, EventArgs.Empty);
         }
 
-        public async Task<bool> AwaitConnection(int timeoutSeconds)
+        public async Task<bool> AwaitConnection(int timeoutSeconds, CancellationToken cancellationToken)
         {
             var stepSize = 100;
             var steps = (timeoutSeconds * 1000) / stepSize;
             for (var i = 0; i < steps; i++)
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(stepSize));
+                await Task.Delay(TimeSpan.FromMilliseconds(stepSize), cancellationToken);
                 if (IsConnected()) return true;
             }
 

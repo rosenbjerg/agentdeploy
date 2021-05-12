@@ -33,7 +33,7 @@ namespace AgentDeploy.Services
         public async Task<ScriptInvocationContext?> Build(ParsedScriptInvocation scriptInvocation)
         {
             var script = HasAccessToScript(scriptInvocation.ScriptName)
-                ? await _scriptReader.Load(scriptInvocation.ScriptName)
+                ? await _scriptReader.Load(scriptInvocation.ScriptName, _operationContext.OperationCancelled)
                 : null;
             if (script == null)
                 return null;

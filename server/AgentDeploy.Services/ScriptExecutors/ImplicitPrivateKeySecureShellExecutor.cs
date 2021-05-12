@@ -9,17 +9,14 @@ namespace AgentDeploy.Services.ScriptExecutors
 {
     public sealed class ImplicitPrivateKeySecureShellExecutor : SecureShellExecutorBase, IImplicitPrivateKeySecureShellExecutor
     {
-        private readonly IScriptTransformer _scriptTransformer;
-
         public ImplicitPrivateKeySecureShellExecutor(ExecutionOptions executionOptions, IScriptTransformer scriptTransformer, IProcessExecutionService processExecutionService) 
             : base(executionOptions, scriptTransformer, processExecutionService)
         {
-            _scriptTransformer = scriptTransformer;
         }
 
         public override async Task<bool> Copy(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
-            var scpCommand = $"-rq {StrictHostKeyChecking(ssh)} -P {ssh.Port} {sourceDirectory} {Credentials(ssh)}:{_scriptTransformer.EscapeWhitespaceInPath(remoteDirectory, '\'')}";
+            var scpCommand = $"-rq {StrictHostKeyChecking(ssh)} -P {ssh.Port} {sourceDirectory} {Credentials(ssh)}:{PathUtils.EscapeWhitespaceInPath(remoteDirectory, '\'')}";
             var result = await ProcessExecutionService.Invoke("scp", scpCommand, (data, error) => onOutput(new ProcessOutput(DateTime.UtcNow, data, error)));
             return result.ExitCode == 0;
         }

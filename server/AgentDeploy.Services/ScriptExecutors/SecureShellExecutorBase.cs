@@ -10,13 +10,13 @@ namespace AgentDeploy.Services.ScriptExecutors
 {
     public abstract class SecureShellExecutorBase : IScriptExecutor
     {
-        private readonly ExecutionOptions _executionOptions;
         private readonly IScriptTransformer _scriptTransformer;
+        protected readonly ExecutionOptions ExecutionOptions;
         protected readonly IProcessExecutionService ProcessExecutionService;
 
         protected SecureShellExecutorBase(ExecutionOptions executionOptions, IScriptTransformer scriptTransformer, IProcessExecutionService processExecutionService)
         {
-            _executionOptions = executionOptions;
+            ExecutionOptions = executionOptions;
             _scriptTransformer = scriptTransformer;
             ProcessExecutionService = processExecutionService;
         }
@@ -24,7 +24,7 @@ namespace AgentDeploy.Services.ScriptExecutors
         public async Task<int> Execute(ScriptInvocationContext invocationContext, string directory, Action<ProcessOutput> onOutput)
         {
             var ssh = invocationContext.SecureShellOptions!;
-            void OnUnprocessedOutput(ProcessOutput output) => onOutput(new ProcessOutput(output.Timestamp, _scriptTransformer.HideSecrets(output.Output, invocationContext), output.Error));
+            void OnUnprocessedOutput(ProcessOutput output) => onOutput(new ProcessOutput(output.Timestamp, ReplacementUtils.HideSecrets(output.Output, invocationContext), output.Error));
 
             var remoteDirectory = await CopyInternal(directory, ssh, OnUnprocessedOutput);
             if (remoteDirectory == null)
@@ -54,8 +54,8 @@ namespace AgentDeploy.Services.ScriptExecutors
         public abstract Task<int> Execute(SecureShellOptions ssh, string sourceDirectory, string fileArgument, Action<ProcessOutput> onOutput);
         public abstract Task Cleanup(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput);
 
-        protected string GetExecuteCommand(string fileArgument) => $"{_executionOptions.Shell} {fileArgument}";
-        protected string GetCleanupCommand(string remoteDirectory) => $"rm -r {_scriptTransformer.EscapeWhitespaceInPath(remoteDirectory, '\'')}";
+        protected string GetExecuteCommand(string fileArgument) => $"{ExecutionOptions.Shell} {fileArgument}";
+        protected string GetCleanupCommand(string remoteDirectory) => $"rm -r {PathUtils.EscapeWhitespaceInPath(remoteDirectory, '\'')}";
 
         private async Task<int> ExecuteInternal(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
