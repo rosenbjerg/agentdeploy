@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+    - .github/workflows/**
+    - server/**
+  pull_request:
+    branches: [ main, release ]
+    paths:
+    - server/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        
+    - name: SonarScan of server sources
+      uses: highbyte/sonarscan-dotnet@2.0
+      env:
+        SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        sonarProjectKey: AgentDeploy
+        sonarProjectName:  AgentDeploy
+        sonarOrganization: rosenbjerg
+        dotnetBuildArguments: ./server
+        dotnetTestArguments: ./server --logger trx --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+        sonarBeginArguments: /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" -d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx"
+
