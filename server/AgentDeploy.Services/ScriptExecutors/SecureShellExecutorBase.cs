@@ -40,12 +40,12 @@ namespace AgentDeploy.Services.ScriptExecutors
             }
         }
 
-        protected string StrictHostKeyChecking(SecureShellOptions secureShellOptions)
+        protected static string StrictHostKeyChecking(SecureShellOptions secureShellOptions)
         {
             return $"-o StrictHostKeyChecking={(secureShellOptions.StrictHostKeyChecking ? "yes" : "no")}";
         }
 
-        protected string Credentials(SecureShellOptions secureShellOptions)
+        protected static string Credentials(SecureShellOptions secureShellOptions)
         {
             return $"{secureShellOptions.Username}@{secureShellOptions.Address}";
         }

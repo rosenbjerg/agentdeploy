@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
+using AgentDeploy.Models.Exceptions;
 using AgentDeploy.Models.Websocket;
 using Microsoft.AspNetCore.Http;
 
@@ -34,14 +35,14 @@ namespace AgentDeploy.ExternalApi.Websocket
 
         public override async Task SendMessage(Message message)
         {
-            if (_websocket == null) throw new Exception("WebSocket has not been accepted yet");
-            if (_websocket.State != WebSocketState.Open) throw new Exception("WebSocket connection is not open");
+            if (_websocket == null) throw new WebsocketException("WebSocket has not been accepted yet");
+            if (_websocket.State != WebSocketState.Open) throw new WebsocketException("WebSocket connection is not open");
             await _websocket.SendAsync(JsonSerializer.SerializeToUtf8Bytes(message, JsonSerializerOptions), WebSocketMessageType.Text, true, _httpContext.RequestAborted);
         }
 
         public override async Task KeepConnectionOpen()
         {
-            if (_websocket != null) throw new Exception("WebSocket has already been accepted");
+            if (_websocket != null) throw new WebsocketException("WebSocket has already been accepted");
 
             try
             {
@@ -69,7 +70,7 @@ namespace AgentDeploy.ExternalApi.Websocket
                             if (parsed != null)
                                 OnMessageReceived(parsed);
                         }
-                        catch (JsonException) { }
+                        catch (JsonException) { continue; }
                     }
                 }
             }
