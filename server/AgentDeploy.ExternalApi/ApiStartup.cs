@@ -86,7 +86,7 @@ namespace AgentDeploy.ExternalApi
             app.UseEndpoints(endpoints => endpoints.MapControllers());
         }
 
-        private void ConfigureJsonSerializer(JsonSerializerOptions options)
+        private static void ConfigureJsonSerializer(JsonSerializerOptions options)
         {
             options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             options.PropertyNameCaseInsensitive = true;

@@ -8,6 +8,11 @@ An agent for managing execution of [taco bell programming](http://widgetsandshit
 [![Client Docker Pulls](https://img.shields.io/docker/pulls/mrosenbjerg/agentd-client?label=client%20docker%20pulls)](https://hub.docker.com/r/mrosenbjerg/agentd-client)
 [![codecov.io](https://codecov.io/github/rosenbjerg/AgentDeploy/coverage.svg?branch=main)](https://app.codecov.io/gh/rosenbjerg/AgentDeploy)
 
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=rosenbjerg_AgentDeploy&metric=security_rating)](https://sonarcloud.io/dashboard?id=rosenbjerg_AgentDeploy)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=rosenbjerg_AgentDeploy&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=rosenbjerg_AgentDeploy)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=rosenbjerg_AgentDeploy&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=rosenbjerg_AgentDeploy)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=rosenbjerg_AgentDeploy&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=rosenbjerg_AgentDeploy)
+
 
 
 ## Server

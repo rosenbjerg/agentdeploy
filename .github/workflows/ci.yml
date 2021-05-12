@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-    - .github/workflows/**
+    - .github/workflows/ci.yml
     - server/**
     - client/**
   pull_request:
@@ -29,10 +29,6 @@ jobs:
         dotnet-version: 5.0.x
         
     - name: Restore NuGet packages
-      working-directory: ${{ env.server_dir }}
-      run: dotnet restore
-        
-    - name: Restore dependencies
       working-directory: ${{ env.server_dir }}
       run: dotnet restore
       
