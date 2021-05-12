@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+    - .github/workflows/**
+    - client/**
+  pull_request:
+    branches: [ main, release ]
+    paths:
+    - client/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: SonarScan of client sources
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        projectBaseDir: ./client
