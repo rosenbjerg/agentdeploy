@@ -1,4 +1,4 @@
-name: CI
+name: Client SonarScan
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
     - client/**
 
 jobs:
-  build:
+  scan:
     runs-on: ubuntu-latest
     steps:
     
