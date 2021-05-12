@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - .github/workflows/sonarscan-client.yml
+      - .github/workflows/sonarscan.yml
       - client/**
       - server/**
 
