@@ -5,6 +5,7 @@ using System.Reflection;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace AgentDeploy.Yaml
 {
@@ -24,8 +25,10 @@ namespace AgentDeploy.Yaml
                     .Where(member => member.MemberType == MemberTypes.Field && member.Name != "value__")
                     .SelectMany(member =>
                     {
-                        var attributes = member.GetCustomAttributes<YamlEnumMemberAliasAttribute>(false);
-                        var names = attributes.Select(attr => attr.Name).Concat(new[] { member.Name.ToLowerInvariant() });
+                        var attributes = member.GetCustomAttributes<ExtendedYamlEnumMember>(false);
+                        var names = attributes.SelectMany(attr => attr.Aliases).ToHashSet();
+                        names.Add(UnderscoredNamingConvention.Instance.Apply(member.Name));
+                        names.Add(member.Name.ToLowerInvariant());
                         return names.Select(n => (name: n, member));
                     })
                     .Where(pa => !string.IsNullOrEmpty(pa.name))
@@ -43,13 +46,6 @@ namespace AgentDeploy.Yaml
         public void WriteYaml(IEmitter emitter, object value, Type type)
         {
             throw new NotImplementedException();
-            
-            // var enumMember = type.GetMember(value.ToString()).FirstOrDefault();
-            // var yamlValue =
-            //     enumMember?.GetCustomAttributes<YamlEnumMemberAliasAttribute>(true).Select(ema => ema.Name).FirstOrDefault() ??
-            //     enumMember?.Name.ToLowerInvariant() ??
-            //     value.ToString();
-            // emitter.Emit(new Scalar(yamlValue));
         }
     }
 }

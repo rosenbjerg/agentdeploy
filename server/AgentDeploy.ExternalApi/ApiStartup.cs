@@ -3,10 +3,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using AgentDeploy.ExternalApi.Middleware;
 using AgentDeploy.ExternalApi.Websocket;
-using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Services;
-using AgentDeploy.Services.Locking;
 using AgentDeploy.Services.Scripts;
 using AgentDeploy.Services.Websocket;
 using AgentDeploy.Yaml;
@@ -38,29 +36,21 @@ namespace AgentDeploy.ExternalApi
             services.Configure<ForwardedHeadersOptions>(options => options.ForwardedHeaders = ForwardedHeaders.All);
             services.AddDistributedMemoryCache();
 
-            services.AddAgentDeployOptions(_configuration);
-
             AddReaders(services);
 
-            services.AddScoped<IInvocationContextService, InvocationContextService>();
-            services.AddScoped<IScriptExecutionService, ScriptExecutionService>();
-            services.AddScoped<IScriptExecutionFileService, ScriptExecutionFileService>();
-            services.AddScoped<IScriptTransformer, ScriptTransformer>();
-            services.AddSingleton<IScriptInvocationParser, ScriptInvocationParser>();
-            services.AddSingleton<IScriptInvocationLockService, ScriptInvocationLockService>();
-
-            services.AddScriptExecutors();
+            services
+                .AddAgentDeployOptions(_configuration)
+                .AddOperationContextServices()
+                .AddScriptInvocationServices()
+                .AddScriptExecutors()
+                .AddYamlParser();
 
             services.AddHttpContextAccessor();
-            services.AddScoped<IOperationContextService, OperationContextService>();
-            services.AddScoped(provider => provider.GetRequiredService<IOperationContextService>().Create());
-            services.AddScoped<IOperationContext>(provider => provider.GetRequiredService<OperationContext>());
             
             services.AddScoped<IConnectionAccepter, WebsocketConnectionAccepter>();
             services.AddSingleton<IConnectionHub, ConnectionHub>();
 
             services.AddSingleton<IProcessExecutionService, ProcessExecutionService>();
-            services.AddYamlParser();
             
             services
                 .AddControllers()

@@ -12,7 +12,7 @@ namespace AgentDeploy.Models.Scripts
         /// <summary>
         /// Concurrent execution of script allowed for distinct tokens
         /// </summary>
-        [YamlEnumMemberAlias("per-token")]
+        [ExtendedYamlEnumMember]
         PerToken,
         /// <summary>
         /// Concurrent execution not allowed

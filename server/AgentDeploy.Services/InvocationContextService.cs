@@ -16,7 +16,7 @@ namespace AgentDeploy.Services
         private static readonly Dictionary<ScriptArgumentType, Regex?> TypeValidation = new()
         {
             { ScriptArgumentType.Integer, new Regex("^\\d+$", RegexOptions.Compiled) },
-            { ScriptArgumentType.Float, new Regex("^\\d+\\.\\d+$", RegexOptions.Compiled) },
+            { ScriptArgumentType.Decimal, new Regex("^\\d+\\.\\d+$", RegexOptions.Compiled) },
             { ScriptArgumentType.Boolean, new Regex("^true|false$", RegexOptions.Compiled) },
             { ScriptArgumentType.String, null },
         };
@@ -33,7 +33,7 @@ namespace AgentDeploy.Services
         public async Task<ScriptInvocationContext?> Build(ParsedScriptInvocation scriptInvocation)
         {
             var script = HasAccessToScript(scriptInvocation.ScriptName)
-                ? await _scriptReader.Load(scriptInvocation.ScriptName)
+                ? await _scriptReader.Load(scriptInvocation.ScriptName, _operationContext.OperationCancelled)
                 : null;
             if (script == null)
                 return null;
@@ -58,7 +58,7 @@ namespace AgentDeploy.Services
                 var scriptFileArgument = inputFile.Value ?? new ScriptFileDefinition();
                 var providedFile = ValidateFileInput(scriptInvocation.Files, inputFile.Key, scriptFileArgument, failed);
                 if (providedFile == null) continue;
-                acceptedFiles.Add(new AcceptedScriptInvocationFile(inputFile.Key, Path.GetFileName(providedFile.FileName), providedFile.Read));
+                acceptedFiles.Add(new AcceptedScriptInvocationFile(inputFile.Key, Path.GetFileName(providedFile.FileName), scriptFileArgument.FilePreprocessing, providedFile.Read));
             }
             
             if (failed.Any()) throw new InvalidInvocationArgumentsException(failed);
