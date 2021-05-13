@@ -45,14 +45,7 @@ namespace AgentDeploy.Yaml
 
         public void WriteYaml(IEmitter emitter, object value, Type type)
         {
-            var enumMember = type.GetMember(value.ToString()).FirstOrDefault();
-            var yamlValue = enumMember?.GetCustomAttributes<ExtendedYamlEnumMember>(true).SelectMany(ema => ema.Aliases).FirstOrDefault();
-            if (yamlValue == null && enumMember != null)
-                yamlValue = UnderscoredNamingConvention.Instance.Apply(enumMember.Name);
-            else
-                value.ToString();
-            
-            emitter.Emit(new Scalar(yamlValue));
+            throw new NotImplementedException();
         }
     }
 }

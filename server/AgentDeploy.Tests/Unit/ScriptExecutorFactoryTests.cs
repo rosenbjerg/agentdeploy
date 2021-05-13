@@ -24,6 +24,10 @@ namespace AgentDeploy.Tests.Unit
             {
                 scriptInvocationContext.SecureShellOptions = new SecureShellOptions
                 {
+                    Address = "localhost",
+                    Port = 22,
+                    Username = "johndoe",
+                    StrictHostKeyChecking = true,
                     Password = password,
                     PrivateKeyPath = privateKeyPath
                 };

@@ -65,7 +65,6 @@ namespace AgentDeploy.Services.ScriptExecutors
             }
             finally
             {
-                
                 if (_fileService.FileExists(passwordFile))
                     _fileService.DeleteFile(passwordFile);
             }
