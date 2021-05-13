@@ -16,7 +16,7 @@ namespace AgentDeploy.Services
         private static readonly Dictionary<ScriptArgumentType, Regex?> TypeValidation = new()
         {
             { ScriptArgumentType.Integer, new Regex("^\\d+$", RegexOptions.Compiled) },
-            { ScriptArgumentType.Float, new Regex("^\\d+\\.\\d+$", RegexOptions.Compiled) },
+            { ScriptArgumentType.Decimal, new Regex("^\\d+\\.\\d+$", RegexOptions.Compiled) },
             { ScriptArgumentType.Boolean, new Regex("^true|false$", RegexOptions.Compiled) },
             { ScriptArgumentType.String, null },
         };

@@ -26,23 +26,24 @@ namespace AgentDeploy.Services.Scripts
         }
         public async Task<ExecutionResult> Execute(ScriptInvocationContext invocationContext, string directory, CancellationToken cancellationToken)
         {
-            var scriptText = await _scriptTransformer.PrepareScriptFile(invocationContext, directory, cancellationToken);
+            var scriptLines = await _scriptTransformer.PrepareScriptFile(invocationContext, directory, cancellationToken);
+            var processedScriptLines = scriptLines.Select(line => ReplacementUtils.HideSecrets(line, invocationContext)).ToArray();
             var executor = _scriptExecutorFactory.Build(invocationContext);
             _logger.LogDebug($"Executing script using {executor.GetType().Name}");
 
             var output = new LinkedList<ProcessOutput>();
-            var onOutput = await SetupOutputHandlers(invocationContext, scriptText, output, cancellationToken);
+            var onOutput = await SetupOutputHandlers(invocationContext, processedScriptLines, output, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             var exitCode = await executor.Execute(invocationContext, directory, onOutput);
 
             var visibleOutput = invocationContext.Script.ShowOutput ? output : Enumerable.Empty<ProcessOutput>();
-            var visibleCommand = invocationContext.Script.ShowCommand ? ReplacementUtils.HideSecrets(scriptText, invocationContext) : string.Empty;
+            var visibleCommand = invocationContext.Script.ShowCommand ? processedScriptLines : Enumerable.Empty<string>();
             return new ExecutionResult(visibleOutput, visibleCommand, exitCode);
         } 
 
-        private async Task<Action<ProcessOutput>> SetupOutputHandlers(ScriptInvocationContext invocationContext, string scriptText, LinkedList<ProcessOutput> output, CancellationToken cancellationToken)
+        private async Task<Action<ProcessOutput>> SetupOutputHandlers(ScriptInvocationContext invocationContext, IEnumerable<string> scriptLines, LinkedList<ProcessOutput> output, CancellationToken cancellationToken)
         {
             Action<ProcessOutput>? onOutput = null;
             if (invocationContext.WebSocketSessionId != null && invocationContext.Script.ShowOutput)
@@ -53,7 +54,7 @@ namespace AgentDeploy.Services.Scripts
                 {
                     onOutput = processOutput => connection.SendOutput(HideSecretsInOutput(processOutput, invocationContext));
                     if (invocationContext.Script.ShowCommand)
-                        connection.SendScript(ReplacementUtils.HideSecrets(scriptText, invocationContext));
+                        connection.SendScript(scriptLines);
                 }
             }
 

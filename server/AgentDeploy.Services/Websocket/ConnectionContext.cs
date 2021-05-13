@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
@@ -49,9 +50,9 @@ namespace AgentDeploy.Services.Websocket
             return false;
         }
 
-        public void SendScript(string scriptContent)
+        public void SendScript(IEnumerable<string> scriptLines)
         {
-            Connection?.SendMessage(new Message("script", scriptContent));
+            Connection?.SendMessage(new Message("script", scriptLines));
         }
         public void SendOutput(ProcessOutput processOutput)
         {

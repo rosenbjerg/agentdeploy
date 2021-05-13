@@ -31,6 +31,7 @@ program
     .option('--hide-timestamps', 'Omit printing timestamps')
     .option('--hide-headers', 'Omit printing info headers')
     .option('--hide-script', 'Omit printing script (if available)')
+    .option('--hide-script-line-numbers', 'Omit printing line-numbers for script')
     .command('invoke <scriptName> <serverUrl>')
     .description('Invoke named script on remote server')
     .action(onInvokeCommandCalled);
@@ -54,9 +55,10 @@ function printFormatted(output: string, time: string, isError: boolean, hideTime
 }
 
 async function printExecutionResult(executionResult: ExecutionResult, options: AgentDeployOptions): Promise<void> {
-    if (!options.ws && !options.hideScript && executionResult.script) {
+    if (!options.ws && !options.hideScript && executionResult.script.length) {
         if (!options.hideHeaders) console.log(`--- ${chalk.bold('Script')} ------------------------------------------------------------`);
-        console.log(executionResult.script);
+        for (const line of executionResult.script)
+            console.log(line);
     }
 
     if (!options.ws && executionResult.output && executionResult.output.length) {
@@ -83,10 +85,11 @@ function prepareWebsocketOutputHandlers(options: AgentDeployOptions): [ProcessOu
         printFormatted(event.output, event.timestamp, event.error, options.hideTimestamps);
     };
 
-    const onScript = (event: string) => {
+    const onScript = (event: string[]) => {
         if (options.hideScript) return;
         if (!options.hideHeaders) console.log(`--- ${chalk.bold('Script')} ------------------------------------------------------------`);
-        printFormatted(event, '', false, true);
+        for (const line of event)
+            printFormatted(line, '', false, true);
     }
 
     return [onOutput, onScript];

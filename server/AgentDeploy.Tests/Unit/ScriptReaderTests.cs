@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Models.Scripts;
 using AgentDeploy.Services;
@@ -39,11 +38,17 @@ namespace AgentDeploy.Tests.Unit
             Assert.AreEqual("echo test", script.Command);
         }
         
-        [TestCase("full", ConcurrentExecutionLevel.Full)]
-        [TestCase("per-token", ConcurrentExecutionLevel.PerToken)]
-        [TestCase("pertoken", ConcurrentExecutionLevel.PerToken)]
-        [TestCase("none", ConcurrentExecutionLevel.None)]
-        public async Task TestScriptReader_ParseConcurrencyLevel(string yamlText, ConcurrentExecutionLevel concurrentExecutionLevel)
+        [TestCase("integer", ScriptArgumentType.Integer)]
+        [TestCase("int", ScriptArgumentType.Integer)]
+        
+        [TestCase("decimal", ScriptArgumentType.Decimal)]
+        [TestCase("float", ScriptArgumentType.Decimal)]
+        
+        [TestCase("string", ScriptArgumentType.String)]
+        
+        [TestCase("boolean", ScriptArgumentType.Boolean)]
+        [TestCase("bool", ScriptArgumentType.Boolean)]
+        public async Task TestScriptReader_ParseScriptArgumentType(string yamlText, ScriptArgumentType scriptArgumentType)
         {
             var directoryOptions = new DirectoryOptions { Scripts = "test", Tokens = "test" };
             var deserializer = new DeserializerBuilder()
@@ -52,7 +57,7 @@ namespace AgentDeploy.Tests.Unit
                 .Build();
             var fileReaderMock = new Mock<IFileService>();
             fileReaderMock.Setup(s => s.FindFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>())).Returns("test");
-            fileReaderMock.Setup(s => s.ReadAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync($"command: echo test\nconcurrency: {yamlText}");
+            fileReaderMock.Setup(s => s.ReadAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync($"variables:\n  test:\n    type: {yamlText}\ncommand: echo test");
             var scriptReaderLoggerMock = new Mock<ILogger<ScriptReader>>();
             
             var scriptReader = new ScriptReader(directoryOptions, deserializer, fileReaderMock.Object, scriptReaderLoggerMock.Object);
@@ -62,7 +67,8 @@ namespace AgentDeploy.Tests.Unit
             Assert.NotNull(script);
             Assert.AreEqual("test", script!.Name);
             Assert.AreEqual("echo test", script.Command);
-            Assert.AreEqual(concurrentExecutionLevel, script.Concurrency);
+            Assert.AreEqual(1, script.Variables.Count);
+            Assert.AreEqual(scriptArgumentType, script.Variables["test"]!.Type);
         }
         
         [Test]

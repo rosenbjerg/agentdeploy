@@ -1,5 +1,3 @@
-using System;
-
 namespace AgentDeploy.Models.Scripts
 {
     public class ScriptFileDefinition

@@ -1,6 +1,6 @@
 
 export type ProcessOutputHandler = (event: ProcessOutput) => void;
-export type ScriptReceivedHandler = (event: string) => void;
+export type ScriptReceivedHandler = (event: string[]) => void;
 export type ErrorCollection = { [name: string] : string[] }
 
 export interface AgentDeployOptions {
@@ -14,6 +14,7 @@ export interface AgentDeployOptions {
     hideTimestamps: boolean
     hideHeaders: boolean
     hideScript: boolean
+    hideScriptLineNumbers: boolean
 }
 
 export interface ProcessOutput {
@@ -24,7 +25,7 @@ export interface ProcessOutput {
 
 export interface ExecutionResult {
     output: ProcessOutput[]
-    script: string
+    script: string[]
     exitCode: number
 }
 

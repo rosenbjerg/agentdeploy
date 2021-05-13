@@ -27,8 +27,12 @@ namespace AgentDeploy.Services
                 var key = match.Groups[1].Value;
                 if (replacements.TryGetValue(key, out var value))
                     return value;
-                return match.Value;
+                return $"$({key})";
             });
+        }
+        public static string ReplaceVariable(string script, string key, string value)
+        {
+            return script.Replace($"$({key})", value);
         }
     }
 }

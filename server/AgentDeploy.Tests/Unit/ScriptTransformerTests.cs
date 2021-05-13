@@ -40,7 +40,7 @@ namespace AgentDeploy.Tests.Unit
 
             var command = await scriptTransformer.PrepareScriptFile(scriptInvocationContext, "test", CancellationToken.None);
             
-            Assert.AreEqual("echo Test", command);
+            Assert.AreEqual("echo Test", command[0]);
             fileService.Verify(s => s.WriteText(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
     }

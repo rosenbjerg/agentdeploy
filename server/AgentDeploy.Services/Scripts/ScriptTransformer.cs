@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -19,17 +18,17 @@ namespace AgentDeploy.Services.Scripts
             _fileService = fileService;
         }
         
-        public async Task<string> PrepareScriptFile(ScriptInvocationContext invocationContext, string directory,
+        public async Task<string[]> PrepareScriptFile(ScriptInvocationContext invocationContext, string directory,
             CancellationToken cancellationToken)
         {
             var scriptText = ReplacementUtils.ReplaceVariables(invocationContext.Script.Command, invocationContext.Arguments.ToDictionary(arg => arg.Name, arg => arg.Value));
             var textVariables = new List<string>(invocationContext.EnvironmentVariables.Select(BuildEnvironmentVariable)) { scriptText.Trim() };
-            var finalText =  string.Join(Environment.NewLine, textVariables);
+            var finalText =  string.Join(_executionOptions.Linebreak, textVariables);
 
             var scriptFilePath = BuildScriptPath(directory);
             await _fileService.WriteText(scriptFilePath, finalText, cancellationToken);
             
-            return scriptText;
+            return scriptText.Split('\r', '\n');
         }
 
         public string BuildScriptPath(string directory)
@@ -41,8 +40,7 @@ namespace AgentDeploy.Services.Scripts
 
         public string BuildScriptArgument(string scriptFilePath)
         {
-            var variables = new Dictionary<string, string> { { "ScriptPath", PathUtils.EscapeWhitespaceInPath(scriptFilePath, '\'') } };
-            var fileArgument = ReplacementUtils.ReplaceVariables(_executionOptions.FileArgumentFormat, variables);
+            var fileArgument = ReplacementUtils.ReplaceVariable(_executionOptions.FileArgumentFormat, "ScriptPath", PathUtils.EscapeWhitespaceInPath(scriptFilePath, '\''));
             return fileArgument;
         }
 

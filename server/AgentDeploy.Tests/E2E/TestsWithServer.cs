@@ -241,7 +241,8 @@ namespace AgentDeploy.Tests.E2E
         }
         
         [TestCase("127.0.0.1", true)]
-        [TestCase("127.0.0.1-127.0.0.10", true)]
+        [TestCase("127.0.0.0-127.0.0.10", true)]
+        [TestCase("127.0.0.2-127.0.0.10", false)]
         [TestCase("128.0.0.1", false)]
         [TestCase("128.0.0.1-128.0.0.10", false)]
         public async Task TrustedIpFilter(string trustedIp, bool success)
@@ -307,6 +308,23 @@ namespace AgentDeploy.Tests.E2E
             Assert.Zero(exitCode);
             Assert.AreEqual("testing-123", instance.OutputData[0]);
             Assert.AreEqual(1, instance.OutputData.Count);
+        }
+        
+        [Test]
+        public async Task LineNumberFormat()
+        {
+            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo testing-123\n\necho again", ShowCommand = true, ShowOutput = false });
+            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            
+            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
+            
+            Assert.Zero(exitCode);
+            Assert.AreEqual(3, instance.OutputData.Count);
+            Assert.AreEqual("1 | echo testing-123", instance.OutputData[0]);
+            Assert.AreEqual("2 | ", instance.OutputData[1]);
+            Assert.AreEqual("3 | echo again", instance.OutputData[2]);
         }
         
         [TestCase(10, 100, null, true)]
@@ -578,11 +596,11 @@ namespace AgentDeploy.Tests.E2E
         [TestCase("1200test", ScriptArgumentType.Integer, false)]
         [TestCase("test", ScriptArgumentType.Integer, false)]
         
-        [TestCase("12.1", ScriptArgumentType.Float, true)]
-        [TestCase("test12.1", ScriptArgumentType.Float, false)]
-        [TestCase("12.1test", ScriptArgumentType.Float, false)]
-        [TestCase("1200", ScriptArgumentType.Float, false)]
-        [TestCase("test", ScriptArgumentType.Float, false)]
+        [TestCase("12.1", ScriptArgumentType.Decimal, true)]
+        [TestCase("test12.1", ScriptArgumentType.Decimal, false)]
+        [TestCase("12.1test", ScriptArgumentType.Decimal, false)]
+        [TestCase("1200", ScriptArgumentType.Decimal, false)]
+        [TestCase("test", ScriptArgumentType.Decimal, false)]
         
         [TestCase("12.1", ScriptArgumentType.String, true)]
         [TestCase("1200", ScriptArgumentType.String, true)]
@@ -643,7 +661,7 @@ namespace AgentDeploy.Tests.E2E
             var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
             tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 --hide-headers --hide-timestamps -t test {(providedAsSecret ? "-s" : "-v")} test_var={secret}");
+            var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 --hide-headers --hide-timestamps --hide-script-line-numbers -t test {(providedAsSecret ? "-s" : "-v")} test_var={secret}");
 
             var shouldBeSecret = definedAsSecret || providedAsSecret;
             Assert.Zero(exitCode);

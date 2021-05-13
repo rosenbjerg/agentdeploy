@@ -12,15 +12,25 @@ import {
     ScriptReceivedHandler
 } from "./types";
 
-function subscribeToWebsocketEvents(wsUrl: string, onOutput: ProcessOutputHandler, onScript: ScriptReceivedHandler): void {
+function subscribeToWebsocketEvents(wsUrl: string, onOutput: ProcessOutputHandler, onScript: ScriptReceivedHandler, hideScriptLineNumbers: boolean): void {
     const websocket = new WebSocket(wsUrl);
     websocket.onmessage = event => {
         const msg = JSON.parse(event.data.toString());
         switch (msg.event) {
             case 'output': return onOutput(msg.data);
-            case 'script': return onScript(msg.data);
+            case 'script':
+                if (!msg.data || msg.data.length === 0) break;
+                return onScript(formatScript(msg.data, hideScriptLineNumbers));
         }
     };
+}
+
+function formatScript(scriptLines: string[], hideScriptLineNumbers: boolean) {
+    if (!hideScriptLineNumbers && scriptLines){
+        const length = scriptLines.length.toString().length;
+        return scriptLines.map((line, i) => `${(i + 1).toString().padStart(length)} | ${line}`);
+    }
+    return scriptLines;
 }
 
 export default async function invokeScript(scriptName: string, serverUrl: string, options: AgentDeployOptions, onOutput: ProcessOutputHandler, onScript: ScriptReceivedHandler, abortSignal?: AbortSignal | null): Promise<ExecutionResult> {
@@ -37,12 +47,14 @@ export default async function invokeScript(scriptName: string, serverUrl: string
 
     if (options.ws) {
         const wsUrl = `${serverUrl}/websocket/connect/${websocketId}`.replace('https', 'wss').replace('http', 'ws');
-        subscribeToWebsocketEvents(wsUrl, onOutput, onScript);
+        subscribeToWebsocketEvents(wsUrl, onOutput, onScript, options.hideScriptLineNumbers);
     }
 
     const response = await responsePromise;
     if (response.status === 200) {
-        return await response.json() as ExecutionResult;
+        const result = await response.json() as ExecutionResult;
+        result.script = formatScript(result.script, options.hideScriptLineNumbers);
+        return result;
     }
     else {
         switch (response.status) {
