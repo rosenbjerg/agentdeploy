@@ -1,10 +1,19 @@
-﻿namespace AgentDeploy.Models.Scripts
+﻿using AgentDeploy.Yaml;
+
+namespace AgentDeploy.Models.Scripts
 {
+    [CustomYamlEnum]
     public enum ScriptArgumentType
     {
-        Integer,
-        Float,
         String,
+        
+        [ExtendedYamlEnumMember("int")]
+        Integer,
+        
+        [ExtendedYamlEnumMember("float")]
+        Decimal,
+        
+        [ExtendedYamlEnumMember("bool")]
         Boolean
     }
 }
