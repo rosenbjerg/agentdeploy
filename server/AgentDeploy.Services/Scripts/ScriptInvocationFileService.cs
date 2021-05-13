@@ -50,7 +50,7 @@ namespace AgentDeploy.Services.Scripts
                 var preprocessResult = await _processExecutionService.Invoke(_executionOptions.Shell, arguments, null);
                 if (preprocessResult.ExitCode != 0)
                 {
-                    _logger.LogWarning("Preprocessing of {File} failed with non-zero exit-code {ExitCode}: {Errors}", preprocessResult.ExitCode, preprocessResult.Errors);
+                    _logger.LogWarning("Preprocessing of {File} failed with non-zero exit-code {ExitCode}: {Errors}", file.Name, preprocessResult.ExitCode, preprocessResult.Errors);
                     throw new FilePreprocessingFailedException(file.Name, preprocessResult.ExitCode, preprocessResult.Errors);
                 }
             }

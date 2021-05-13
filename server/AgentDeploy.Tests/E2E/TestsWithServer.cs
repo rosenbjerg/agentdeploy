@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -325,6 +326,36 @@ namespace AgentDeploy.Tests.E2E
             Assert.AreEqual("1 | echo testing-123", instance.OutputData[0]);
             Assert.AreEqual("2 | ", instance.OutputData[1]);
             Assert.AreEqual("3 | echo again", instance.OutputData[2]);
+        }
+        
+        [Test]
+        public async Task PreprocessingFailed()
+        {
+            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo testing-123\n\necho again", Files = new Dictionary<string, ScriptFileDefinition?>
+            {
+                {"test", new ScriptFileDefinition
+                {
+                    FilePreprocessing = "exit 1"
+                }}
+            }});
+            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+
+            var tempFile = Path.Combine(Path.GetTempPath(), "test_file.ext");
+            await File.WriteAllTextAsync(tempFile, "test");
+            try
+            {
+                var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test -f test={tempFile}");
+                Assert.NotZero(exitCode);
+                Assert.AreEqual(3, instance.ErrorData.Count);
+                Assert.AreEqual("File preprocessing failed with non-zero exit-code: 1", instance.ErrorData[0]);
+                Assert.AreEqual("test:", instance.ErrorData[1]);
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
         }
         
         [TestCase(10, 100, null, true)]
