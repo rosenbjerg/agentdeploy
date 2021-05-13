@@ -49,13 +49,13 @@ namespace AgentDeploy.Services.ScriptExecutors
         {
             return $"{secureShellOptions.Username}@{secureShellOptions.Address}";
         }
-        
-        public abstract Task<bool> Copy(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput);
-        public abstract Task<int> Execute(SecureShellOptions ssh, string sourceDirectory, string fileArgument, Action<ProcessOutput> onOutput);
-        public abstract Task Cleanup(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput);
+
+        protected abstract Task<bool> Copy(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput);
+        protected abstract Task<int> Execute(SecureShellOptions ssh, string sourceDirectory, string fileArgument, Action<ProcessOutput> onOutput);
+        protected abstract Task Cleanup(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput);
 
         protected string GetExecuteCommand(string fileArgument) => $"{ExecutionOptions.Shell} {fileArgument}";
-        protected string GetCleanupCommand(string remoteDirectory) => $"rm -r {PathUtils.EscapeWhitespaceInPath(remoteDirectory, '\'')}";
+        protected static string GetCleanupCommand(string remoteDirectory) => $"rm -r {PathUtils.EscapeWhitespaceInPath(remoteDirectory, '\'')}";
 
         private async Task<int> ExecuteInternal(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {

@@ -50,34 +50,42 @@ namespace AgentDeploy.ExternalApi.Websocket
                 var buffer = ArrayPool<byte>.Shared.Rent(4096);
                 while (!_operationContext.OperationCancelled.IsCancellationRequested && _websocket.State is WebSocketState.Connecting or WebSocketState.Open)
                 {
-                    WebSocketReceiveResult message;
-                    try
-                    {
-                        message = await _websocket.ReceiveAsync(new ArraySegment<byte>(buffer), _httpContext.RequestAborted);
-                    }
-                    catch (OperationCanceledException) { break; }
-                    catch (WebSocketException) { break; }
-                    catch (IOException) { break; }
-                
-                    if (message.MessageType == WebSocketMessageType.Close)
+                    if (await ReceiveMessages(buffer))
                         break;
-
-                    if (message.EndOfMessage && message.MessageType == WebSocketMessageType.Text)
-                    {
-                        try
-                        {
-                            var parsed = JsonSerializer.Deserialize<Message>(buffer);
-                            if (parsed != null)
-                                OnMessageReceived(parsed);
-                        }
-                        catch (JsonException) { continue; }
-                    }
                 }
             }
             finally
             {
                 OnDisconnected();
             }
+        }
+
+        private async Task<bool> ReceiveMessages(byte[] buffer)
+        {
+            WebSocketReceiveResult message;
+            try
+            {
+                message = await _websocket!.ReceiveAsync(new ArraySegment<byte>(buffer), _httpContext.RequestAborted);
+            }
+            catch (OperationCanceledException) { return true; }
+            catch (WebSocketException) { return true; }
+            catch (IOException) { return true; }
+
+            if (message.MessageType == WebSocketMessageType.Close)
+                return true;
+
+            if (message.EndOfMessage && message.MessageType == WebSocketMessageType.Text)
+            {
+                try
+                {
+                    var parsed = JsonSerializer.Deserialize<Message>(buffer);
+                    if (parsed != null)
+                        OnMessageReceived(parsed);
+                }
+                catch (JsonException) { return false; }
+            }
+
+            return false;
         }
     }
 }

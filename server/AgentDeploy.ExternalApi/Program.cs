@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace AgentDeploy.ExternalApi
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {

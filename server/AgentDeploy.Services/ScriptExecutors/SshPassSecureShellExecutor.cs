@@ -17,8 +17,8 @@ namespace AgentDeploy.Services.ScriptExecutors
         {
             _fileService = fileService;
         }
-        
-        public override async Task<bool> Copy(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
+
+        protected override async Task<bool> Copy(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
             var sourceDir = PathUtils.Combine(ExecutionOptions.DirectorySeparatorChar, ExecutionOptions.TempDir, sourceDirectory);
             var remoteDir = PathUtils.EscapeWhitespaceInPath(remoteDirectory, '\'');
@@ -31,7 +31,7 @@ namespace AgentDeploy.Services.ScriptExecutors
             });
         }
 
-        public override async Task<int> Execute(SecureShellOptions ssh, string sourceDirectory, string fileArgument, Action<ProcessOutput> onOutput)
+        protected override async Task<int> Execute(SecureShellOptions ssh, string sourceDirectory, string fileArgument, Action<ProcessOutput> onOutput)
         {
             var sourceDir = PathUtils.Combine(ExecutionOptions.DirectorySeparatorChar, ExecutionOptions.TempDir, sourceDirectory);
             return await UsePasswordFile(ssh, sourceDir, async passwordFile =>
@@ -43,7 +43,7 @@ namespace AgentDeploy.Services.ScriptExecutors
             });
         }
 
-        public override async Task Cleanup(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
+        protected override async Task Cleanup(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
             var sourceDir = PathUtils.Combine(ExecutionOptions.DirectorySeparatorChar, ExecutionOptions.TempDir, sourceDirectory);
             await UsePasswordFile(ssh, sourceDir, async passwordFile =>

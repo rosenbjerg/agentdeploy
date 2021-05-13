@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -28,7 +29,7 @@ namespace AgentDeploy.Services.Scripts
             var scriptFilePath = BuildScriptPath(directory);
             await _fileService.WriteText(scriptFilePath, finalText, cancellationToken);
             
-            return scriptText.Split('\r', '\n');
+            return scriptText.Split('\r', '\n', StringSplitOptions.None);
         }
 
         public string BuildScriptPath(string directory)

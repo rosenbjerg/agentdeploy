@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace AgentDeploy.Models.Exceptions
 {
     [Serializable]
-    public class InvalidInvocationArgumentsException : Exception
+    public sealed class InvalidInvocationArgumentsException : Exception
     {
         public List<InvocationArgumentError> Errors { get; }
 
@@ -13,7 +13,7 @@ namespace AgentDeploy.Models.Exceptions
         {
             Errors = errors;
         }
-        
+
         private InvalidInvocationArgumentsException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

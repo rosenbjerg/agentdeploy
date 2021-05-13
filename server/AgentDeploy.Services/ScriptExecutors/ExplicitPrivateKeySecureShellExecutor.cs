@@ -14,7 +14,7 @@ namespace AgentDeploy.Services.ScriptExecutors
         {
         }
 
-        public override async Task<bool> Copy(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
+        protected override async Task<bool> Copy(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
             var privateKeyPath = PathUtils.EscapeWhitespaceInPath(ssh.PrivateKeyPath!);
             var scpCommand = $"-rqi {privateKeyPath} {StrictHostKeyChecking(ssh)} -P {ssh.Port} {sourceDirectory} {Credentials(ssh)}:{PathUtils.EscapeWhitespaceInPath(remoteDirectory, '\'')}";
@@ -22,7 +22,7 @@ namespace AgentDeploy.Services.ScriptExecutors
             return result.ExitCode == 0;
         }
 
-        public override async Task<int> Execute(SecureShellOptions ssh, string sourceDirectory, string fileArgument, Action<ProcessOutput> onOutput)
+        protected override async Task<int> Execute(SecureShellOptions ssh, string sourceDirectory, string fileArgument, Action<ProcessOutput> onOutput)
         {
             var privateKeyPath = PathUtils.EscapeWhitespaceInPath(ssh.PrivateKeyPath!);
             var sshCommand = $"-qtti {privateKeyPath} {StrictHostKeyChecking(ssh)} -p {ssh.Port} {Credentials(ssh)} \"{GetExecuteCommand(fileArgument)}\"";
@@ -30,7 +30,7 @@ namespace AgentDeploy.Services.ScriptExecutors
             return result.ExitCode;
         }
 
-        public override async Task Cleanup(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
+        protected override async Task Cleanup(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
             var privateKeyPath = PathUtils.EscapeWhitespaceInPath(ssh.PrivateKeyPath!);
             var cleanupCommand = $"-i {privateKeyPath} {StrictHostKeyChecking(ssh)} -p {ssh.Port} {Credentials(ssh)} \"{GetCleanupCommand(remoteDirectory)}\"";

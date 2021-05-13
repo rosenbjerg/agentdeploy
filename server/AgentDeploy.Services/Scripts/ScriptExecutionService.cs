@@ -62,7 +62,7 @@ namespace AgentDeploy.Services.Scripts
             return onOutput;
         }
 
-        private ProcessOutput HideSecretsInOutput(ProcessOutput processOutput, ScriptInvocationContext scriptInvocationContext)
+        private static ProcessOutput HideSecretsInOutput(ProcessOutput processOutput, ScriptInvocationContext scriptInvocationContext)
         {
             var data = ReplacementUtils.HideSecrets(processOutput.Output, scriptInvocationContext);
             return new ProcessOutput(processOutput.Timestamp, data, processOutput.Error);
