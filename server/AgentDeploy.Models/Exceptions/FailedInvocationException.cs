@@ -15,7 +15,7 @@ namespace AgentDeploy.Models.Exceptions
             Errors = errors;
         }
 
-        private FailedInvocationException(SerializationInfo info, StreamingContext context)
+        protected FailedInvocationException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             Errors = (Dictionary<string, string[]>) info.GetValue($"{nameof(FailedInvocationValidationException)}.{nameof(Errors)}", typeof(Dictionary<string, string[]>))!;
