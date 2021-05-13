@@ -10,9 +10,7 @@ namespace AgentDeploy.Models.Options
         public char DirectorySeparatorChar { get; set; } = Path.DirectorySeparatorChar;
         public string TempDir { get; set; } = Path.GetTempPath();
         
-        public string? DefaultFilePreprocessing { get; set; } = ClamAvEnabled
-            ? "clamscan -i $(FilePath)" 
-            : null;
+        public string? DefaultFilePreprocessing { get; set; } = ClamAvEnabled ? "clamscan -i $(FilePath)" : null;
         
         /// <summary>
         /// Which shell to execute the command file with

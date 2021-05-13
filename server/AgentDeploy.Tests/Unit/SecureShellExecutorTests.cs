@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
@@ -7,7 +6,6 @@ using AgentDeploy.Models.Tokens;
 using AgentDeploy.Services;
 using AgentDeploy.Services.ScriptExecutors;
 using AgentDeploy.Services.Scripts;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
 
@@ -116,27 +114,6 @@ namespace AgentDeploy.Tests.Unit
             processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} scp -rq -o StrictHostKeyChecking=no -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>()), Times.Once);
             processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -qtt -o StrictHostKeyChecking=no -p 22 {username}@host.docker.internal \"/bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>()), Times.Once);
             processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -o StrictHostKeyChecking=no -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>()), Times.Once);
-        }
-        [TestCase("user", "/source dir")]
-        [TestCase("admin", "sourceDir")]
-        public async Task FilePreprocessingTests(string username, string sourceDir)
-        {
-            var executionOptions = new ExecutionOptions
-            {
-                DirectorySeparatorChar = '/',
-                DefaultFilePreprocessing = "clamscan -i $(FilePath)"
-            };
-            var processExecutionServiceMock = new Mock<IProcessExecutionService>();
-            var fileService = new Mock<IFileService>();
-            processExecutionServiceMock
-                .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>()))
-                .ReturnsAsync(new ProcessExecutionResult(0, Array.Empty<string>(), Array.Empty<string>()));
-            
-            var service = new ScriptInvocationFileService(executionOptions, processExecutionServiceMock.Object, fileService.Object, NullLogger<ScriptInvocationFileService>.Instance);
-            await service.DownloadFiles(new ScriptInvocationContext(), "testDir", CancellationToken.None);
-            
-            processExecutionServiceMock.Verify(s => s.Invoke("b", $"-f {passwordFile} ssh -o StrictHostKeyChecking=no -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>()), Times.Once);
-
         }
     }
 }

@@ -43,6 +43,7 @@ namespace AgentDeploy.ExternalApi
             AddReaders(services);
 
             services.AddScoped<IInvocationContextService, InvocationContextService>();
+            services.AddScoped<IScriptExecutionService, ScriptExecutionService>();
             services.AddScoped<IScriptInvocationService, ScriptInvocationService>();
             services.AddScoped<IScriptInvocationFileService, ScriptInvocationFileService>();
             services.AddScoped<IScriptTransformer, ScriptTransformer>();

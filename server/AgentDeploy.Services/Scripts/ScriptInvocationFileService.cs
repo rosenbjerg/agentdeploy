@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
@@ -47,11 +45,9 @@ namespace AgentDeploy.Services.Scripts
             if (!string.IsNullOrEmpty(preprocessing))
             {
                 _logger.LogDebug("Preprocessing {File} with {Preprocessor}", filePath, preprocessing);
-                var preprocess = ReplacementUtils.ReplaceVariables(preprocessing, new Dictionary<string, string>
-                {
-                    { "FilePath", PathUtils.EscapeWhitespaceInPath(filePath) }
-                });
-                var preprocessResult = await _processExecutionService.Invoke(_executionOptions.Shell, preprocess, null);
+                var preprocess = ReplacementUtils.ReplaceVariable(preprocessing, "FilePath", PathUtils.EscapeWhitespaceInPath(filePath, '\''));
+                var arguments = ReplacementUtils.ReplaceVariable(_executionOptions.CommandArgumentFormat, "Command", preprocess);
+                var preprocessResult = await _processExecutionService.Invoke(_executionOptions.Shell, arguments, null);
                 if (preprocessResult.ExitCode != 0)
                 {
                     _logger.LogWarning("Preprocessing of {File} failed with non-zero exit-code {ExitCode}: {Errors}", preprocessResult.ExitCode, preprocessResult.Errors);
