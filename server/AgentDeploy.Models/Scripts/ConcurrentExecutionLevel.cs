@@ -2,7 +2,7 @@ using AgentDeploy.Yaml;
 
 namespace AgentDeploy.Models.Scripts
 {
-    [CustomYamlEnum]
+    [ExtendedYamlEnum]
     public enum ConcurrentExecutionLevel
     {
         /// <summary>

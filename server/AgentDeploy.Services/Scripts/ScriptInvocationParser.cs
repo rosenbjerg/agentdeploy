@@ -19,7 +19,7 @@ namespace AgentDeploy.Services.Scripts
                 EnvironmentVariables = ParseEnvironmentVariables(scriptInvocation.EnvironmentVariables, failed),
                 Files = ParseFormFiles(scriptInvocation.Files, failed)
             };
-            if (failed.Any()) throw new InvalidInvocationArgumentsException(failed);
+            if (failed.Any()) throw new FailedInvocationValidationException(failed);
 
             return result;
         }

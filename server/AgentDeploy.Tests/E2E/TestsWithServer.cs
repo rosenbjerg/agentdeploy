@@ -134,7 +134,7 @@ namespace AgentDeploy.Tests.E2E
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -v test_var=test test_var=test2");
             
             Assert.NotZero(exitCode);
-            Assert.AreEqual("One or more validation errors occured:", instance.ErrorData[0]);
+            Assert.AreEqual("One or more validation errors occured", instance.ErrorData[0]);
             Assert.AreEqual("test_var:", instance.ErrorData[1]);
             Assert.AreEqual("  Variable with same key already provided", instance.ErrorData[2]);
         }
@@ -157,7 +157,7 @@ namespace AgentDeploy.Tests.E2E
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -s test_var=test test_var=test2");
             
             Assert.NotZero(exitCode);
-            Assert.AreEqual("One or more validation errors occured:", instance.ErrorData[0]);
+            Assert.AreEqual("One or more validation errors occured", instance.ErrorData[0]);
             Assert.AreEqual("test_var:", instance.ErrorData[1]);
             Assert.AreEqual("  Secret variable with same key already provided", instance.ErrorData[2]);
         }
@@ -180,7 +180,7 @@ namespace AgentDeploy.Tests.E2E
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -s test_var=test -e test=123 test=321");
             
             Assert.NotZero(exitCode);
-            Assert.AreEqual("One or more validation errors occured:", instance.ErrorData[0]);
+            Assert.AreEqual("One or more validation errors occured", instance.ErrorData[0]);
             Assert.AreEqual("test:", instance.ErrorData[1]);
             Assert.AreEqual("  Environment variable with same key already provided", instance.ErrorData[2]);
         }
@@ -415,7 +415,7 @@ namespace AgentDeploy.Tests.E2E
             
             Assert.NotZero(exitCode);
             Assert.AreEqual(3, instance.ErrorData.Count);
-            Assert.AreEqual("One or more validation errors occured:", instance.ErrorData[0]);
+            Assert.AreEqual("One or more validation errors occured", instance.ErrorData[0]);
             Assert.AreEqual("test_var:", instance.ErrorData[1]);
             Assert.AreEqual("  No value provided", instance.ErrorData[2]);
         }
@@ -475,7 +475,7 @@ namespace AgentDeploy.Tests.E2E
             
             Assert.NotZero(exitCode);
             Assert.AreEqual(3, instance.ErrorData.Count);
-            Assert.AreEqual("One or more validation errors occured:", instance.ErrorData[0]);
+            Assert.AreEqual("One or more validation errors occured", instance.ErrorData[0]);
             Assert.AreEqual("test_var:", instance.ErrorData[1]);
             Assert.AreEqual("  Variable is locked and can not be provided", instance.ErrorData[2]);
         }
@@ -607,7 +607,7 @@ namespace AgentDeploy.Tests.E2E
             {
                 Assert.NotZero(exitCode);
                 Assert.AreEqual(3, instance.ErrorData.Count);
-                Assert.AreEqual("One or more validation errors occured:", instance.ErrorData[0]);
+                Assert.AreEqual("One or more validation errors occured", instance.ErrorData[0]);
                 Assert.AreEqual("test_var:", instance.ErrorData[1]);
                 if (string.IsNullOrEmpty(scriptConstraint) && !string.IsNullOrEmpty(tokenConstraint))
                 {

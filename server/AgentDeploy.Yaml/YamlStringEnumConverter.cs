@@ -13,7 +13,7 @@ namespace AgentDeploy.Yaml
     {
         private static readonly Dictionary<Type, Dictionary<string, MemberInfo>> TypeCache = new();
         
-        public bool Accepts(Type type) => type.IsEnum && type.GetCustomAttribute<CustomYamlEnumAttribute>() != null;
+        public bool Accepts(Type type) => type.IsEnum && type.GetCustomAttribute<ExtendedYamlEnumAttribute>() != null;
 
         public object ReadYaml(IParser parser, Type type)
         {
@@ -25,7 +25,7 @@ namespace AgentDeploy.Yaml
                     .Where(member => member.MemberType == MemberTypes.Field && member.Name != "value__")
                     .SelectMany(member =>
                     {
-                        var attributes = member.GetCustomAttributes<ExtendedYamlEnumMember>(false);
+                        var attributes = member.GetCustomAttributes<ExtendedYamlEnumMemberAttribute>(false);
                         var names = attributes.SelectMany(attr => attr.Aliases).ToHashSet();
                         names.Add(UnderscoredNamingConvention.Instance.Apply(member.Name));
                         names.Add(member.Name.ToLowerInvariant());

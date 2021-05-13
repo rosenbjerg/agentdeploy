@@ -29,7 +29,7 @@ namespace AgentDeploy.Services.Scripts
             var scriptFilePath = BuildScriptPath(directory);
             await _fileService.WriteText(scriptFilePath, finalText, cancellationToken);
             
-            return scriptText.Split('\r', '\n', StringSplitOptions.None);
+            return scriptText.Split(new []{'\r', '\n'}, StringSplitOptions.None);
         }
 
         public string BuildScriptPath(string directory)

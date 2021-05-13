@@ -61,7 +61,7 @@ namespace AgentDeploy.Services
                 acceptedFiles.Add(new AcceptedScriptInvocationFile(inputFile.Key, Path.GetFileName(providedFile.FileName), scriptFileArgument.FilePreprocessing, providedFile.Read));
             }
             
-            if (failed.Any()) throw new InvalidInvocationArgumentsException(failed);
+            if (failed.Any()) throw new FailedInvocationValidationException(failed);
 
             return new ScriptInvocationContext
             {

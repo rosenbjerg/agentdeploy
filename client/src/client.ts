@@ -26,7 +26,7 @@ function subscribeToWebsocketEvents(wsUrl: string, onOutput: ProcessOutputHandle
 }
 
 function formatScript(scriptLines: string[], hideScriptLineNumbers: boolean) {
-    if (!hideScriptLineNumbers && scriptLines){
+    if (!hideScriptLineNumbers && scriptLines.length){
         const length = scriptLines.length.toString().length;
         return scriptLines.map((line, i) => `${(i + 1).toString().padStart(length)} | ${line}`);
     }

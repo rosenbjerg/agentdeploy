@@ -37,23 +37,12 @@ namespace AgentDeploy.ExternalApi.Controllers
                 var result = await _scriptInvocationService.Invoke(executionContext);
                 return Ok(result);
             }
-            catch (InvalidInvocationArgumentsException e)
+            catch (FailedInvocationException e)
             {
                 return BadRequest(new FailedInvocation
                 {
-                    Title = "One or more validation errors occured:",
-                    Errors = e.Errors.GroupBy(error => error.Name, error => error.Error).ToDictionary(g => g.Key, g => g.ToArray())
-                });
-            }
-            catch (FilePreprocessingFailedException e)
-            {
-                return BadRequest(new FailedInvocation
-                {
-                    Title = $"File preprocessing failed with non-zero exit-code: {e.ExitCode}",
-                    Errors = new Dictionary<string, string[]>
-                    {
-                        { e.Name, e.ErrorOutput.ToArray() }
-                    }
+                    Title = e.Message,
+                    Errors = e.Errors
                 });
             }
             catch (ScriptLockedException e)

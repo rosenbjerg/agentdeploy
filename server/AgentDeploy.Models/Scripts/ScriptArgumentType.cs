@@ -2,7 +2,7 @@
 
 namespace AgentDeploy.Models.Scripts
 {
-    [CustomYamlEnum]
+    [ExtendedYamlEnum]
     public enum ScriptArgumentType
     {
         String,
