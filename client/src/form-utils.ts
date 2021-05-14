@@ -1,5 +1,5 @@
-import { createReadStream, existsSync } from 'fs';
-import { basename } from 'path';
+import {createReadStream, existsSync} from 'fs';
+import {basename} from 'path';
 import * as FormData from 'form-data';
 import {AgentDeployOptions, ErrorCollection, InvocationError} from "./types";
 
@@ -10,7 +10,7 @@ function createForm(scriptName: string, options: AgentDeployOptions): FormData {
     formdata.append('scriptName', scriptName);
 
     const errors: ErrorCollection = {};
-    const addError = (name, error) => {
+    const addError = (name: string, error: string) => {
         if (!errors[name]) errors[name] = [];
         errors[name].push(error);
     }
@@ -27,8 +27,7 @@ function createForm(scriptName: string, options: AgentDeployOptions): FormData {
 }
 
 
-
-function addFieldToForm(collection: string[], formdata: FormData, formKey: string, formattedKey: string, onError: (name, error: string)=>void): void {
+function addFieldToForm(collection: string[], formdata: FormData, formKey: string, formattedKey: string, onError: (name: string, error: string) => void): void {
     for (const variable of collection) {
         if (keyValuePairRegex.test(variable)) {
             formdata.append(formKey, variable);
@@ -38,10 +37,10 @@ function addFieldToForm(collection: string[], formdata: FormData, formKey: strin
     }
 }
 
-function addFileToForm(collection: string[], formdata: FormData, onError: (name, error: string)=>void): void {
+function addFileToForm(collection: string[], formdata: FormData, onError: (name: string, error: string) => void): void {
     for (const fileArgument of collection) {
-        if (keyValuePairRegex.test(fileArgument)) {
-            const match = fileArgument.match(keyValuePairRegex);
+        const match = fileArgument.match(keyValuePairRegex);
+        if (match) {
             const key = match[1];
             const filePath = match[2];
             if (filePath && existsSync(filePath)) {

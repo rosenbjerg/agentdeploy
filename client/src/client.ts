@@ -1,6 +1,6 @@
 import * as WebSocket from "ws";
 import createForm from "./form-utils";
-import { v4 } from "uuid";
+import {v4} from "uuid";
 import fetch from "node-fetch";
 
 import {
@@ -17,7 +17,8 @@ function subscribeToWebsocketEvents(wsUrl: string, onOutput: ProcessOutputHandle
     websocket.onmessage = event => {
         const msg = JSON.parse(event.data.toString());
         switch (msg.event) {
-            case 'output': return onOutput(msg.data);
+            case 'output':
+                return onOutput(msg.data);
             case 'script':
                 if (!msg.data || msg.data.length === 0) break;
                 return onScript(formatScript(msg.data, hideScriptLineNumbers));
@@ -26,7 +27,7 @@ function subscribeToWebsocketEvents(wsUrl: string, onOutput: ProcessOutputHandle
 }
 
 function formatScript(scriptLines: string[], hideScriptLineNumbers: boolean) {
-    if (!hideScriptLineNumbers && scriptLines.length){
+    if (!hideScriptLineNumbers && scriptLines.length) {
         const length = scriptLines.length.toString().length;
         return scriptLines.map((line, i) => `${(i + 1).toString().padStart(length)} | ${line}`);
     }
@@ -55,16 +56,19 @@ export default async function invokeScript(scriptName: string, serverUrl: string
         const result = await response.json() as ExecutionResult;
         result.script = formatScript(result.script, options.hideScriptLineNumbers);
         return result;
-    }
-    else {
+    } else {
         switch (response.status) {
             case 400:
                 const failedInvocation = await response.json() as FailedInvocation;
                 throw new InvocationError(failedInvocation.title, failedInvocation.errors);
-            case 401: throw new Error(`The provided token is invalid`);
-            case 404: throw new Error(`No script named '${scriptName}' is available`);
-            case 423: throw new Error(await response.text());
-            default: throw new Error(`Unexpected response status code: ${response.status}`);
+            case 401:
+                throw new Error(`The provided token is invalid`);
+            case 404:
+                throw new Error(`No script named '${scriptName}' is available`);
+            case 423:
+                throw new Error(await response.text());
+            default:
+                throw new Error(`Unexpected response status code: ${response.status}`);
         }
     }
 }

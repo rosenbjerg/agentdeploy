@@ -1,7 +1,6 @@
-
 export type ProcessOutputHandler = (event: ProcessOutput) => void;
 export type ScriptReceivedHandler = (event: string[]) => void;
-export type ErrorCollection = { [name: string] : string[] }
+export type ErrorCollection = { [name: string]: string[] }
 
 export interface AgentDeployOptions {
     token: string
@@ -36,6 +35,7 @@ export interface FailedInvocation {
 
 export class InvocationError extends Error {
     public errors: ErrorCollection;
+
     constructor(message: string, errors: ErrorCollection) {
         super(message);
         this.name = "InvocationError";

@@ -3,6 +3,7 @@ import * as chalk from 'chalk';
 import {Command} from 'commander';
 import * as dateformat from 'dateformat';
 import * as prompt from 'prompt';
+
 const pkg = require('../package.json');
 
 import {
@@ -36,7 +37,7 @@ program
     .description('Invoke named script on remote server')
     .action(onInvokeCommandCalled);
 
-const fail = error => {
+const fail = (error: string) => {
     console.error(chalk.red(error));
     process.exit(-1);
 };
@@ -109,7 +110,7 @@ async function promptForToken(): Promise<string> {
     };
     prompt.start();
     // @ts-ignore
-    const { token } = await prompt.get(schema);
+    const {token} = await prompt.get(schema);
     return token as string;
 }
 
