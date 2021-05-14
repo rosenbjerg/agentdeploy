@@ -2,11 +2,10 @@
   "name": "agentd-client",
   "version": "3.0.0",
   "license": "MIT",
-  "bin": "./src/index.js",
   "scripts": {
-    "build": "tsc",
     "package": "tsc && pkg package.json"
   },
+  "bin": "./src/index.js",
   "pkg": {
     "targets": [
       "node8-linux-x64",
