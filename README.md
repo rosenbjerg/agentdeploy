@@ -1,4 +1,4 @@
-# AgentDeploy
+# agentdeploy
 
 An agent for managing execution of [taco bell programming](http://widgetsandshit.com/teddziuba/2010/10/taco-bell-programming.html)-style deployment and server management scripts
 
