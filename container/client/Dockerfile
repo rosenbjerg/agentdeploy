@@ -2,7 +2,7 @@ ARG BASE_IMAGE=amd64/alpine
 
 FROM node:lts-alpine as builder
 WORKDIR /app
-COPY package.json package-lock.json .
+COPY package.json package-lock.json ./
 RUN npm install -g typescript
 RUN npm install -g pkg
 RUN npm ci
