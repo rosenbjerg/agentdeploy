@@ -14,7 +14,7 @@ namespace AgentDeploy.ExternalApi.Websocket
 {
     public class WebsocketConnection : Connection
     {
-        private static JsonSerializerOptions JsonSerializerOptions = new();
+        private static readonly JsonSerializerOptions JsonSerializerOptions = new();
         
         private readonly HttpContext _httpContext;
         private readonly IOperationContext _operationContext;
@@ -27,7 +27,7 @@ namespace AgentDeploy.ExternalApi.Websocket
             JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         }
         
-        public WebsocketConnection(HttpContext httpContext, IOperationContext operationContext) : base(operationContext)
+        public WebsocketConnection(HttpContext httpContext, IOperationContext operationContext)
         {
             _httpContext = httpContext;
             _operationContext = operationContext;

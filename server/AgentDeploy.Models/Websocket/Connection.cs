@@ -5,13 +5,6 @@ namespace AgentDeploy.Models.Websocket
 {
     public abstract class Connection
     {
-        protected Connection(IOperationContext operationContext)
-        {
-            OperationContext = operationContext;
-        }
-        
-        public IOperationContext OperationContext { get; }
-
         public abstract Task SendMessage(Message message);
 
         public abstract Task KeepConnectionOpen();
