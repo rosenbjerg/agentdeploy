@@ -5,8 +5,6 @@ namespace AgentDeploy.Models.Options
 {
     public class ExecutionOptions
     {
-        private static readonly bool ClamAvEnabled = Environment.GetEnvironmentVariable("CLAMAV") == "true";
-
         /// <summary>
         /// Specify the string to use as linebreak. Defaults to Environment.NewLine
         /// </summary>
@@ -22,7 +20,7 @@ namespace AgentDeploy.Models.Options
         /// </summary>
         public string TempDir { get; set; } = Path.GetTempPath();
         
-        public string? DefaultFilePreprocessing { get; set; } = ClamAvEnabled ? "clamscan -i $(FilePath)" : null;
+        public string? DefaultFilePreprocessing { get; set; }
         
         /// <summary>
         /// The name or path of the shell to use. Defaults to /bin/sh

@@ -10,9 +10,6 @@ RUN dotnet publish -r ${DOTNET_RID} /p:PublishTrimmed=true -o /app/build src/Age
 
 FROM $BASE_IMAGE as runtime
 RUN apk add --update --no-cache icu-libs openssh sshpass
-ARG CLAMAV=false
-ENV CLAMAV=$CLAMAV
-RUN if [ "$CLAMAV" = "true" ]; then apk add --update --no-cache clamav && freshclam; fi
 EXPOSE 5000
 ENV ASPNETCORE_URLS=http://*:5000
 WORKDIR /app

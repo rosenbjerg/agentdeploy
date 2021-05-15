@@ -22,16 +22,6 @@ jobs:
           -t "mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}" \
           -t "mrosenbjerg/agentd-server:latest" \
           server
-        
-    - name: Build agentd server image with ClamAV
-      run: |
-        SERVER_VERSION=$(cat server/AgentDeploy.ExternalApi/AgentDeploy.ExternalApi.csproj | grep '<PackageVersion>' | sed 's/.*<PackageVersion>\(.*\)<\/PackageVersion>/\1/' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
-        MAJOR_SERVER_VERSION=$(echo "$SERVER_VERSION" | sed -E s/\.[0-9]+$//)
-
-        docker build -f container/server/Dockerfile --build-arg CLAMAV=true \
-          -t "mrosenbjerg/agentd-server:${SERVER_VERSION}-clamav" \
-          -t "mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-clamav" \
-          server
     
     - name: Build agentd client image
       run: |
