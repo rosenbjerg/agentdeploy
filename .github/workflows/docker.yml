@@ -23,7 +23,7 @@ jobs:
           -t "mrosenbjerg/agentd-server:latest" \
           server
         
-    - name: Build agentd server image with clamAV
+    - name: Build agentd server image with ClamAV
       run: |
         SERVER_VERSION=$(cat server/AgentDeploy.ExternalApi/AgentDeploy.ExternalApi.csproj | grep '<PackageVersion>' | sed 's/.*<PackageVersion>\(.*\)<\/PackageVersion>/\1/' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
         MAJOR_SERVER_VERSION=$(echo "$SERVER_VERSION" | sed -E s/\.[0-9]+$//)
