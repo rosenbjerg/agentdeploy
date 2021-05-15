@@ -2,6 +2,7 @@
   "name": "agentd-client",
   "version": "3.0.0",
   "license": "MIT",
+  "repository": "https://github.com/rosenbjerg/agentdeploy/client",
   "scripts": {
     "package": "tsc && pkg package.json"
   },
