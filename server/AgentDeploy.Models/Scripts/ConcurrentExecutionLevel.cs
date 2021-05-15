@@ -1,5 +1,8 @@
+using AgentDeploy.Yaml;
+
 namespace AgentDeploy.Models.Scripts
 {
+    [ExtendedYamlEnum]
     public enum ConcurrentExecutionLevel
     {
         /// <summary>
@@ -9,9 +12,10 @@ namespace AgentDeploy.Models.Scripts
         /// <summary>
         /// Concurrent execution of script allowed for distinct tokens
         /// </summary>
+        [ExtendedYamlEnumMember]
         PerToken,
         /// <summary>
-        /// Concurrent execution not allowed 
+        /// Concurrent execution not allowed
         /// </summary>
         None
     }

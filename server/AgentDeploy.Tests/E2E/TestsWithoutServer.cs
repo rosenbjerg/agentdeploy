@@ -11,7 +11,7 @@ namespace AgentDeploy.Tests.E2E
         {
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("--help");
             Assert.Zero(exitCode);
-            Assert.AreEqual("Usage: agentd client [options] [command]", instance.OutputData[0]);
+            Assert.AreEqual("Usage: agentd-client [options] [command]", instance.OutputData[0]);
         }
         
         [Test]
@@ -19,7 +19,7 @@ namespace AgentDeploy.Tests.E2E
         {
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("nope");
             Assert.NotZero(exitCode);
-            Assert.AreEqual("error: unknown command 'nope'. See 'agentd client --help'.", instance.ErrorData[0]);
+            Assert.AreEqual("error: unknown command 'nope'. See 'agentd-client --help'.", instance.ErrorData[0]);
         }
         
         [Test]
@@ -43,7 +43,7 @@ namespace AgentDeploy.Tests.E2E
         {
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test invalid-url -t test");
             Assert.NotZero(exitCode);
-            Assert.AreEqual("error: Only absolute URLs are supported", instance.ErrorData[0]);
+            Assert.AreEqual("Only absolute URLs are supported", instance.ErrorData[0]);
         }
         
         [Test]
@@ -51,7 +51,7 @@ namespace AgentDeploy.Tests.E2E
         {
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:4999");
             Assert.NotZero(exitCode);
-            Assert.AreEqual("error: token must be provided by placing a file containing the token at the path ./agentd.token or by using the token argument (-t)", instance.ErrorData[0]);
+            Assert.AreEqual("The token must either be provided by placing a file containing the token at the path ./agentd.token or by using the token argument (-t)", instance.ErrorData[0]);
         }
         
         [Test]
@@ -67,7 +67,7 @@ namespace AgentDeploy.Tests.E2E
         {
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:4999");
             Assert.NotZero(exitCode);
-            Assert.AreEqual("error: token must be provided by placing a file containing the token at the path ./agentd.token or by using the token argument (-t)", instance.ErrorData[0]);
+            Assert.AreEqual("The token must either be provided by placing a file containing the token at the path ./agentd.token or by using the token argument (-t)", instance.ErrorData[0]);
         }
         
         [Test]
@@ -75,7 +75,7 @@ namespace AgentDeploy.Tests.E2E
         {
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:4999 -t test");
             Assert.NotZero(exitCode);
-            Assert.AreEqual("error: request to http://localhost:4999/rest/invoke failed, reason: connect ECONNREFUSED 127.0.0.1:4999", instance.ErrorData[0]);
+            Assert.AreEqual("request to http://localhost:4999/rest/invoke failed, reason: connect ECONNREFUSED 127.0.0.1:4999", instance.ErrorData[0]);
         }
     }
 }

@@ -3,7 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <PackageVersion>2.2.1</PackageVersion>
+        <PackageVersion>3.0.0</PackageVersion>
+        <RepositoryUrl>https://github.com/rosenbjerg/agentdeploy/server</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,7 +20,10 @@
 
     <ItemGroup>
       <PackageReference Include="IPAddressRange" Version="4.2.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.6" />
       <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     </ItemGroup>
 
 </Project>

@@ -1,15 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
-using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
-using AgentDeploy.Models.Scripts;
 using AgentDeploy.Services;
-using AgentDeploy.Services.Scripts;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
+using YamlDotNet.Serialization;using YamlDotNet.Serialization.NamingConventions;
 
 namespace AgentDeploy.Tests.Unit
 {
@@ -23,7 +19,7 @@ namespace AgentDeploy.Tests.Unit
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
-            var fileReaderMock = new Mock<IFileReader>();
+            var fileReaderMock = new Mock<IFileService>();
             fileReaderMock.Setup(s => s.FindFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>())).Returns("test");
             fileReaderMock.Setup(s => s.ReadAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync("name: test-token\ndescription: a test token");
             var tokenReaderLoggerMock = new Mock<ILogger<TokenReader>>();
@@ -36,31 +32,23 @@ namespace AgentDeploy.Tests.Unit
             Assert.AreEqual("test-token", token!.Name);
             Assert.AreEqual("a test token", token.Description);
         }
-    }
-    [Category("Unit")]
-    public class ScriptReaderTests
-    {
+        
         [Test]
-        public async Task TestScriptReader()
+        public async Task TestTokenReader_Null()
         {
-            var operationContext = new OperationContext { OperationCancelled = CancellationToken.None };
             var directoryOptions = new DirectoryOptions { Scripts = "test", Tokens = "test" };
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
-            var fileReaderMock = new Mock<IFileReader>();
-            fileReaderMock.Setup(s => s.FindFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>())).Returns("test");
-            fileReaderMock.Setup(s => s.ReadAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync("command: echo test\nconcurrency: pertoken");
-            var scriptReaderLoggerMock = new Mock<ILogger<ScriptReader>>();
+            var fileReaderMock = new Mock<IFileService>();
+            fileReaderMock.Setup(s => s.FindFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>())).Returns(default(string));
+            var tokenReaderLoggerMock = new Mock<ILogger<TokenReader>>();
             
-            var scriptReader = new ScriptReader(operationContext, deserializer, fileReaderMock.Object, directoryOptions, scriptReaderLoggerMock.Object);
+            var tokenReader = new TokenReader(directoryOptions, deserializer, fileReaderMock.Object, tokenReaderLoggerMock.Object);
 
-            var script = await scriptReader.Load("test");
+            var token = await tokenReader.ParseTokenFile("test", CancellationToken.None);
             
-            Assert.NotNull(script);
-            Assert.AreEqual("test", script!.Name);
-            Assert.AreEqual("echo test", script.Command);
-            Assert.AreEqual(ConcurrentExecutionLevel.PerToken, script.Concurrency);
+            Assert.Null(token);
         }
     }
 }

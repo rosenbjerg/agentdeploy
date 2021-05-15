@@ -11,8 +11,16 @@ using AgentDeploy.Services.Scripts;
 
 namespace AgentDeploy.Services
 {
-    public class InvocationContextService : IInvocationContextService
+    public sealed class InvocationContextService : IInvocationContextService
     {
+        private static readonly Dictionary<ScriptArgumentType, Regex?> TypeValidation = new()
+        {
+            { ScriptArgumentType.Integer, new Regex("^\\d+$", RegexOptions.Compiled) },
+            { ScriptArgumentType.Decimal, new Regex("^\\d+\\.\\d+$", RegexOptions.Compiled) },
+            { ScriptArgumentType.Boolean, new Regex("^true|false$", RegexOptions.Compiled) },
+            { ScriptArgumentType.String, null },
+        };
+        
         private readonly IOperationContext _operationContext;
         private readonly IScriptReader _scriptReader;
 
@@ -25,7 +33,7 @@ namespace AgentDeploy.Services
         public async Task<ScriptInvocationContext?> Build(ParsedScriptInvocation scriptInvocation)
         {
             var script = HasAccessToScript(scriptInvocation.ScriptName)
-                ? await _scriptReader.Load(scriptInvocation.ScriptName)
+                ? await _scriptReader.Load(scriptInvocation.ScriptName, _operationContext.OperationCancelled)
                 : null;
             if (script == null)
                 return null;
@@ -42,7 +50,7 @@ namespace AgentDeploy.Services
                 var scriptVariableDefinition = inputVariable.Value ?? new ScriptVariableDefinition();
                 var invocationValue = ValidateInputVariables(scriptInvocation.Variables, inputVariable.Key, scriptVariableDefinition, scriptAccessDeclaration, failed);
                 if (invocationValue == null) continue;
-                acceptedVariables.Add(new AcceptedScriptInvocationArgument(inputVariable.Key, scriptVariableDefinition.Type, invocationValue.Value, invocationValue.Secret || scriptVariableDefinition.Secret));
+                acceptedVariables.Add(new AcceptedScriptInvocationArgument(inputVariable.Key, invocationValue.Value, invocationValue.Secret || scriptVariableDefinition.Secret));
             }
 
             foreach (var inputFile in script.Files)
@@ -50,10 +58,10 @@ namespace AgentDeploy.Services
                 var scriptFileArgument = inputFile.Value ?? new ScriptFileDefinition();
                 var providedFile = ValidateFileInput(scriptInvocation.Files, inputFile.Key, scriptFileArgument, failed);
                 if (providedFile == null) continue;
-                acceptedFiles.Add(new AcceptedScriptInvocationFile(inputFile.Key, Path.GetFileName(providedFile.FileName), providedFile.Read));
+                acceptedFiles.Add(new AcceptedScriptInvocationFile(inputFile.Key, Path.GetFileName(providedFile.FileName), scriptFileArgument.FilePreprocessing, providedFile.Read));
             }
             
-            if (failed.Any()) throw new InvalidInvocationArgumentsException(failed);
+            if (failed.Any()) throw new FailedInvocationValidationException(failed);
 
             return new ScriptInvocationContext
             {
@@ -105,18 +113,13 @@ namespace AgentDeploy.Services
                 return null;
             }
 
-            if (scriptVariableDefinition.Type == ScriptArgumentType.Integer && !IntegerRegex.IsMatch(invocationValue.Value))
+            var regex = TypeValidation[scriptVariableDefinition.Type];
+            if (regex != null && !regex.IsMatch(invocationValue.Value))
             {
-                failed.Add(new InvocationArgumentError(scriptVariableKey, $"Provided value does not pass type validation ({IntegerRegex})"));
+                failed.Add(new InvocationArgumentError(scriptVariableKey, $"Provided value does not pass type validation ({regex})"));
                 return null;
             }
-
-            if (scriptVariableDefinition.Type == ScriptArgumentType.Float && !FloatRegex.IsMatch(invocationValue.Value))
-            {
-                failed.Add(new InvocationArgumentError(scriptVariableKey, $"Provided value does not pass type validation ({FloatRegex})"));
-                return null;
-            }
-
+            
             return invocationValue;
         }
 
@@ -154,8 +157,5 @@ namespace AgentDeploy.Services
         {
             return _operationContext.Token.AvailableScripts == null || _operationContext.Token.AvailableScripts.ContainsKey(scriptName);
         }
-
-        private static Regex IntegerRegex = new("^\\d+$", RegexOptions.Compiled);
-        private static Regex FloatRegex = new("^\\d+\\.\\d+$", RegexOptions.Compiled);
     }
 }

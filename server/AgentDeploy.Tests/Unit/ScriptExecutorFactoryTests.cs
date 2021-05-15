@@ -24,6 +24,10 @@ namespace AgentDeploy.Tests.Unit
             {
                 scriptInvocationContext.SecureShellOptions = new SecureShellOptions
                 {
+                    Address = "localhost",
+                    Port = 22,
+                    Username = "johndoe",
+                    StrictHostKeyChecking = true,
                     Password = password,
                     PrivateKeyPath = privateKeyPath
                 };
@@ -40,9 +44,7 @@ namespace AgentDeploy.Tests.Unit
             
             var factory = new ScriptExecutorFactory(serviceProviderMock.Object);
 
-            
             factory.Build(scriptInvocationContext);
-            
             
             serviceProviderMock.Verify(s => s.GetService(It.IsAny<Type>()), Times.Once);
         }

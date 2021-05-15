@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AgentDeploy.Services.ScriptExecutors
 {
-    public class ScriptExecutorFactory : IScriptExecutorFactory
+    public sealed class ScriptExecutorFactory : IScriptExecutorFactory
     {
         private readonly IServiceProvider _serviceProvider;
 

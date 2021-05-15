@@ -1,0 +1,65 @@
+name: Sonar
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - .github/workflows/sonarscan.yml
+      - client/**
+      - server/**
+
+jobs:
+
+  client:
+    env:
+      client_dir: ./client
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: SonarScan of client sources
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectBaseDir: ${{ env.client_dir }}
+          args: >
+            -Dsonar.organization=rosenbjerg
+            -Dsonar.projectKey=rosenbjerg_AgentDeploy
+  
+  server:
+    env:
+      client_dir: ./client
+      server_dir: ./server
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+
+      - name: Restore NuGet packages
+        working-directory: ${{ env.server_dir }}
+        run: dotnet restore
+
+      - name: Install SonarScanner
+        run: dotnet tool install dotnet-sonarscanner --global
+
+      - name: Build with SonarScan
+        working-directory: ${{ env.server_dir }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet sonarscanner begin /k:rosenbjerg_AgentDeploy /n:AgentDeploy /o:rosenbjerg /d:sonar.login=${{ secrets.SONAR_TOKEN }} /d:sonar.host.url=https://sonarcloud.io &&
+          dotnet build -c Release --no-restore &&
+          dotnet sonarscanner end /d:sonar.login=${{ secrets.SONAR_TOKEN }}

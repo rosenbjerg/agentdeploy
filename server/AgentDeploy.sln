@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentDeploy.Models", "Agent
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentDeploy.Tests", "AgentDeploy.Tests\AgentDeploy.Tests.csproj", "{47EC42C5-C8EC-4DA6-A612-C62A10A71FB1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentDeploy.Yaml", "AgentDeploy.Yaml\AgentDeploy.Yaml.csproj", "{F6F946E0-6E3F-4131-B64D-CA83E3B0CFF8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{47EC42C5-C8EC-4DA6-A612-C62A10A71FB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47EC42C5-C8EC-4DA6-A612-C62A10A71FB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47EC42C5-C8EC-4DA6-A612-C62A10A71FB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6F946E0-6E3F-4131-B64D-CA83E3B0CFF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6F946E0-6E3F-4131-B64D-CA83E3B0CFF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6F946E0-6E3F-4131-B64D-CA83E3B0CFF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6F946E0-6E3F-4131-B64D-CA83E3B0CFF8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

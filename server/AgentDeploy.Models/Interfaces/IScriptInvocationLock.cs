@@ -1,6 +1,6 @@
 using System;
 
-namespace AgentDeploy.Services.Locking
+namespace AgentDeploy.Models
 {
     public interface IScriptInvocationLock : IDisposable
     {

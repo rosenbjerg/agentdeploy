@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace AgentDeploy.Services.Scripts
 {
-    public class ScriptInvocationParser : IScriptInvocationParser
+    public static class ScriptInvocationParser
     {
-        public ParsedScriptInvocation Parse(ScriptInvocation scriptInvocation)
+        public static ParsedScriptInvocation Parse(ScriptInvocation scriptInvocation)
         {
             var failed = new List<InvocationArgumentError>();
             var result =  new ParsedScriptInvocation
@@ -19,12 +19,12 @@ namespace AgentDeploy.Services.Scripts
                 EnvironmentVariables = ParseEnvironmentVariables(scriptInvocation.EnvironmentVariables, failed),
                 Files = ParseFormFiles(scriptInvocation.Files, failed)
             };
-            if (failed.Any()) throw new InvalidInvocationArgumentsException(failed);
+            if (failed.Any()) throw new FailedInvocationValidationException(failed);
 
             return result;
         }
 
-        private Dictionary<string, ScriptInvocationVariable> SplitVariables(string[] variables,
+        private static Dictionary<string, ScriptInvocationVariable> SplitVariables(string[] variables,
             string[] secretVariables, List<InvocationArgumentError> invocationArgumentErrors)
         {
             var result = new Dictionary<string, ScriptInvocationVariable>();
@@ -46,13 +46,13 @@ namespace AgentDeploy.Services.Scripts
             return result;
         }
 
-        private ScriptInvocationVariable ParseScriptInvocationVariable(string value, bool secret, char splitCharacter = '=')
+        private static ScriptInvocationVariable ParseScriptInvocationVariable(string value, bool secret, char splitCharacter = '=')
         {
             var split = value.Split(splitCharacter);
             return new ScriptInvocationVariable(split[0].Trim(), split[1].Trim(), secret);
         }
         
-        private ScriptEnvironmentVariable[] ParseEnvironmentVariables(string[] values,
+        private static ScriptEnvironmentVariable[] ParseEnvironmentVariables(string[] values,
             List<InvocationArgumentError> invocationArgumentErrors, char splitCharacter = '=')
         {
             var result = new Dictionary<string, ScriptEnvironmentVariable>();
@@ -66,7 +66,7 @@ namespace AgentDeploy.Services.Scripts
             return result.Values.ToArray();
         }
 
-        private Dictionary<string, ScriptInvocationFile> ParseFormFiles(IFormFile[] formFiles,
+        private static Dictionary<string, ScriptInvocationFile> ParseFormFiles(IFormFile[] formFiles,
             List<InvocationArgumentError> invocationArgumentErrors, char splitCharacter = '=')
         {
             var result = new Dictionary<string, ScriptInvocationFile>();

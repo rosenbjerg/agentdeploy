@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
+    - .github/workflows/ci.yml
     - server/**
     - client/**
   pull_request:
@@ -30,10 +31,6 @@ jobs:
     - name: Restore NuGet packages
       working-directory: ${{ env.server_dir }}
       run: dotnet restore
-        
-    - name: Restore dependencies
-      working-directory: ${{ env.server_dir }}
-      run: dotnet restore
       
     - name: Build
       working-directory: ${{ env.server_dir }}
@@ -47,11 +44,25 @@ jobs:
       uses: actions/setup-node@v2.1.5
       with: 
         node-version: 8.x
+
+    - name: Install TypeScript
+      working-directory: ${{ env.client_dir }}
+      run: npm install -g typescript
         
     - name: Install NPM packages
       working-directory: ${{ env.client_dir }}
       run: npm ci
+        
+    - name: Compile Typescript client to Javascript
+      working-directory: ${{ env.client_dir }}
+      run: tsc src/index.ts
       
     - name: Run E2E test suite
       working-directory: ${{ env.server_dir }}
       run: dotnet test -c Release --filter TestCategory=E2E --collect "XPlat Code Coverage" --logger GitHubActions --no-build --verbosity normal
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        directory: server/AgentDeploy.Tests/TestResults
+        fail_ci_if_error: true

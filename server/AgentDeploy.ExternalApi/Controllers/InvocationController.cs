@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AgentDeploy.ExternalApi.Filters;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Exceptions;
@@ -13,14 +15,12 @@ namespace AgentDeploy.ExternalApi.Controllers
     public class InvocationController : ControllerBase
     {
         private readonly IInvocationContextService _invocationContextService;
-        private readonly IScriptExecutionService _scriptExecutionService;
-        private readonly IScriptInvocationParser _scriptInvocationParser;
+        private readonly IScriptInvocationService _scriptInvocationService;
 
-        public InvocationController(IInvocationContextService invocationContextService, IScriptExecutionService scriptExecutionService, IScriptInvocationParser scriptInvocationParser)
+        public InvocationController(IInvocationContextService invocationContextService, IScriptInvocationService scriptInvocationService)
         {
             _invocationContextService = invocationContextService;
-            _scriptExecutionService = scriptExecutionService;
-            _scriptInvocationParser = scriptInvocationParser;
+            _scriptInvocationService = scriptInvocationService;
         }
         
         [HttpPost("invoke")]
@@ -29,19 +29,19 @@ namespace AgentDeploy.ExternalApi.Controllers
         {
             try
             {
-                var parsedScriptInvocation = _scriptInvocationParser.Parse(scriptInvocation);
+                var parsedScriptInvocation = ScriptInvocationParser.Parse(scriptInvocation);
                 var executionContext = await _invocationContextService.Build(parsedScriptInvocation);
                 if (executionContext == null)
                     return NotFound();
 
-                var result = await _scriptExecutionService.Execute(executionContext);
+                var result = await _scriptInvocationService.Invoke(executionContext);
                 return Ok(result);
             }
-            catch (InvalidInvocationArgumentsException e)
+            catch (FailedInvocationException e)
             {
-                return BadRequest(new
+                return BadRequest(new FailedInvocation
                 {
-                    Message = "One or more validation errors occured",
+                    Title = e.Message,
                     Errors = e.Errors
                 });
             }

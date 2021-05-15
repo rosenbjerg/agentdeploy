@@ -17,10 +17,10 @@ jobs:
         SERVER_VERSION=$(cat server/AgentDeploy.ExternalApi/AgentDeploy.ExternalApi.csproj | grep '<PackageVersion>' | sed 's/.*<PackageVersion>\(.*\)<\/PackageVersion>/\1/' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
         MAJOR_SERVER_VERSION=$(echo "$SERVER_VERSION" | sed -E s/\.[0-9]+$//)
 
-        docker build -f container/Dockerfile.server \
-          -t mrosenbjerg/agentd-server:${SERVER_VERSION} \
-          -t mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION} \
-          -t mrosenbjerg/agentd-server:latest \
+        docker build -f container/server/Dockerfile \
+          -t "mrosenbjerg/agentd-server:${SERVER_VERSION}" \
+          -t "mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}" \
+          -t "mrosenbjerg/agentd-server:latest" \
           server
     
     - name: Build agentd client image
@@ -28,10 +28,10 @@ jobs:
         CLIENT_VERSION=$(cat client/package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
         MAJOR_CLIENT_VERSION=$(echo "$CLIENT_VERSION" | sed -E s/\.[0-9]+$//)
         
-        docker build -f container/Dockerfile.client \
+        docker build -f container/client/Dockerfile \
           -t "mrosenbjerg/agentd-client:${CLIENT_VERSION}" \
           -t "mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}" \
-          -t mrosenbjerg/agentd-client:latest \
+          -t "mrosenbjerg/agentd-client:latest" \
           client
     
     - name: Login to Docker Hub

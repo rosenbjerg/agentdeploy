@@ -1,41 +1,62 @@
-﻿using System.Threading.Tasks;
-using AgentDeploy.Models;
+﻿using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AgentDeploy.Models.Exceptions;
 using AgentDeploy.Models.Options;
+using AgentDeploy.Models.Scripts;
 using Microsoft.Extensions.Logging;
 using YamlDotNet.Serialization;
 
 namespace AgentDeploy.Services.Scripts
 {
-    public class ScriptReader : IScriptReader
+    public sealed class ScriptReader : IScriptReader
     {
-        private readonly IOperationContext _operationContext;
         private readonly DirectoryOptions _directoryOptions;
-        private readonly ILogger<ScriptReader> _logger;
         private readonly IDeserializer _deserializer;
-        private readonly IFileReader _fileReader;
+        private readonly IFileService _fileService;
+        private readonly ILogger<ScriptReader> _logger;
 
-        public ScriptReader(IOperationContext operationContext, IDeserializer deserializer, IFileReader fileReader,
-            DirectoryOptions directoryOptions, ILogger<ScriptReader> logger)
+        public ScriptReader(DirectoryOptions directoryOptions, IDeserializer deserializer, IFileService fileService,
+            ILogger<ScriptReader> logger)
         {
-            _operationContext = operationContext;
-            _deserializer = deserializer;
-            _fileReader = fileReader;
             _directoryOptions = directoryOptions;
+            _deserializer = deserializer;
+            _fileService = fileService;
             _logger = logger;
         }
 
-        public async Task<Models.Scripts.Script?> Load(string scriptName)
+        public async Task<Script?> Load(string scriptName, CancellationToken cancellationToken)
         {
-            var filePath = _fileReader.FindFile(_directoryOptions.Scripts, scriptName, "yaml", "yml");
+            var filePath = _fileService.FindFile(_directoryOptions.Scripts, scriptName, "yaml", "yml");
             _logger.LogDebug($"Attempting to read command file: {filePath}");
 
-            var content = await _fileReader.ReadAsync(filePath, _operationContext.OperationCancelled);
+            var content = await _fileService.ReadAsync(filePath, cancellationToken);
             if (content == null)
                 return null;
 
-            var result = _deserializer.Deserialize<Models.Scripts.Script>(content);
+            var result = _deserializer.Deserialize<Script>(content);
             result.Name = scriptName;
+            
+            ValidateVariableUsage(result);
+
             return result;
+        }
+
+        private static void ValidateVariableUsage(Script result)
+        {
+            var declaredReplacements = result.Variables.Select(v => v.Key).Concat(result.Files.Select(f => f.Key)).ToArray();
+            var usedReplacements = ReplacementUtils.ExtractUsedVariables(result.Command);
+
+            var unusedReplacements = declaredReplacements.Where(dr => !usedReplacements.Contains(dr)).Distinct().ToArray();
+            var undeclaredReplacements = usedReplacements.Where(ur => !declaredReplacements.Contains(ur)).Distinct().ToArray();
+
+            if (unusedReplacements.Any() || undeclaredReplacements.Any())
+            {
+                var errors = unusedReplacements.Select(ur => (ur, "Variable is declared but not used"))
+                    .Concat(undeclaredReplacements.Select(ur => (ur, "Variable is used but not declared")))
+                    .ToDictionary(urp => urp.ur, urp => new[] { urp.Item2 });
+                throw new InvalidScriptFileException(errors);
+            }
         }
     }
 }
