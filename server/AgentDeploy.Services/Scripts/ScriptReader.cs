@@ -1,5 +1,7 @@
-﻿using System.Threading;
+﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using AgentDeploy.Models.Exceptions;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Models.Scripts;
 using Microsoft.Extensions.Logging;
@@ -32,9 +34,29 @@ namespace AgentDeploy.Services.Scripts
             if (content == null)
                 return null;
 
-            var result = _deserializer.Deserialize<Models.Scripts.Script>(content);
+            var result = _deserializer.Deserialize<Script>(content);
             result.Name = scriptName;
+            
+            ValidateVariableUsage(result);
+
             return result;
+        }
+
+        private static void ValidateVariableUsage(Script result)
+        {
+            var declaredReplacements = result.Variables.Select(v => v.Key).Concat(result.Files.Select(f => f.Key)).ToArray();
+            var usedReplacements = ReplacementUtils.ExtractUsedVariables(result.Command);
+
+            var unusedReplacements = declaredReplacements.Where(dr => !usedReplacements.Contains(dr)).Distinct().ToArray();
+            var undeclaredReplacements = usedReplacements.Where(ur => !declaredReplacements.Contains(ur)).Distinct().ToArray();
+
+            if (unusedReplacements.Any() || undeclaredReplacements.Any())
+            {
+                var errors = unusedReplacements.Select(ur => (ur, "Variable is declared but not used"))
+                    .Concat(undeclaredReplacements.Select(ur => (ur, "Variable is used but not declared")))
+                    .ToDictionary(urp => urp.ur, urp => new[] { urp.Item2 });
+                throw new InvalidScriptFileException(errors);
+            }
         }
     }
 }

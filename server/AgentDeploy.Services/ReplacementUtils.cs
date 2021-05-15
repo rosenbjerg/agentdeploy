@@ -20,6 +20,7 @@ namespace AgentDeploy.Services
 
             return sb.ToString();
         }
+        
         public static string ReplaceVariables(string script, Dictionary<string, string> replacements)
         {
             return VariableRegex.Replace(script, match =>
@@ -30,9 +31,15 @@ namespace AgentDeploy.Services
                 return $"$({key})";
             });
         }
+        
         public static string ReplaceVariable(string script, string key, string value)
         {
             return script.Replace($"$({key})", value);
+        }
+
+        public static string[] ExtractUsedVariables(string script)
+        {
+            return VariableRegex.Matches(script).Select(m => m.Groups[1].Value).ToArray();
         }
     }
 }
