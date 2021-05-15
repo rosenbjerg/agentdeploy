@@ -13,13 +13,14 @@ RUN pkg src/index.js --targets node8-alpine-x64 --output /app/agentd-client
 
 
 FROM $BASE_IMAGE as runtime
-RUN addgroup -S agentd && adduser -S agentd -G agentd
-USER agentd
 WORKDIR /app
 
 ARG TINI_VERSION=v0.19.0
 RUN wget -O /tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static && chmod +x /tini
-ENTRYPOINT ["/tini", "-g", "--"]
+
+RUN addgroup -S agentd && adduser -S agentd -G agentd
+USER agentd
 
 COPY --from=builder /app/agentd-client /app/agentd-client
+ENTRYPOINT ["/tini", "-g", "--"]
 CMD /app/agentd-client
