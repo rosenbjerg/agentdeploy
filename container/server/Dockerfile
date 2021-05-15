@@ -23,7 +23,6 @@ RUN wget -O /tini https://github.com/krallin/tini/releases/download/${TINI_VERSI
 RUN addgroup -S agentd && adduser -S agentd -G agentd
 USER agentd
 
-ENTRYPOINT ["/tini", "-g", "--"]
-
 COPY --from=builder /app/build /app
+ENTRYPOINT ["/tini", "-g", "--"]
 CMD /app/AgentDeploy.ExternalApi
