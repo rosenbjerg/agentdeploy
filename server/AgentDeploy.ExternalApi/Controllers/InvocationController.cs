@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AgentDeploy.ExternalApi.Filters;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Exceptions;

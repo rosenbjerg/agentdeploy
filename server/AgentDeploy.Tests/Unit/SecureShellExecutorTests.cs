@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
@@ -80,20 +81,22 @@ namespace AgentDeploy.Tests.Unit
             processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-o StrictHostKeyChecking=no -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>()), Times.Once);
         }
         
-        [TestCase("user", "/source dir")]
-        [TestCase("admin", "sourceDir")]
+        [TestCase("user", "/tmp/source dir")]
+        [TestCase("admin", "/tmp/sourceDir")]
         public async Task SshPassSecureShellExecutorTest(string username, string sourceDir)
         {
-            var targetDir = sourceDir.Contains(" ") ? $"'/tmp/{sourceDir.TrimStart('/')}'" : $"/tmp/{sourceDir.TrimStart('/')}";
-            var targetScript = sourceDir.Contains(" ") ? $"'/tmp/{sourceDir.TrimStart('/')}/script.sh'" : $"/tmp/{sourceDir.TrimStart('/')}/script.sh";
-            var passwordFile = sourceDir.Contains(" ") ? $"\"/tmp/{sourceDir.TrimStart('/')}/sshpass.txt\"" : $"/tmp/{sourceDir.TrimStart('/')}/sshpass.txt";
+            var operationContext = new OperationContext();
+            var targetDir = sourceDir.Contains(" ") ? $"'{sourceDir}'" : $"{sourceDir}";
+            var targetScript = sourceDir.Contains(" ") ? $"'{sourceDir}/script.sh'" : $"{sourceDir}/script.sh";
+            var passwordFile = $"/tmp/sshpass-{operationContext.CorrelationId}.txt";
             var scriptInvocationContext = new ScriptInvocationContext
             {
                 SecureShellOptions = new SecureShellOptions
                 {
                     Username = username,
                     Password = "my-password"
-                }
+                },
+                CorrelationId = operationContext.CorrelationId
             };
             
             var executionOptions = new ExecutionOptions
@@ -102,15 +105,23 @@ namespace AgentDeploy.Tests.Unit
                 TempDir = "/tmp"
             };
             var fileService = new Mock<IFileService>();
+            fileService.Setup(service => service.WriteText(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).Callback<string, string, CancellationToken>(
+                (path, content, _) =>
+                {
+                    Assert.IsTrue(path.StartsWith("/tmp/sshpass-"));
+                    Assert.IsTrue(path.EndsWith(".txt"));
+                    Assert.AreEqual("my-password", content);
+                });
             var scriptTransformer = new ScriptTransformer(executionOptions, fileService.Object);
             var processExecutionServiceMock = new Mock<IProcessExecutionService>();
             processExecutionServiceMock
                 .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>()))
                 .ReturnsAsync(new ProcessExecutionResult(0, Array.Empty<string>(), Array.Empty<string>()));
-            var service = new SshPassSecureShellExecutor(executionOptions, scriptTransformer, processExecutionServiceMock.Object, fileService.Object);
+            var service = new SshPassSecureShellExecutor(executionOptions, scriptTransformer, processExecutionServiceMock.Object, fileService.Object, operationContext);
             var result = await service.Execute(scriptInvocationContext, sourceDir, _ => { });
             
             Assert.AreEqual(0, result);
+            
             processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} scp -rq -o StrictHostKeyChecking=no -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>()), Times.Once);
             processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -qtt -o StrictHostKeyChecking=no -p 22 {username}@host.docker.internal \"/bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>()), Times.Once);
             processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -o StrictHostKeyChecking=no -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>()), Times.Once);

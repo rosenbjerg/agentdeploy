@@ -19,10 +19,9 @@ namespace AgentDeploy.Tests.Unit
         [TestCase(true, null, null, nameof(IImplicitPrivateKeySecureShellExecutor))]
         public void ResolvesCorrect(bool setSshOptions, string? password, string? privateKeyPath, string scriptExecutorName)
         {
-            var scriptInvocationContext = new ScriptInvocationContext();
-            if (setSshOptions)
+            var scriptInvocationContext = new ScriptInvocationContext
             {
-                scriptInvocationContext.SecureShellOptions = new SecureShellOptions
+                SecureShellOptions = !setSshOptions ? null : new SecureShellOptions
                 {
                     Address = "localhost",
                     Port = 22,
@@ -30,8 +29,8 @@ namespace AgentDeploy.Tests.Unit
                     StrictHostKeyChecking = true,
                     Password = password,
                     PrivateKeyPath = privateKeyPath
-                };
-            }
+                }
+            };
             
             var serviceProviderMock = new Mock<IServiceProvider>();
             serviceProviderMock
