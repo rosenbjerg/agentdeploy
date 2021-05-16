@@ -118,6 +118,7 @@ Options:
   --hide-timestamps                              Omit printing timestamps
   --hide-headers                                 Omit printing info headers
   --hide-script                                  Omit printing script (if available)
+  --hide-script-line-numbers                     Omit printing line-numbers for script
   -h, --help                                     display help for command
 
 Commands:

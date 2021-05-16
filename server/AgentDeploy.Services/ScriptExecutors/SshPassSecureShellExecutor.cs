@@ -10,19 +10,20 @@ namespace AgentDeploy.Services.ScriptExecutors
 {
     public sealed class SshPassSecureShellExecutor : SecureShellExecutorBase, ISshPassSecureShellExecutor
     {
+        private readonly IOperationContext _operationContext;
         private readonly IFileService _fileService;
 
-        public SshPassSecureShellExecutor(ExecutionOptions executionOptions, IScriptTransformer scriptTransformer, IProcessExecutionService processExecutionService, IFileService fileService) 
+        public SshPassSecureShellExecutor(ExecutionOptions executionOptions, IScriptTransformer scriptTransformer, IProcessExecutionService processExecutionService, IFileService fileService, IOperationContext operationContext) 
             : base(executionOptions, scriptTransformer, processExecutionService)
         {
             _fileService = fileService;
+            _operationContext = operationContext;
         }
 
         protected override async Task<bool> Copy(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
-            var sourceDir = PathUtils.Combine(ExecutionOptions.DirectorySeparatorChar, ExecutionOptions.TempDir, sourceDirectory);
             var remoteDir = PathUtils.EscapeWhitespaceInPath(remoteDirectory, '\'');
-            return await UsePasswordFile(ssh, sourceDir, async passwordFile =>
+            return await UsePasswordFile(ssh, async passwordFile =>
             {
                 var passwordFilePath = PathUtils.EscapeWhitespaceInPath(passwordFile);
                 var scpCommand = $"-f {passwordFilePath} scp -rq {StrictHostKeyChecking(ssh)} -P {ssh.Port} {sourceDirectory} {Credentials(ssh)}:{remoteDir}";
@@ -33,8 +34,7 @@ namespace AgentDeploy.Services.ScriptExecutors
 
         protected override async Task<int> Execute(SecureShellOptions ssh, string sourceDirectory, string fileArgument, Action<ProcessOutput> onOutput)
         {
-            var sourceDir = PathUtils.Combine(ExecutionOptions.DirectorySeparatorChar, ExecutionOptions.TempDir, sourceDirectory);
-            return await UsePasswordFile(ssh, sourceDir, async passwordFile =>
+            return await UsePasswordFile(ssh, async passwordFile =>
             {
                 var passwordFilePath = PathUtils.EscapeWhitespaceInPath(passwordFile);
                 var sshCommand = $"-f {passwordFilePath} ssh -qtt {StrictHostKeyChecking(ssh)} -p {ssh.Port} {Credentials(ssh)} \"{GetExecuteCommand(fileArgument)}\"";
@@ -45,8 +45,7 @@ namespace AgentDeploy.Services.ScriptExecutors
 
         protected override async Task Cleanup(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
-            var sourceDir = PathUtils.Combine(ExecutionOptions.DirectorySeparatorChar, ExecutionOptions.TempDir, sourceDirectory);
-            await UsePasswordFile(ssh, sourceDir, async passwordFile =>
+            await UsePasswordFile(ssh, async passwordFile =>
             {
                 var passwordFilePath = PathUtils.EscapeWhitespaceInPath(passwordFile);
                 var sshCommand = $"-f {passwordFilePath} ssh {StrictHostKeyChecking(ssh)} -p {ssh.Port} {Credentials(ssh)} \"{GetCleanupCommand(remoteDirectory)}\"";
@@ -55,9 +54,9 @@ namespace AgentDeploy.Services.ScriptExecutors
             });
         }
 
-        private async Task<T> UsePasswordFile<T>(SecureShellOptions ssh, string directory, Func<string, Task<T>> task)
+        private async Task<T> UsePasswordFile<T>(SecureShellOptions ssh, Func<string, Task<T>> task)
         {
-            var passwordFile = PathUtils.Combine(ExecutionOptions.DirectorySeparatorChar, directory, "sshpass.txt");
+            var passwordFile = PathUtils.Combine(ExecutionOptions.DirectorySeparatorChar, ExecutionOptions.TempDir, $"sshpass-{_operationContext.CorrelationId}.txt");
             await _fileService.WriteText(passwordFile, ssh.Password!, CancellationToken.None);
             try
             {

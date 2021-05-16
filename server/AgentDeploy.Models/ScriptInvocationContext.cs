@@ -7,11 +7,13 @@ namespace AgentDeploy.Models
 {
     public class ScriptInvocationContext
     {
-        public Script Script { get; set; } = null!;
-        public List<AcceptedScriptInvocationArgument> Arguments { get; set; } = new(0);
-        public AcceptedScriptInvocationFile[] Files { get; set; } = Array.Empty<AcceptedScriptInvocationFile>();
-        public ScriptEnvironmentVariable[] EnvironmentVariables { get; set; } = Array.Empty<ScriptEnvironmentVariable>();
-        public SecureShellOptions? SecureShellOptions { get; set; }
-        public Guid? WebSocketSessionId { get; set; }
+        public Script Script { get; init; } = null!;
+        public List<AcceptedScriptInvocationArgument> Arguments { get; init; } = new(0);
+        public AcceptedScriptInvocationFile[] Files { get; init; } = Array.Empty<AcceptedScriptInvocationFile>();
+        public ScriptEnvironmentVariable[] EnvironmentVariables { get; init; } = Array.Empty<ScriptEnvironmentVariable>();
+        public SecureShellOptions? SecureShellOptions { get; init; }
+        public Guid? WebSocketSessionId { get; init; }
+        public DateTime Timestamp { get; } = DateTime.UtcNow;
+        public Guid CorrelationId { get; init; }
     }
 }

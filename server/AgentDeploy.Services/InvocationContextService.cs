@@ -70,7 +70,8 @@ namespace AgentDeploy.Services
                 Files = acceptedFiles.ToArray(),
                 EnvironmentVariables = scriptInvocation.EnvironmentVariables,
                 SecureShellOptions = scriptAccessDeclaration?.Ssh ?? _operationContext.Token.Ssh,
-                WebSocketSessionId = scriptInvocation.WebsocketSessionId
+                WebSocketSessionId = scriptInvocation.WebsocketSessionId,
+                CorrelationId = _operationContext.CorrelationId
             };
         }
 
