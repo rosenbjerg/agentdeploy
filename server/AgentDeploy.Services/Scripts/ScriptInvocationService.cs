@@ -33,7 +33,7 @@ namespace AgentDeploy.Services.Scripts
 
         public async Task<ExecutionResult> Invoke(ScriptInvocationContext invocationContext)
         {
-            var directory = CreateTemporaryDirectory();
+            var directory = CreateTemporaryDirectory(invocationContext.CorrelationId, invocationContext.Timestamp);
             try
             {
                 using var scriptLock = await _scriptInvocationLockService.Lock(invocationContext.Script, _operationContext.TokenString, _operationContext.OperationCancelled);
@@ -45,11 +45,11 @@ namespace AgentDeploy.Services.Scripts
                 _fileService.DeleteDirectory(directory, true);
             }
         }
-        
 
-        private string CreateTemporaryDirectory()
+
+        private string CreateTemporaryDirectory(Guid correlationId, DateTime timestamp)
         {
-            var directoryName = $"agentd_job_{DateTime.Now:yyyyMMddhhmmssfff}_{Guid.NewGuid()}";
+            var directoryName = $"agentd_job_{timestamp:yyyyMMddhhmmssfff}_{correlationId}";
             var directory = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, _executionOptions.TempDir, directoryName);
             _fileService.CreateDirectory(directory);
             return directory;
