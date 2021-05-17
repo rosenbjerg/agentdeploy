@@ -128,8 +128,18 @@ namespace AgentDeploy.Services
         {
             if (!scriptInvocationFiles.TryGetValue(scriptFileKey, out var scriptFileArgument))
             {
-                failed.Add(new InvocationArgumentError(scriptFileKey, "No file provided"));
-                return null;
+                if (scriptFileDefinition.Optional)
+                {
+                    return new ScriptInvocationFile
+                    {
+                        Key = scriptFileKey,
+                    };
+                }
+                else
+                {
+                    failed.Add(new InvocationArgumentError(scriptFileKey, "No file provided"));
+                    return null;
+                }
             }
 
             if (scriptFileArgument.FileSize < scriptFileDefinition.MinSize)
