@@ -395,6 +395,40 @@ namespace AgentDeploy.Tests.E2E
                 Assert.AreEqual("test_file:", instance.ErrorData[1]);
             }
         }
+        
+        [TestCase(false, false, false)]
+        [TestCase(false, true, true)]
+        [TestCase(true, false, true)]
+        [TestCase(true, true, true)]
+        public async Task RequiredFile(bool optional, bool provideFile, bool success)
+        {
+            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo test", Files = new Dictionary<string, ScriptFileDefinition?>
+            {
+                {"test_file", new ScriptFileDefinition
+                {
+                    Optional = optional
+                }}
+            } });
+            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            
+            var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps{(provideFile ? " -f test_file=E2E/Files/testfile.txt" : "")}");
+
+            if (success)
+            {
+                Assert.Zero(exitCode);
+                Assert.AreEqual(1, instance.OutputData.Count);
+                Assert.AreEqual("test", instance.OutputData[0]);
+            }
+            else
+            {
+                Assert.NotZero(exitCode);
+                Assert.AreEqual(3, instance.ErrorData.Count);
+                Assert.AreEqual("test_file:", instance.ErrorData[1]);
+                Assert.AreEqual("  No file provided", instance.ErrorData[2]);
+            }
+        }
 
         [Test]
         public async Task MissingArgument_NoDefaultValue()
