@@ -8,7 +8,7 @@ namespace AgentDeploy.Services
 {
     public static class ReplacementUtils
     {
-        private static readonly Regex VariableRegex = new(@"\$\(([^)]+)\)", RegexOptions.Compiled);
+        private static readonly Regex VariableRegex = new(@"\$\(([\S]+)\)", RegexOptions.Compiled);
         
         public static string HideSecrets(string text, ScriptInvocationContext invocationContext)
         {
