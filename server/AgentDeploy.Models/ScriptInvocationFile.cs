@@ -8,6 +8,6 @@ namespace AgentDeploy.Models
         public string Key { get; set; } = null!;
         public string FileName { get; set; } = null!;
         public long FileSize { get; set; }
-        public Func<Stream> Read { get; set; } = null!;
+        public Func<Stream>? Read { get; set; }
     }
 }

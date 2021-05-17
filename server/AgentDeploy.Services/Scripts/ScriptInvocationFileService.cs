@@ -29,14 +29,27 @@ namespace AgentDeploy.Services.Scripts
             _fileService.CreateDirectory(filesDirectory);
             foreach (var file in invocationContext.Files)
             {
-                var filePath = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, filesDirectory, file.FileName);
-                _logger.LogDebug("Downloading {InputFile} to {Path}", file.FileName, filePath);
-                
-                await using var inputStream = file.OpenRead();
-                await _fileService.Write(inputStream, filePath, cancellationToken);
-                await ExecuteFilePreprocessing(file, filePath);
-                invocationContext.Arguments.Add(new AcceptedScriptInvocationArgument(file.Name, filePath, false));
+                if (file.OpenRead != null)
+                {
+                    await DownloadFile(invocationContext, cancellationToken, filesDirectory, file);
+                }
+                else
+                {
+                    invocationContext.Arguments.Add(new AcceptedScriptInvocationArgument(file.Name, string.Empty, false));   
+                }
             }
+        }
+
+        private async Task DownloadFile(ScriptInvocationContext invocationContext, CancellationToken cancellationToken,
+            string filesDirectory, AcceptedScriptInvocationFile file)
+        {
+            var filePath = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, filesDirectory, file.FileName);
+            _logger.LogDebug("Downloading {InputFile} to {Path}", file.FileName, filePath);
+
+            await using var inputStream = file.OpenRead!();
+            await _fileService.Write(inputStream, filePath, cancellationToken);
+            await ExecuteFilePreprocessing(file, filePath);
+            invocationContext.Arguments.Add(new AcceptedScriptInvocationArgument(file.Name, filePath, false));
         }
 
         private async Task ExecuteFilePreprocessing(AcceptedScriptInvocationFile file, string filePath)
