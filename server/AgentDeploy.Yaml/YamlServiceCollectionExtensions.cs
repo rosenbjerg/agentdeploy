@@ -10,7 +10,7 @@ namespace AgentDeploy.Yaml
         {
             return serviceCollection
                 .AddSingleton(_ => new DeserializerBuilder()
-                    .WithTypeConverter(new YamlStringEnumConverter())
+                    .WithTypeConverter(new ExtendedYamlEnumConverter())
                     .WithNamingConvention(UnderscoredNamingConvention.Instance)
                     .Build());
         }

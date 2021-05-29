@@ -42,7 +42,15 @@ namespace AgentDeploy.Services.ScriptExecutors
 
         protected static string StrictHostKeyChecking(SecureShellOptions secureShellOptions)
         {
-            return $"-o StrictHostKeyChecking={(secureShellOptions.StrictHostKeyChecking ? "yes" : "no")}";
+            var hostKeyChecking = secureShellOptions.HostKeyChecking switch
+            {
+                HostKeyCheckingOptions.AcceptNew => "accept-new",
+                HostKeyCheckingOptions.Yes => "yes",
+                HostKeyCheckingOptions.No => "no",
+                HostKeyCheckingOptions.Off => "off",
+                _ => throw new ArgumentOutOfRangeException(nameof(secureShellOptions), "Unknown StrictHostKeyChecking value")
+            };
+            return $"-o StrictHostKeyChecking={hostKeyChecking}";
         }
 
         protected static string Credentials(SecureShellOptions secureShellOptions)

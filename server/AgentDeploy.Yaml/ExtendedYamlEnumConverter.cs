@@ -9,7 +9,7 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace AgentDeploy.Yaml
 {
-    public class YamlStringEnumConverter : IYamlTypeConverter
+    public class ExtendedYamlEnumConverter : IYamlTypeConverter
     {
         private static readonly Dictionary<Type, Dictionary<string, MemberInfo>> TypeCache = new();
         

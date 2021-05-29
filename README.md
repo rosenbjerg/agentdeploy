@@ -4,9 +4,13 @@ An agent for managing execution of [taco bell programming](http://widgetsandshit
 
 [![CI](https://github.com/rosenbjerg/AgentDeploy/actions/workflows/ci.yml/badge.svg)](https://github.com/rosenbjerg/agentdeploy/actions/workflows/ci.yml)
 [![GitHub](https://img.shields.io/github/license/rosenbjerg/agentdeploy)](https://github.com/rosenbjerg/agentdeploy/blob/main/LICENSE)
-[![Server Docker Pulls](https://img.shields.io/docker/pulls/mrosenbjerg/agentd-server?label=server%20docker%20pulls)](https://hub.docker.com/r/mrosenbjerg/agentd-server)
-[![Client Docker Pulls](https://img.shields.io/docker/pulls/mrosenbjerg/agentd-client?label=client%20docker%20pulls)](https://hub.docker.com/r/mrosenbjerg/agentd-client)
 [![codecov.io](https://codecov.io/github/rosenbjerg/agentdeploy/coverage.svg?branch=main)](https://app.codecov.io/gh/rosenbjerg/agentdeploy)
+
+[![Server Docker Pulls](https://img.shields.io/docker/pulls/mrosenbjerg/agentd-server?label=server%20docker%20pulls)](https://hub.docker.com/r/mrosenbjerg/agentd-server)
+[![Server Docker Image size](https://img.shields.io/docker/image-size/mrosenbjerg/agentd-server)](https://hub.docker.com/r/mrosenbjerg/agentd-server)
+
+[![Client Docker Pulls](https://img.shields.io/docker/pulls/mrosenbjerg/agentd-client?label=client%20docker%20pulls)](https://hub.docker.com/r/mrosenbjerg/agentd-client)
+[![Client Docker Image size](https://img.shields.io/docker/image-size/mrosenbjerg/agentd-client)](https://hub.docker.com/r/mrosenbjerg/agentd-client)
 
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=rosenbjerg_AgentDeploy&metric=security_rating)](https://sonarcloud.io/dashboard?id=rosenbjerg_AgentDeploy)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=rosenbjerg_AgentDeploy&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=rosenbjerg_AgentDeploy)
