@@ -22,7 +22,7 @@ namespace AgentDeploy.Tests.Unit
         {
             var directoryOptions = new DirectoryOptions { Scripts = "test", Tokens = "test" };
             var deserializer = new DeserializerBuilder()
-                .WithTypeConverter(new YamlStringEnumConverter())
+                .WithTypeConverter(new ExtendedYamlEnumConverter())
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
             var fileReaderMock = new Mock<IFileService>();
@@ -44,7 +44,7 @@ namespace AgentDeploy.Tests.Unit
         {
             var directoryOptions = new DirectoryOptions { Scripts = "test", Tokens = "test" };
             var deserializer = new DeserializerBuilder()
-                .WithTypeConverter(new YamlStringEnumConverter())
+                .WithTypeConverter(new ExtendedYamlEnumConverter())
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
             var fileReaderMock = new Mock<IFileService>();
@@ -66,7 +66,7 @@ namespace AgentDeploy.Tests.Unit
         {
             var directoryOptions = new DirectoryOptions { Scripts = "test", Tokens = "test" };
             var deserializer = new DeserializerBuilder()
-                .WithTypeConverter(new YamlStringEnumConverter())
+                .WithTypeConverter(new ExtendedYamlEnumConverter())
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
             var fileReaderMock = new Mock<IFileService>();
@@ -97,7 +97,7 @@ namespace AgentDeploy.Tests.Unit
         {
             var directoryOptions = new DirectoryOptions { Scripts = "test", Tokens = "test" };
             var deserializer = new DeserializerBuilder()
-                .WithTypeConverter(new YamlStringEnumConverter())
+                .WithTypeConverter(new ExtendedYamlEnumConverter())
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
             var fileReaderMock = new Mock<IFileService>();
