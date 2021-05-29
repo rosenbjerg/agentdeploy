@@ -13,10 +13,10 @@ namespace AgentDeploy.Models.Tokens
         public string TemporaryAgentDirectory { get; init; } = "/tmp";
         
         public string? PrivateKeyPath { get; init; }
-        
+
         /// <summary>
         /// Whether to require strict host key checking when connecting using SSH
         /// </summary>
-        public bool StrictHostKeyChecking { get; init; }
+        public HostKeyCheckingOptions HostKeyChecking { get; init; } = HostKeyCheckingOptions.AcceptNew;
     }
 }

@@ -26,7 +26,7 @@ namespace AgentDeploy.Tests.Unit
                     Address = "localhost",
                     Port = 22,
                     Username = "johndoe",
-                    StrictHostKeyChecking = true,
+                    HostKeyChecking = HostKeyCheckingOptions.Yes,
                     Password = password,
                     PrivateKeyPath = privateKeyPath
                 }
