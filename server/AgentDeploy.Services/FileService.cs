@@ -50,8 +50,7 @@ namespace AgentDeploy.Services
         public async Task CopyFileAsync(string sourcePath, string destinationPath, CancellationToken cancellationToken)
         {
             await using var inputStream = File.OpenRead(sourcePath);
-            await using var outputStream = File.Create(destinationPath);
-            await inputStream.CopyToAsync(outputStream, cancellationToken);
+            await WriteAsync(inputStream, destinationPath, cancellationToken);
         }
     }
 }
