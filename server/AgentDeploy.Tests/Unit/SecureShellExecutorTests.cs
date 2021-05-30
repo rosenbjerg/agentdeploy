@@ -115,7 +115,7 @@ namespace AgentDeploy.Tests.Unit
             
             Assert.AreEqual(0, result);
             
-            fileService.Verify(s => s.WriteText(passwordFile, scriptInvocationContext.SecureShellOptions.Password, It.IsAny<CancellationToken>()), Times.Exactly(3));
+            fileService.Verify(s => s.WriteTextAsync(passwordFile, scriptInvocationContext.SecureShellOptions.Password, It.IsAny<CancellationToken>()), Times.Exactly(3));
             processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} scp -rq -o StrictHostKeyChecking=accept-new -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>()), Times.Once);
             processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -qtt -o StrictHostKeyChecking=accept-new -p 22 {username}@host.docker.internal \"/bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>()), Times.Once);
             processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -o StrictHostKeyChecking=accept-new -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>()), Times.Once);

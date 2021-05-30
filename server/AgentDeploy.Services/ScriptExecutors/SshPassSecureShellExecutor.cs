@@ -57,7 +57,7 @@ namespace AgentDeploy.Services.ScriptExecutors
         private async Task<T> UsePasswordFile<T>(SecureShellOptions ssh, Func<string, Task<T>> task)
         {
             var passwordFile = PathUtils.Combine(ExecutionOptions.DirectorySeparatorChar, ExecutionOptions.TempDir, $"sshpass-{_operationContext.CorrelationId}.txt");
-            await _fileService.WriteText(passwordFile, ssh.Password!, CancellationToken.None);
+            await _fileService.WriteTextAsync(passwordFile, ssh.Password!, CancellationToken.None);
             try
             {
                 return await task(passwordFile);

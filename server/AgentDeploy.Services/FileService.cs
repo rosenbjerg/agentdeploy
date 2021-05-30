@@ -30,10 +30,10 @@ namespace AgentDeploy.Services
                 .FirstOrDefault(File.Exists);
         }
 
-        public async Task WriteText(string filePath, string content, CancellationToken cancellationToken) =>
+        public async Task WriteTextAsync(string filePath, string content, CancellationToken cancellationToken) =>
             await File.WriteAllTextAsync(filePath, content, cancellationToken);
 
-        public async Task Write(Stream inputStream, string filePath, CancellationToken cancellationToken)
+        public async Task WriteAsync(Stream inputStream, string filePath, CancellationToken cancellationToken)
         {
             await using var fileStream = File.Create(filePath);
             await inputStream.CopyToAsync(fileStream, cancellationToken);

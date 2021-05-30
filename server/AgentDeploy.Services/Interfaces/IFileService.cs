@@ -8,8 +8,8 @@ namespace AgentDeploy.Services
     {
         Task<string?> ReadAsync(string? filePath, CancellationToken cancellationToken);
         string? FindFile(string directoryPath, string fileName, params string[] extensions);
-        Task WriteText(string filePath, string content, CancellationToken cancellationToken);
-        Task Write(Stream inputStream, string filePath, CancellationToken cancellationToken);
+        Task WriteTextAsync(string filePath, string content, CancellationToken cancellationToken);
+        Task WriteAsync(Stream inputStream, string filePath, CancellationToken cancellationToken);
         void CreateDirectory(string directoryPath);
         void DeleteDirectory(string directoryPath, bool recursive);
         bool FileExists(string filePath);

@@ -1,10 +1,11 @@
 ﻿variables:
   hello:
-    type: string
   password:
-    type: 'string'
-show_script: true
-show_output: true
+    secret: yes
+show_script: yes
+show_output: yes
+include_files:
+  - files/*.txt
 command: |
   echo "$(hello) $WORLD"
   echo "hidden password is $(password)"
