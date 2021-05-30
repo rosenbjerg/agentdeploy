@@ -38,15 +38,15 @@ namespace AgentDeploy.Tests.Unit
             var scriptTransformer = new ScriptTransformer(executionOptions, null!);
             var processExecutionServiceMock = new Mock<IProcessExecutionService>();
             processExecutionServiceMock
-                .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>()))
+                .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>(), It.IsAny<string>()))
                 .ReturnsAsync(new ProcessExecutionResult(0, Array.Empty<string>(), Array.Empty<string>()));
             var service = new ExplicitPrivateKeySecureShellExecutor(executionOptions, scriptTransformer, processExecutionServiceMock.Object);
             var result = await service.Execute(scriptInvocationContext, sourceDir, _ => { });
             
             Assert.AreEqual(0, result);
-            processExecutionServiceMock.Verify(s => s.Invoke("scp", $"-rqi {pkPath} -o StrictHostKeyChecking=accept-new -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>()), Times.Once);
-            processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-qtti {pkPath} -o StrictHostKeyChecking=accept-new -p 22 {username}@host.docker.internal \"/bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>()), Times.Once);
-            processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-i {pkPath} -o StrictHostKeyChecking=accept-new -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("scp", $"-rqi {pkPath} -o StrictHostKeyChecking=accept-new -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>(), It.IsAny<string>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-qtti {pkPath} -o StrictHostKeyChecking=accept-new -p 22 {username}@host.docker.internal \"cd {targetDir} ; /bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>(), It.IsAny<string>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-i {pkPath} -o StrictHostKeyChecking=accept-new -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>(), It.IsAny<string>()), Times.Once);
         }
         
         [TestCase("user", "/source dir")]
@@ -71,15 +71,15 @@ namespace AgentDeploy.Tests.Unit
             var scriptTransformer = new ScriptTransformer(executionOptions, null!);
             var processExecutionServiceMock = new Mock<IProcessExecutionService>();
             processExecutionServiceMock
-                .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>()))
+                .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>(), It.IsAny<string>()))
                 .ReturnsAsync(new ProcessExecutionResult(0, Array.Empty<string>(), Array.Empty<string>()));
             var service = new ImplicitPrivateKeySecureShellExecutor(executionOptions, scriptTransformer, processExecutionServiceMock.Object);
             var result = await service.Execute(scriptInvocationContext, sourceDir, _ => { });
             
             Assert.AreEqual(0, result);
-            processExecutionServiceMock.Verify(s => s.Invoke("scp", $"-rq -o StrictHostKeyChecking=off -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>()), Times.Once);
-            processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-qtt -o StrictHostKeyChecking=off -p 22 {username}@host.docker.internal \"/bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>()), Times.Once);
-            processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-o StrictHostKeyChecking=off -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("scp", $"-rq -o StrictHostKeyChecking=off -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>(), It.IsAny<string>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-qtt -o StrictHostKeyChecking=off -p 22 {username}@host.docker.internal \"cd {targetDir} ; /bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>(), It.IsAny<string>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-o StrictHostKeyChecking=off -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>(), It.IsAny<string>()), Times.Once);
         }
         
         [TestCase("user", "/tmp/source dir")]
@@ -110,7 +110,7 @@ namespace AgentDeploy.Tests.Unit
             var scriptTransformer = new ScriptTransformer(executionOptions, fileService.Object);
             var processExecutionServiceMock = new Mock<IProcessExecutionService>();
             processExecutionServiceMock
-                .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>()))
+                .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>(), It.IsAny<string>()))
                 .ReturnsAsync(new ProcessExecutionResult(0, Array.Empty<string>(), Array.Empty<string>()));
             var service = new SshPassSecureShellExecutor(executionOptions, scriptTransformer, processExecutionServiceMock.Object, fileService.Object, operationContext);
             var result = await service.Execute(scriptInvocationContext, sourceDir, _ => { });
@@ -118,9 +118,9 @@ namespace AgentDeploy.Tests.Unit
             Assert.AreEqual(0, result);
             
             fileService.Verify(s => s.WriteTextAsync(passwordFile, scriptInvocationContext.SecureShellOptions.Password, It.IsAny<CancellationToken>()), Times.Exactly(3));
-            processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} scp -rq -o StrictHostKeyChecking=yes -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>()), Times.Once);
-            processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -qtt -o StrictHostKeyChecking=yes -p 22 {username}@host.docker.internal \"/bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>()), Times.Once);
-            processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -o StrictHostKeyChecking=yes -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} scp -rq -o StrictHostKeyChecking=yes -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>(), It.IsAny<string>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -qtt -o StrictHostKeyChecking=yes -p 22 {username}@host.docker.internal \"cd {targetDir} ; /bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>(), It.IsAny<string>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -o StrictHostKeyChecking=yes -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>(), It.IsAny<string>()), Times.Once);
         }
     }
 }
