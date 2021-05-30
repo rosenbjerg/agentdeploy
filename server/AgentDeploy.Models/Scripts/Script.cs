@@ -18,6 +18,12 @@ namespace AgentDeploy.Models.Scripts
         /// Files needed for invocation of script
         /// </summary>
         public Dictionary<string, ScriptFileDefinition?> Files { get; init; } = new();
+
+        /// <summary>
+        /// File assets necessary for script execution. File paths must be relative to working directory or absolute.
+        /// Will be copied to script execution working directory
+        /// </summary>
+        public List<string> Assets { get; init; } = new();
         
         /// <summary>
         /// The command to run when executing this script

@@ -15,5 +15,11 @@ namespace AgentDeploy.Models.Options
         /// </summary>
         [Required]
         public string Tokens { get; set; } = null!;
+        
+        /// <summary>
+        /// Directory containing assets for scripts
+        /// </summary>
+        [Required]
+        public string Assets { get; set; } = null!;
     }
 }

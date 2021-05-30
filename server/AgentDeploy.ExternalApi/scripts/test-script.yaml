@@ -4,8 +4,8 @@
     secret: yes
 show_script: yes
 show_output: yes
-include_files:
-  - files/*.txt
+assets:
+  - files/dummy.txt
 command: |
   echo "$(hello) $WORLD"
   echo "hidden password is $(password)"
