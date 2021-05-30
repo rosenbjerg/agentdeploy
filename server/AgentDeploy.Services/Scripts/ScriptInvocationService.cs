@@ -37,7 +37,7 @@ namespace AgentDeploy.Services.Scripts
             try
             {
                 using var scriptLock = await _scriptInvocationLockService.Lock(invocationContext.Script, _operationContext.TokenString, _operationContext.OperationCancelled);
-                await _scriptInvocationFileService.CopyAssets(invocationContext.Script, directory);
+                await _scriptInvocationFileService.CopyAssets(invocationContext.Script, directory, _operationContext.OperationCancelled);
                 await _scriptInvocationFileService.DownloadFiles(invocationContext, directory, _operationContext.OperationCancelled);
                 return await _scriptExecutionService.Execute(invocationContext, directory, _operationContext.OperationCancelled);
             }

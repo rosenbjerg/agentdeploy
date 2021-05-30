@@ -39,7 +39,7 @@ namespace AgentDeploy.Tests.Unit
                 }
             };
             
-            var service = new ScriptInvocationFileService(executionOptions, processExecutionServiceMock.Object, fileService.Object, NullLogger<ScriptInvocationFileService>.Instance);
+            var service = new ScriptInvocationFileService(executionOptions, null!, processExecutionServiceMock.Object, fileService.Object, NullLogger<ScriptInvocationFileService>.Instance);
             await service.DownloadFiles(invocationContext, "testDir", CancellationToken.None);
             
             processExecutionServiceMock.Verify(s => s.Invoke("bash", $"-c \"{expectedCommand}\"", It.IsAny<Action<string, bool>>()), Times.Once);
@@ -68,7 +68,7 @@ namespace AgentDeploy.Tests.Unit
                 }
             };
             
-            var service = new ScriptInvocationFileService(executionOptions, processExecutionServiceMock.Object, fileService.Object, NullLogger<ScriptInvocationFileService>.Instance);
+            var service = new ScriptInvocationFileService(executionOptions, null!, processExecutionServiceMock.Object, fileService.Object, NullLogger<ScriptInvocationFileService>.Instance);
             Assert.ThrowsAsync<FilePreprocessingFailedException>(() => service.DownloadFiles(invocationContext, "testDir", CancellationToken.None));
         }
     }
