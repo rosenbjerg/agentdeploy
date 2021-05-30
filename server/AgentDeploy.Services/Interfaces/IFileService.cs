@@ -14,5 +14,6 @@ namespace AgentDeploy.Services
         void DeleteDirectory(string directoryPath, bool recursive);
         bool FileExists(string filePath);
         void DeleteFile(string filePath);
+        Task CopyFileAsync(string sourcePath, string destinationPath, CancellationToken cancellationToken);
     }
 }
