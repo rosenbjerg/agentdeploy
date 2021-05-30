@@ -429,6 +429,34 @@ namespace AgentDeploy.Tests.E2E
                 Assert.AreEqual("  No file provided", instance.ErrorData[2]);
             }
         }
+        
+        [TestCase("testfile.txt", true)]
+        [TestCase("*.txt", true)]
+        [TestCase("notfound.jpeg", false)]
+        [TestCase("*.jpeg", false)]
+        public async Task AssetFile(string assetGlob, bool exists)
+        {
+            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "cat ./testfile.txt", Assets = new List<string> { assetGlob }});
+            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            
+            var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
+
+            if (exists)
+            {
+                Assert.Zero(exitCode);
+                Assert.AreEqual(1, instance.OutputData.Count);
+                Assert.AreEqual("the quick brown fox jumps over the lazy dog", instance.OutputData[0]);
+            }
+            else
+            {
+                Assert.NotZero(exitCode);
+                Assert.AreEqual(3, instance.ErrorData.Count);
+                Assert.AreEqual("Missing files:", instance.ErrorData[1]);
+                Assert.AreEqual($"  {assetGlob}", instance.ErrorData[2]);
+            }
+        }
 
         [Test]
         public async Task MissingArgument_NoDefaultValue()
