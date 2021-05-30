@@ -59,7 +59,8 @@ namespace AgentDeploy.Tests.Unit
             {
                 SecureShellOptions = new SecureShellOptions
                 {
-                    Username = username
+                    Username = username,
+                    HostKeyChecking = HostKeyCheckingOptions.Off
                 }
             };
             
@@ -76,9 +77,9 @@ namespace AgentDeploy.Tests.Unit
             var result = await service.Execute(scriptInvocationContext, sourceDir, _ => { });
             
             Assert.AreEqual(0, result);
-            processExecutionServiceMock.Verify(s => s.Invoke("scp", $"-rq -o StrictHostKeyChecking=accept-new -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>()), Times.Once);
-            processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-qtt -o StrictHostKeyChecking=accept-new -p 22 {username}@host.docker.internal \"/bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>()), Times.Once);
-            processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-o StrictHostKeyChecking=accept-new -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("scp", $"-rq -o StrictHostKeyChecking=off -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-qtt -o StrictHostKeyChecking=off -p 22 {username}@host.docker.internal \"/bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("ssh", $"-o StrictHostKeyChecking=off -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>()), Times.Once);
         }
         
         [TestCase("user", "/tmp/source dir")]
@@ -94,7 +95,8 @@ namespace AgentDeploy.Tests.Unit
                 SecureShellOptions = new SecureShellOptions
                 {
                     Username = username,
-                    Password = "my-password"
+                    Password = "my-password",
+                    HostKeyChecking = HostKeyCheckingOptions.Yes
                 },
                 CorrelationId = operationContext.CorrelationId
             };
@@ -116,9 +118,9 @@ namespace AgentDeploy.Tests.Unit
             Assert.AreEqual(0, result);
             
             fileService.Verify(s => s.WriteTextAsync(passwordFile, scriptInvocationContext.SecureShellOptions.Password, It.IsAny<CancellationToken>()), Times.Exactly(3));
-            processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} scp -rq -o StrictHostKeyChecking=accept-new -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>()), Times.Once);
-            processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -qtt -o StrictHostKeyChecking=accept-new -p 22 {username}@host.docker.internal \"/bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>()), Times.Once);
-            processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -o StrictHostKeyChecking=accept-new -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} scp -rq -o StrictHostKeyChecking=yes -P 22 {sourceDir} {username}@host.docker.internal:{targetDir}", It.IsAny<Action<string, bool>>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -qtt -o StrictHostKeyChecking=yes -p 22 {username}@host.docker.internal \"/bin/sh {targetScript}\"", It.IsAny<Action<string, bool>>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("sshpass", $"-f {passwordFile} ssh -o StrictHostKeyChecking=yes -p 22 {username}@host.docker.internal \"rm -r {targetDir}\"", It.IsAny<Action<string, bool>>()), Times.Once);
         }
     }
 }
