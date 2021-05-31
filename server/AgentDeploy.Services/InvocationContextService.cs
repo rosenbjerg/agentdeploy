@@ -11,6 +11,16 @@ using AgentDeploy.Services.Scripts;
 
 namespace AgentDeploy.Services
 {
+    public interface ITypeValidator
+    {
+        
+    }
+
+    public sealed class RegexTypeValidator
+    {
+        
+    }
+    
     public sealed class InvocationContextService : IInvocationContextService
     {
         private static readonly Dictionary<ScriptArgumentType, Regex?> TypeValidation = new()
@@ -18,6 +28,8 @@ namespace AgentDeploy.Services
             { ScriptArgumentType.Integer, new Regex("^\\d+$", RegexOptions.Compiled) },
             { ScriptArgumentType.Decimal, new Regex("^\\d+\\.\\d+$", RegexOptions.Compiled) },
             { ScriptArgumentType.Boolean, new Regex("^true|false$", RegexOptions.Compiled) },
+            { ScriptArgumentType.FQDN, new Regex("^(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{0,62}[a-zA-Z0-9]\\.)+[a-zA-Z]{2,63}$)$", RegexOptions.Compiled) },
+            { ScriptArgumentType.IPv4, new Regex("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}↵(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", RegexOptions.Compiled) },
             { ScriptArgumentType.String, null },
         };
         

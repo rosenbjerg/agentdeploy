@@ -5,6 +5,8 @@ namespace AgentDeploy.Models.Scripts
     [ExtendedYamlEnum]
     public enum ScriptArgumentType
     {
+        FQDN,
+        
         String,
         
         [ExtendedYamlEnumMember("int")]
