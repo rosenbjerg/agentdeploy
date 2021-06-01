@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -63,8 +64,8 @@ namespace AgentDeploy.Services.Scripts
         {
             var globResults = script.Assets.Distinct().Select(assetGlob =>
             {
-                var found = Directory
-                    .GetFiles(_directoryOptions.Assets, assetGlob, SearchOption.AllDirectories)
+                var found = _fileService
+                    .FindFiles(_directoryOptions.Assets, assetGlob, true)
                     .Select(file =>
                     {
                         var fileName = Path.GetFileName(file);
@@ -77,7 +78,7 @@ namespace AgentDeploy.Services.Scripts
             return globResults;
         }
 
-        private static void VerifyExistenceOfAssets((string AssetGlob, (string SourcePath, string DestinationPath)[] found)[] assets)
+        private static void VerifyExistenceOfAssets(IEnumerable<(string AssetGlob, (string SourcePath, string DestinationPath)[] found)> assets)
         {
             var missing = assets.Where(asset => !asset.found.Any()).ToArray();
             if (missing.Any())

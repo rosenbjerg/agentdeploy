@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -51,6 +52,11 @@ namespace AgentDeploy.Services
         {
             await using var inputStream = File.OpenRead(sourcePath);
             await WriteAsync(inputStream, destinationPath, cancellationToken);
+        }
+
+        public IEnumerable<string> FindFiles(string directory, string glob, bool recursive)
+        {
+            return Directory.EnumerateFiles(directory, glob, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         }
     }
 }

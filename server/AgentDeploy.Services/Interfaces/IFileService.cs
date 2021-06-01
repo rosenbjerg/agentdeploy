@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,5 +16,6 @@ namespace AgentDeploy.Services
         bool FileExists(string filePath);
         void DeleteFile(string filePath);
         Task CopyFileAsync(string sourcePath, string destinationPath, CancellationToken cancellationToken);
+        IEnumerable<string> FindFiles(string directory, string glob, bool recursive);
     }
 }
