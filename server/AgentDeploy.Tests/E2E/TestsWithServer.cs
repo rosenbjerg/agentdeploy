@@ -618,7 +618,7 @@ namespace AgentDeploy.Tests.E2E
                         {
                             "test", new ScriptAccessDeclaration
                             {
-                                VariableContraints = new Dictionary<string, string>
+                                VariableConstraints = new Dictionary<string, string>
                                 {
                                     { "test_var", tokenConstraint }
                                 }
