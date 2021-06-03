@@ -14,6 +14,13 @@ namespace AgentDeploy.Models.Scripts
         Decimal,
         
         [ExtendedYamlEnumMember("bool")]
-        Boolean
+        Boolean,
+        
+        IP,
+        IPv4,
+        IPv6,
+        DnsName,
+        Hostname,
+        Email
     }
 }

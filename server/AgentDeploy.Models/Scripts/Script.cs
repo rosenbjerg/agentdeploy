@@ -18,11 +18,11 @@ namespace AgentDeploy.Models.Scripts
         /// Files needed for invocation of script
         /// </summary>
         public Dictionary<string, ScriptFileDefinition?> Files { get; init; } = new();
-        
+
         /// <summary>
         /// The command to run when executing this script
         /// </summary>
-        public string Command { get; init; } = null!;
+        public string Command { get; init; } = string.Empty;
         
         /// <summary>
         /// Whether to include command in response
