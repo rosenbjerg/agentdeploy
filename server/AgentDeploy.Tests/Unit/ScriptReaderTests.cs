@@ -39,6 +39,62 @@ namespace AgentDeploy.Tests.Unit
             Assert.AreEqual("echo test", script.Command);
         }
         
+        [TestCase("boolean", ScriptArgumentType.Boolean)]
+        [TestCase("bool", ScriptArgumentType.Boolean)]
+        [TestCase("decimal", ScriptArgumentType.Decimal)]
+        [TestCase("float", ScriptArgumentType.Decimal)]
+        [TestCase("int", ScriptArgumentType.Integer)]
+        [TestCase("integer", ScriptArgumentType.Integer)]
+        [TestCase("email", ScriptArgumentType.Email)]
+        [TestCase("hostname", ScriptArgumentType.Hostname)]
+        [TestCase("ip", ScriptArgumentType.IP)]
+        [TestCase("ipv4", ScriptArgumentType.IPv4)]
+        [TestCase("ipv6", ScriptArgumentType.IPv6)]
+        [TestCase("dns_name", ScriptArgumentType.DnsName)]
+        [TestCase("string", ScriptArgumentType.String)]
+        public async Task ScriptArgumentTypeReadingTest(string concurrencyYamlString, ScriptArgumentType expectedScriptArgumentType)
+        {
+            var directoryOptions = new DirectoryOptions { Scripts = "test", Tokens = "test" };
+            var deserializer = new DeserializerBuilder()
+                .WithTypeConverter(new ExtendedYamlEnumConverter())
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .Build();
+            var fileReaderMock = new Mock<IFileService>();
+            fileReaderMock.Setup(s => s.FindFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>())).Returns("test");
+            fileReaderMock.Setup(s => s.ReadAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync($"variables:\n  test:\n    type: {concurrencyYamlString}\ncommand: echo $(test)");
+            var scriptReaderLoggerMock = new Mock<ILogger<ScriptReader>>();
+            
+            var scriptReader = new ScriptReader(directoryOptions, deserializer, fileReaderMock.Object, scriptReaderLoggerMock.Object);
+
+            var script = await scriptReader.Load("test", It.IsAny<CancellationToken>());
+            
+            Assert.NotNull(script);
+            Assert.AreEqual(expectedScriptArgumentType, script!.Variables["test"]!.Type);
+        }
+        
+        [TestCase("none", ConcurrentExecutionLevel.None)]
+        [TestCase("per_token", ConcurrentExecutionLevel.PerToken)]
+        [TestCase("full", ConcurrentExecutionLevel.Full)]
+        public async Task ScriptArgumentConcurrentReadingTest(string concurrencyYamlString, ConcurrentExecutionLevel expectedConcurrentExecutionLevel)
+        {
+            var directoryOptions = new DirectoryOptions { Scripts = "test", Tokens = "test" };
+            var deserializer = new DeserializerBuilder()
+                .WithTypeConverter(new ExtendedYamlEnumConverter())
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .Build();
+            var fileReaderMock = new Mock<IFileService>();
+            fileReaderMock.Setup(s => s.FindFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>())).Returns("test");
+            fileReaderMock.Setup(s => s.ReadAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync($"concurrency: {concurrencyYamlString}");
+            var scriptReaderLoggerMock = new Mock<ILogger<ScriptReader>>();
+            
+            var scriptReader = new ScriptReader(directoryOptions, deserializer, fileReaderMock.Object, scriptReaderLoggerMock.Object);
+
+            var script = await scriptReader.Load("test", It.IsAny<CancellationToken>());
+            
+            Assert.NotNull(script);
+            Assert.AreEqual(expectedConcurrentExecutionLevel, script!.Concurrency);
+        }
+        
         [Test]
         public void TestScriptReader_UnusedVariable()
         {

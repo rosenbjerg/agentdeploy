@@ -4,6 +4,7 @@ using AgentDeploy.Services;
 using AgentDeploy.Services.Locking;
 using AgentDeploy.Services.ScriptExecutors;
 using AgentDeploy.Services.Scripts;
+using AgentDeploy.Services.TypeValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +31,7 @@ namespace AgentDeploy.ExternalApi
         public static IServiceCollection AddScriptInvocationServices(this IServiceCollection serviceCollection)
         {
             return serviceCollection
+                .AddSingleton<ITypeValidationService, TypeValidationService>()
                 .AddScoped<IInvocationContextService, InvocationContextService>()
                 .AddScoped<IScriptExecutionService, ScriptExecutionService>()
                 .AddScoped<IScriptInvocationService, ScriptInvocationService>()

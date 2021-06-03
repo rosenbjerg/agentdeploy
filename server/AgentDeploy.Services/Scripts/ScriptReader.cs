@@ -42,10 +42,10 @@ namespace AgentDeploy.Services.Scripts
             return result;
         }
 
-        private static void ValidateVariableUsage(Script result)
+        private static void ValidateVariableUsage(Script script)
         {
-            var declaredReplacements = result.Variables.Select(v => v.Key).Concat(result.Files.Select(f => f.Key)).ToArray();
-            var usedReplacements = ReplacementUtils.ExtractUsedVariables(result.Command);
+            var declaredReplacements = script.Variables.Select(v => v.Key).Concat(script.Files.Select(f => f.Key)).ToArray();
+            var usedReplacements = ReplacementUtils.ExtractUsedVariables(script.Command);
 
             var unusedReplacements = declaredReplacements.Where(dr => !usedReplacements.Contains(dr)).Distinct().ToArray();
             var undeclaredReplacements = usedReplacements.Where(ur => !declaredReplacements.Contains(ur)).Distinct().ToArray();
