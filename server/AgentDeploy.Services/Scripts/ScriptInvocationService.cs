@@ -33,10 +33,11 @@ namespace AgentDeploy.Services.Scripts
 
         public async Task<ExecutionResult> Invoke(ScriptInvocationContext invocationContext)
         {
-            var directory = CreateTemporaryDirectory(invocationContext.CorrelationId, invocationContext.Timestamp);
+            var directory = CreateScriptExecutionFolder(invocationContext.CorrelationId, invocationContext.Timestamp);
             try
             {
                 using var scriptLock = await _scriptInvocationLockService.Lock(invocationContext.Script, _operationContext.TokenString, _operationContext.OperationCancelled);
+                await _scriptInvocationFileService.CopyAssets(invocationContext.Script, directory, _operationContext.OperationCancelled);
                 await _scriptInvocationFileService.DownloadFiles(invocationContext, directory, _operationContext.OperationCancelled);
                 return await _scriptExecutionService.Execute(invocationContext, directory, _operationContext.OperationCancelled);
             }
@@ -47,7 +48,7 @@ namespace AgentDeploy.Services.Scripts
         }
 
 
-        private string CreateTemporaryDirectory(Guid correlationId, DateTime timestamp)
+        private string CreateScriptExecutionFolder(Guid correlationId, DateTime timestamp)
         {
             var directoryName = $"agentd_job_{timestamp:yyyyMMddhhmmssfff}_{correlationId}";
             var directory = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, _executionOptions.TempDir, directoryName);

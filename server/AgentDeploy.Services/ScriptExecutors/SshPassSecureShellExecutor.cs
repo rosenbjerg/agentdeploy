@@ -32,12 +32,12 @@ namespace AgentDeploy.Services.ScriptExecutors
             });
         }
 
-        protected override async Task<int> Execute(SecureShellOptions ssh, string sourceDirectory, string fileArgument, Action<ProcessOutput> onOutput)
+        protected override async Task<int> Execute(SecureShellOptions ssh, string remoteDirectory, string fileArgument, Action<ProcessOutput> onOutput)
         {
             return await UsePasswordFile(ssh, async passwordFile =>
             {
                 var passwordFilePath = PathUtils.EscapeWhitespaceInPath(passwordFile);
-                var sshCommand = $"-f {passwordFilePath} ssh -qtt {StrictHostKeyChecking(ssh)} -p {ssh.Port} {Credentials(ssh)} \"{GetExecuteCommand(fileArgument)}\"";
+                var sshCommand = $"-f {passwordFilePath} ssh -qtt {StrictHostKeyChecking(ssh)} -p {ssh.Port} {Credentials(ssh)} \"{GetExecuteCommand(remoteDirectory, fileArgument)}\"";
                 var result = await ProcessExecutionService.Invoke("sshpass", sshCommand, (data, error) => onOutput(new ProcessOutput(DateTime.UtcNow, data, error)));
                 return result.ExitCode;
             });
@@ -57,7 +57,7 @@ namespace AgentDeploy.Services.ScriptExecutors
         private async Task<T> UsePasswordFile<T>(SecureShellOptions ssh, Func<string, Task<T>> task)
         {
             var passwordFile = PathUtils.Combine(ExecutionOptions.DirectorySeparatorChar, ExecutionOptions.TempDir, $"sshpass-{_operationContext.CorrelationId}.txt");
-            await _fileService.WriteText(passwordFile, ssh.Password!, CancellationToken.None);
+            await _fileService.WriteTextAsync(passwordFile, ssh.Password!, CancellationToken.None);
             try
             {
                 return await task(passwordFile);

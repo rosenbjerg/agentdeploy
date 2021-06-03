@@ -31,7 +31,7 @@ namespace AgentDeploy.Tests.Unit
             
             var executionOptions = new ExecutionOptions();
             var fileService = new Mock<IFileService>();
-            fileService.Setup(s => s.WriteText(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).Callback<string, string, CancellationToken>((path, content, _) =>
+            fileService.Setup(s => s.WriteTextAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).Callback<string, string, CancellationToken>((path, content, _) =>
             {
                 Assert.AreEqual($"test{Path.DirectorySeparatorChar}script.sh", path);
                 Assert.AreEqual($"HELLO=WORLD{Environment.NewLine}echo Test", content);
@@ -41,7 +41,7 @@ namespace AgentDeploy.Tests.Unit
             var command = await scriptTransformer.PrepareScriptFile(scriptInvocationContext, "test", CancellationToken.None);
             
             Assert.AreEqual("echo Test", command[0]);
-            fileService.Verify(s => s.WriteText(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            fileService.Verify(s => s.WriteTextAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

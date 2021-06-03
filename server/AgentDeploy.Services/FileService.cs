@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -30,10 +31,10 @@ namespace AgentDeploy.Services
                 .FirstOrDefault(File.Exists);
         }
 
-        public async Task WriteText(string filePath, string content, CancellationToken cancellationToken) =>
+        public async Task WriteTextAsync(string filePath, string content, CancellationToken cancellationToken) =>
             await File.WriteAllTextAsync(filePath, content, cancellationToken);
 
-        public async Task Write(Stream inputStream, string filePath, CancellationToken cancellationToken)
+        public async Task WriteAsync(Stream inputStream, string filePath, CancellationToken cancellationToken)
         {
             await using var fileStream = File.Create(filePath);
             await inputStream.CopyToAsync(fileStream, cancellationToken);
@@ -46,5 +47,16 @@ namespace AgentDeploy.Services
         public bool FileExists(string filePath) => File.Exists(filePath);
 
         public void DeleteFile(string filePath) => File.Delete(filePath);
+        
+        public async Task CopyFileAsync(string sourcePath, string destinationPath, CancellationToken cancellationToken)
+        {
+            await using var inputStream = File.OpenRead(sourcePath);
+            await WriteAsync(inputStream, destinationPath, cancellationToken);
+        }
+
+        public IEnumerable<string> FindFiles(string directory, string glob, bool recursive)
+        {
+            return Directory.EnumerateFiles(directory, glob, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+        }
     }
 }

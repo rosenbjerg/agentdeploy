@@ -24,7 +24,7 @@ namespace AgentDeploy.Services.ScriptExecutors
             var scriptFilePath = _scriptTransformer.BuildScriptPath(directory);
             var fileArgument = _scriptTransformer.BuildScriptArgument(scriptFilePath);
 
-            var result = await _processExecutionService.Invoke(_executionOptions.Shell, fileArgument, (data, error) => onOutput(new ProcessOutput(DateTime.UtcNow, data, error)));
+            var result = await _processExecutionService.Invoke(_executionOptions.Shell, fileArgument, (data, error) => onOutput(new ProcessOutput(DateTime.UtcNow, data, error)), directory);
             return result.ExitCode;
         }
     }
