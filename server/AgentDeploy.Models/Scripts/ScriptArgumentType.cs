@@ -5,8 +5,6 @@ namespace AgentDeploy.Models.Scripts
     [ExtendedYamlEnum]
     public enum ScriptArgumentType
     {
-        FQDN,
-        
         String,
         
         [ExtendedYamlEnumMember("int")]
@@ -16,6 +14,13 @@ namespace AgentDeploy.Models.Scripts
         Decimal,
         
         [ExtendedYamlEnumMember("bool")]
-        Boolean
+        Boolean,
+        
+        IP,
+        IPv4,
+        IPv6,
+        DnsName,
+        Hostname,
+        Email
     }
 }

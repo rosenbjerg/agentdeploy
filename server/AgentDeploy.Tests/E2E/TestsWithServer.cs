@@ -655,28 +655,10 @@ namespace AgentDeploy.Tests.E2E
         }
 
         
-        [TestCase("12.1", ScriptArgumentType.Integer, false)]
         [TestCase("1200", ScriptArgumentType.Integer, true)]
-        [TestCase("test1200", ScriptArgumentType.Integer, false)]
-        [TestCase("1200test", ScriptArgumentType.Integer, false)]
-        [TestCase("test", ScriptArgumentType.Integer, false)]
-        
         [TestCase("12.1", ScriptArgumentType.Decimal, true)]
-        [TestCase("test12.1", ScriptArgumentType.Decimal, false)]
-        [TestCase("12.1test", ScriptArgumentType.Decimal, false)]
-        [TestCase("1200", ScriptArgumentType.Decimal, false)]
-        [TestCase("test", ScriptArgumentType.Decimal, false)]
-        
-        [TestCase("12.1", ScriptArgumentType.String, true)]
-        [TestCase("1200", ScriptArgumentType.String, true)]
         [TestCase("test", ScriptArgumentType.String, true)]
-        
         [TestCase("true", ScriptArgumentType.Boolean, true)]
-        [TestCase("True", ScriptArgumentType.Boolean, false)]
-        [TestCase("TRUE", ScriptArgumentType.Boolean, false)]
-        [TestCase("false", ScriptArgumentType.Boolean, true)]
-        [TestCase("False", ScriptArgumentType.Boolean, false)]
-        [TestCase("FALSE", ScriptArgumentType.Boolean, false)]
         public async Task VariableValidation_InbuiltTypes(string variableValue, ScriptArgumentType scriptArgumentType, bool success)
         {
             var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
