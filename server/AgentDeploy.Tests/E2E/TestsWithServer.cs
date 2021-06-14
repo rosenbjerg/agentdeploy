@@ -202,13 +202,6 @@ namespace AgentDeploy.Tests.E2E
         
         [TestCase("test1", "test1", "tok1", "tok1", ConcurrentExecutionLevel.Full, true)]
         [TestCase("test1", "test1", "tok1", "tok1", ConcurrentExecutionLevel.None, false)]
-        [TestCase("test1", "test1", "tok1", "tok1", ConcurrentExecutionLevel.PerToken, false)]
-        
-        [TestCase("test1", "test1", "tok1", "tok2", ConcurrentExecutionLevel.None, false)]
-        [TestCase("test1", "test1", "tok1", "tok2", ConcurrentExecutionLevel.PerToken, true)]
-
-        [TestCase("test1", "test2", "tok1", "tok2", ConcurrentExecutionLevel.None, true)]
-        [TestCase("test1", "test2", "tok1", "tok2", ConcurrentExecutionLevel.PerToken, true)]
         public async Task ConcurrentExecution(string scriptName1, string scriptName2, string token1, string token2, ConcurrentExecutionLevel concurrencyLevel, bool success)
         {
             var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
