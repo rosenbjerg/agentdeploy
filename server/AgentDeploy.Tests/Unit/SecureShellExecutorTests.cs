@@ -13,6 +13,33 @@ using NUnit.Framework;
 namespace AgentDeploy.Tests.Unit
 {
     [Category("Unit")]
+    public class LocalExecutorTests
+    {
+
+        [TestCase("user", "/path/to/my key", "/source dir")]
+        [TestCase("admin", "key", "sourceDir")]
+        public async Task LocalScriptExecutor(string username, string privateKeyPath, string sourceDir)
+        {
+            var targetScript = sourceDir.Contains(" ") ? $"'{sourceDir}/script.sh'" : $"{sourceDir}/script.sh";
+            var scriptInvocationContext = new ScriptInvocationContext();
+            var executionOptions = new ExecutionOptions
+            {
+                DirectorySeparatorChar = '/'
+            };
+            var scriptTransformer = new ScriptTransformer(executionOptions, null!);
+            var processExecutionServiceMock = new Mock<IProcessExecutionService>();
+            processExecutionServiceMock
+                .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>(), It.IsAny<string>()))
+                .ReturnsAsync(new ProcessExecutionResult(0, Array.Empty<string>(), Array.Empty<string>()));
+            var service = new LocalScriptExecutor(executionOptions, scriptTransformer, processExecutionServiceMock.Object);
+            var result = await service.Execute(scriptInvocationContext, sourceDir, _ => { });
+            
+            Assert.AreEqual(0, result);
+            processExecutionServiceMock.Verify(s => s.Invoke("/bin/sh", targetScript, It.IsAny<Action<string, bool>>(), sourceDir), Times.Once);
+        }
+    }
+    
+    [Category("Unit")]
     public class SecureShellExecutorTests
     {
         [TestCase("user", "/path/to/my key", "/source dir")]
