@@ -8,9 +8,9 @@ namespace AgentDeploy.Models
         public string ScriptName { get; set; } = null!;
         public Guid? WebsocketSessionId { get; set; }
 
-        public Dictionary<string, ScriptInvocationVariable> Variables { get; set; } = null!;
-        public ScriptEnvironmentVariable[] EnvironmentVariables { get; set; } = null!;
+        public Dictionary<string, ScriptInvocationVariable> Variables { get; set; } = new();
+        public ScriptEnvironmentVariable[] EnvironmentVariables { get; set; } = Array.Empty<ScriptEnvironmentVariable>();
 
-        public Dictionary<string, ScriptInvocationFile> Files { get; set; } = null!;
+        public Dictionary<string, ScriptInvocationFile> Files { get; set; } = new();
     }
 }

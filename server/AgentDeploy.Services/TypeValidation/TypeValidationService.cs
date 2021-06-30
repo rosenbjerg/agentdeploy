@@ -37,6 +37,7 @@ namespace AgentDeploy.Services.TypeValidation
                 var scriptVariableDefinition = inputVariable.Value ?? new ScriptVariableDefinition();
                 var invocationValue = ValidateVariable(scriptInvocation.Variables, inputVariable.Key, scriptVariableDefinition, scriptAccessDeclaration, failed);
                 if (invocationValue == null) continue;
+                
                 acceptedVariables.Add(new AcceptedScriptInvocationArgument(inputVariable.Key, invocationValue.Value,
                     invocationValue.Secret || scriptVariableDefinition.Secret));
             }
@@ -47,6 +48,7 @@ namespace AgentDeploy.Services.TypeValidation
                 var providedFile =
                     ValidateFile(scriptInvocation.Files, inputFile.Key, scriptFileArgument, failed);
                 if (providedFile == null) continue;
+                
                 acceptedFiles.Add(new AcceptedScriptInvocationFile(inputFile.Key, Path.GetFileName(providedFile.FileName),
                     scriptFileArgument.FilePreprocessing, providedFile.Read));
             }

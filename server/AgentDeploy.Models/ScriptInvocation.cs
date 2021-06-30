@@ -7,7 +7,7 @@ namespace AgentDeploy.Models
 {
     public class ScriptInvocation
     {
-        [Required, FromForm(Name = "scriptName"), RegularExpression(@"[\w\-. ]+")]
+        [Required, FromForm(Name = "scriptName"), RegularExpression(@"^[\w\-. ]+$")]
         public string ScriptName { get; set; } = null!;
 
         [FromForm(Name = "websocket-session-id")]
