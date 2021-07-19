@@ -18,7 +18,7 @@ An agent for managing execution of [taco bell programming](http://widgetsandshit
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=rosenbjerg_AgentDeploy&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=rosenbjerg_AgentDeploy)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=rosenbjerg_AgentDeploy&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=rosenbjerg_AgentDeploy)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=rosenbjerg_AgentDeploy&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=rosenbjerg_AgentDeploy)
-
+[![CodeFactor](https://www.codefactor.io/repository/github/rosenbjerg/agentdeploy/badge/main)](https://www.codefactor.io/repository/github/rosenbjerg/agentdeploy/overview/main)
 
 
 ## Server
