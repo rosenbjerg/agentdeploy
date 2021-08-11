@@ -82,12 +82,12 @@ namespace AgentDeploy.Tests.Unit
             var invocation = new ScriptInvocation
             {
                 ScriptName = "test",
-                WebsocketSessionId = Guid.NewGuid()
+                WebsocketSessionId = Guid.NewGuid(),
+                Files = fieldNames
+                    .Select(fieldName => (IFormFile)new FormFile(Stream.Null, 0, 0, fieldName, $"{fieldName}=test.txt"))
+                    .ToArray()
             };
-            invocation.Files = fieldNames
-                .Select(fieldName => new FormFile(Stream.Null, 0, 0, fieldName, $"{fieldName}=test.txt"))
-                .ToArray();
-            
+
             if (valid)
             {
                 var result = ScriptInvocationParser.Parse(invocation);
