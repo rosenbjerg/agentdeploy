@@ -33,7 +33,7 @@ namespace AgentDeploy.Tests.E2E
             if (buildExitCode != 0)
                 throw new Exception($"Unable to build {_containerName} image from E2E/Files: {string.Join("\n", buildInstance.ErrorData)}");
             
-            var (startExitCode, startInstance) = await Instance.FinishAsync("docker", $"run --rm -d -p 5022:22/tcp --name={_containerName} {_containerName}");
+            var (startExitCode, startInstance) = await Instance.FinishAsync("docker", $"run --rm -d -p 127.0.0.1:5022:22/tcp --name={_containerName} {_containerName}");
             if (startExitCode != 0)
                 throw new Exception($"Unable to start {_containerName}: {string.Join("\n", startInstance.ErrorData)}");
 
