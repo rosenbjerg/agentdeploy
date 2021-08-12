@@ -13,7 +13,7 @@ namespace AgentDeploy.Tests.E2E
             Address = "127.0.0.1",
             Username = "root",
             PrivateKeyPath = Path.GetFullPath("E2E/Files/id_rsa"),
-            Port = 222,
+            Port = 5022,
         })
         {
         }
