@@ -26,8 +26,9 @@ namespace AgentDeploy.Tests.E2E
         private static string _containerName = "ssh-target-dummy";
         public static async Task SshTargetDummyStart()
         {
-            var path = Path.GetFullPath("./");
-            Console.WriteLine(path);
+            if (!File.Exists("E2E/Files/Dockerfile"))
+                throw new Exception($"Dockerfile not found");
+            
             var (buildExitCode, buildInstance) = await Instance.FinishAsync("docker", $"build -t {_containerName} E2E/Files");
             if (buildExitCode != 0)
                 throw new Exception($"Unable to build {_containerName} image from E2E/Files: {string.Join("\n", buildInstance.ErrorData)}");
