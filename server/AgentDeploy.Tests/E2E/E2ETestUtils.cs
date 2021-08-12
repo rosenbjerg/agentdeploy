@@ -27,7 +27,7 @@ namespace AgentDeploy.Tests.E2E
         public static async Task SshTargetDummyStart()
         {
             if (!File.Exists("E2E/Files/Dockerfile"))
-                throw new Exception($"Dockerfile not found");
+                throw new FileNotFoundException($"Dockerfile not found", "E2E/Files/Dockerfile");
             
             var (buildExitCode, buildInstance) = await Instance.FinishAsync("docker", $"build -t {_containerName} E2E/Files");
             if (buildExitCode != 0)
