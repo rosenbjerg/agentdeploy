@@ -111,6 +111,7 @@ namespace AgentDeploy.Tests.E2E
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
+            AssertNoBackendExceptions();
             Assert.Zero(exitCode);
             Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
         }
@@ -125,6 +126,7 @@ namespace AgentDeploy.Tests.E2E
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
+            AssertNoBackendExceptions();
             Assert.Zero(exitCode);
             Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
         }
@@ -209,6 +211,7 @@ namespace AgentDeploy.Tests.E2E
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --ws");
             
+            AssertNoBackendExceptions();
             Assert.Zero(exitCode);
             Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
         }
@@ -235,13 +238,15 @@ namespace AgentDeploy.Tests.E2E
             var task1Result = result[0];
             var task2Result = result[1];
             
-            Assert.Zero(task1Result.exitCode);
             if (success)
             {
+                AssertNoBackendExceptions();
+                Assert.Zero(task1Result.exitCode);
                 Assert.Zero(task2Result.exitCode);
             }
             else
             {
+                Assert.Zero(task1Result.exitCode);
                 Assert.NotZero(task2Result.exitCode);
                 Assert.AreEqual($"The script '{scriptName2}' is currently locked. Try again later", task2Result.instance.ErrorData[0]);
             }
@@ -263,6 +268,7 @@ namespace AgentDeploy.Tests.E2E
 
             if (success)
             {
+                AssertNoBackendExceptions();
                 Assert.Zero(exitCode);
                 Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
             }
@@ -283,6 +289,7 @@ namespace AgentDeploy.Tests.E2E
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers");
             
+            AssertNoBackendExceptions();
             Assert.Zero(exitCode);
             Assert.IsTrue(instance.OutputData[0].EndsWith("testing-123"));
             Assert.AreEqual(1, instance.OutputData.Count);
@@ -298,6 +305,7 @@ namespace AgentDeploy.Tests.E2E
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-timestamps");
             
+            AssertNoBackendExceptions();
             Assert.Zero(exitCode);
             Assert.AreEqual("testing-123", instance.OutputData[1]);
         }
@@ -312,6 +320,7 @@ namespace AgentDeploy.Tests.E2E
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
+            AssertNoBackendExceptions();
             Assert.Zero(exitCode);
             Assert.AreEqual("testing-123", instance.OutputData[0]);
             Assert.AreEqual(1, instance.OutputData.Count);
@@ -327,6 +336,7 @@ namespace AgentDeploy.Tests.E2E
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
+            AssertNoBackendExceptions();
             Assert.Zero(exitCode);
             Assert.AreEqual(3, instance.OutputData.Count);
             Assert.AreEqual("1 | echo testing-123", instance.OutputData[0]);
@@ -390,6 +400,7 @@ namespace AgentDeploy.Tests.E2E
 
             if (success)
             {
+                AssertNoBackendExceptions();
                 Assert.Zero(exitCode);
                 Assert.AreEqual(1, instance.OutputData.Count);
                 Assert.AreEqual("the quick brown fox jumps over the lazy dog", instance.OutputData[0]);
@@ -423,6 +434,7 @@ namespace AgentDeploy.Tests.E2E
 
             if (success)
             {
+                AssertNoBackendExceptions();
                 Assert.Zero(exitCode);
                 Assert.AreEqual(1, instance.OutputData.Count);
                 Assert.AreEqual("test", instance.OutputData[0]);
@@ -434,6 +446,12 @@ namespace AgentDeploy.Tests.E2E
                 Assert.AreEqual("test_file:", instance.ErrorData[1]);
                 Assert.AreEqual("  No file provided", instance.ErrorData[2]);
             }
+        }
+
+        private void AssertNoBackendExceptions()
+        {
+            var backendException = Host.Services.GetRequiredService<TestLoggerFactory>().GetExceptionStacktrace();
+            Assert.IsEmpty(backendException);
         }
         
         [TestCase("testfile.txt", true)]
@@ -449,8 +467,10 @@ namespace AgentDeploy.Tests.E2E
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
 
+            
             if (exists)
             {
+                AssertNoBackendExceptions();
                 Assert.Zero(exitCode);
                 Assert.AreEqual(1, instance.OutputData.Count);
                 Assert.AreEqual("the quick brown fox jumps over the lazy dog", instance.OutputData[0]);
@@ -505,6 +525,7 @@ namespace AgentDeploy.Tests.E2E
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
+            AssertNoBackendExceptions();
             Assert.Zero(exitCode);
             Assert.AreEqual(1, instance.OutputData.Count);
             Assert.AreEqual("testing-123", instance.OutputData[0]);
@@ -582,6 +603,7 @@ namespace AgentDeploy.Tests.E2E
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
+            AssertNoBackendExceptions();
             Assert.Zero(exitCode);
             Assert.AreEqual(1, instance.OutputData.Count);
             Assert.AreEqual("testing_321", instance.OutputData[0]);
@@ -618,6 +640,7 @@ namespace AgentDeploy.Tests.E2E
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
+            AssertNoBackendExceptions();
             Assert.Zero(exitCode);
             Assert.AreEqual(1, instance.OutputData.Count);
             Assert.AreEqual("testing_321", instance.OutputData[0]);
@@ -667,6 +690,7 @@ namespace AgentDeploy.Tests.E2E
             
             if (shouldSucceed)
             {
+                AssertNoBackendExceptions();
                 Assert.Zero(exitCode);
                 Assert.AreEqual(1, instance.OutputData.Count);
                 Assert.AreEqual(testValue, instance.OutputData[0]);
@@ -710,9 +734,14 @@ namespace AgentDeploy.Tests.E2E
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 --hide-timestamps -t test -v test_var={variableValue}");
 
-            Assert.AreEqual(success, exitCode == 0);
+            if (success)
+            {
+                AssertNoBackendExceptions();
+                Assert.Zero(exitCode);
+            }
             if (!success)
             {
+                Assert.NotZero(exitCode);
                 Assert.AreEqual(3, instance.ErrorData.Count);
                 Assert.AreEqual("test_var:", instance.ErrorData[1]);
                 Assert.IsTrue(instance.ErrorData[2].StartsWith("  Provided value does not pass type validation"));
@@ -745,6 +774,7 @@ namespace AgentDeploy.Tests.E2E
             var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 --hide-headers --hide-timestamps --hide-script-line-numbers -t test {(providedAsSecret ? "-s" : "-v")} test_var={secret}");
 
             var shouldBeSecret = definedAsSecret || providedAsSecret;
+            AssertNoBackendExceptions();
             Assert.Zero(exitCode);
             Assert.AreEqual(2, instance.OutputData.Count);
             Assert.AreEqual(0, instance.ErrorData.Count);

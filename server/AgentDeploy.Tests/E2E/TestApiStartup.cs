@@ -24,7 +24,10 @@ namespace AgentDeploy.Tests.E2E
             var mockScriptReader = new Mock<IScriptReader>();
             var mockTokenReader = new Mock<ITokenReader>();
 
-            services.AddSingleton<ILoggerFactory, TestLoggerFactory>();
+            var testLoggerFactory = new TestLoggerFactory();
+            services.AddSingleton<ILoggerFactory>(testLoggerFactory);
+            services.AddSingleton(testLoggerFactory);
+            
             services.AddSingleton<IFileService>(new FileService(new ExecutionOptions()));
             services.AddSingleton(mockScriptReader);
             services.AddSingleton(mockTokenReader);
@@ -35,6 +38,8 @@ namespace AgentDeploy.Tests.E2E
 
     public class TestLoggerFactory : ILoggerFactory
     {
+        private string? _stacktrace;
+
         public void Dispose()
         {
         }
@@ -45,16 +50,30 @@ namespace AgentDeploy.Tests.E2E
 
         public ILogger CreateLogger(string categoryName)
         {
-            return new TestLogger(categoryName);
+            return new TestLogger(categoryName, this);
+        }
+
+        public string GetExceptionStacktrace()
+        {
+            var stacktrace = new string(_stacktrace);
+            _stacktrace = null;
+            return stacktrace;
+        }
+
+        public void SetExceptionStacktrace(string stacktrace)
+        {
+            _stacktrace = stacktrace;
         }
     }
     public class TestLogger : ILogger
     {
         private readonly string _categoryName;
+        private readonly TestLoggerFactory _testLoggerFactory;
 
-        public TestLogger(string categoryName)
+        public TestLogger(string categoryName, TestLoggerFactory testLoggerFactory)
         {
             _categoryName = categoryName;
+            _testLoggerFactory = testLoggerFactory;
         }
         public IDisposable BeginScope<TState>(TState state)
         {
@@ -69,9 +88,7 @@ namespace AgentDeploy.Tests.E2E
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (exception == null) return;
-            Debug.WriteLine(exception.StackTrace);
-            Trace.WriteLine(exception.StackTrace);
-            TestContext.WriteLine(exception.StackTrace);
+            _testLoggerFactory.SetExceptionStacktrace($"{exception.Message}: {exception.StackTrace}");
         }
     }
 }
