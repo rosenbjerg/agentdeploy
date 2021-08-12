@@ -89,6 +89,8 @@ namespace AgentDeploy.Tests.E2E
         {
             if (exception == null) return;
             _testLoggerFactory.SetExceptionStacktrace($"{exception.Message}: {exception.StackTrace}");
+            TestContext.Progress.WriteLine($"{exception.Message}: {exception.StackTrace}");
+            TestContext.Error.WriteLine($"{exception.Message}: {exception.StackTrace}");
         }
     }
 }
