@@ -83,10 +83,7 @@ namespace AgentDeploy.Services.ScriptExecutors
             var remoteDirectory = $"{ssh.TemporaryAgentDirectory.TrimEnd('/')}/{directoryName}";
             var sourceDirectory = directory;
 
-            onOutput(new ProcessOutput(DateTime.Now, "Copying files to remote..", false));
             var success = await Copy(ssh, sourceDirectory, remoteDirectory, onOutput);
-            if (success) onOutput(new ProcessOutput(DateTime.Now, "All files copied to remote", false));
-            
             return success ? remoteDirectory : null;
         }
     }

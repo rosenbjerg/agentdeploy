@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
@@ -22,9 +23,13 @@ namespace AgentDeploy.Services.ScriptExecutors
         public async Task<int> Execute(ScriptInvocationContext invocationContext, string directory, Action<ProcessOutput> onOutput)
         {
             var scriptFilePath = _scriptTransformer.BuildScriptPath(directory);
+            if (_executionOptions.UseWslPathOnWindows)
+                scriptFilePath = scriptFilePath.Replace("C:", "/mnt/c");
             var fileArgument = _scriptTransformer.BuildScriptArgument(scriptFilePath);
 
             var result = await _processExecutionService.Invoke(_executionOptions.Shell, fileArgument, (data, error) => onOutput(new ProcessOutput(DateTime.UtcNow, data, error)), directory);
+            if (_executionOptions.UseWslPathOnWindows)
+                await Task.Delay(100); // WSL is a bit slow at unlocking the directory, so a delay is needed to avoid an exception
             return result.ExitCode;
         }
     }

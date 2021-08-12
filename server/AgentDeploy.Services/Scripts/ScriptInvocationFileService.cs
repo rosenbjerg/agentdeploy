@@ -31,13 +31,14 @@ namespace AgentDeploy.Services.Scripts
         public async Task DownloadFiles(ScriptInvocationContext invocationContext, string directory,
             CancellationToken cancellationToken)
         {
-            var filesDirectory = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, directory, "files");
+            var filesFolderName = "files";
+            var filesDirectory = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, directory, filesFolderName);
             _fileService.CreateDirectory(filesDirectory);
             foreach (var file in invocationContext.Files)
             {
                 if (file.OpenRead != null)
                 {
-                    await DownloadFile(invocationContext, cancellationToken, filesDirectory, file);
+                    await DownloadFile(invocationContext, cancellationToken, filesDirectory, filesFolderName, file);
                 }
                 else
                 {
@@ -86,7 +87,7 @@ namespace AgentDeploy.Services.Scripts
         }
 
         private async Task DownloadFile(ScriptInvocationContext invocationContext, CancellationToken cancellationToken,
-            string filesDirectory, AcceptedScriptInvocationFile file)
+            string filesDirectory, string filesFolderName, AcceptedScriptInvocationFile file)
         {
             var filePath = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, filesDirectory, file.FileName);
             _logger.LogDebug("Downloading {InputFile} to {Path}", file.FileName, filePath);
@@ -94,7 +95,8 @@ namespace AgentDeploy.Services.Scripts
             await using var inputStream = file.OpenRead!();
             await _fileService.WriteAsync(inputStream, filePath, cancellationToken);
             await ExecuteFilePreprocessing(file, filePath);
-            invocationContext.Arguments.Add(new AcceptedScriptInvocationArgument(file.Name, filePath, false));
+            var relativeFilePath = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, filesFolderName, Path.GetFileName(filePath));
+            invocationContext.Arguments.Add(new AcceptedScriptInvocationArgument(file.Name, relativeFilePath, false));
         }
 
         private async Task ExecuteFilePreprocessing(AcceptedScriptInvocationFile file, string filePath)

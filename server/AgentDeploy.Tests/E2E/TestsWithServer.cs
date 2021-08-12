@@ -16,30 +16,43 @@ using NUnit.Framework;
 
 namespace AgentDeploy.Tests.E2E
 {
-    [Category("E2E")]
-    public class TestsWithServer
+    public abstract class TestsWithServer
     {
-        private IHost _host = null!;
+        private readonly SecureShellOptions? _secureShellOptions;
+
+        public TestsWithServer(SecureShellOptions? secureShellOptions)
+        {
+            _secureShellOptions = secureShellOptions;
+        }
+        protected IHost Host = null!;
 
         [OneTimeSetUp]
         public async Task StartServer()
         {
             var server = Program.CreateHostBuilder<TestApiStartup>(Array.Empty<string>());
-            _host = await server.StartAsync();
+            Host = await server.StartAsync();
+
+            await Setup();
         }
 
         [OneTimeTearDown]
         public async Task StopServer()
         {
-            await _host.StopAsync();
-            _host.Dispose();
+            await Host.StopAsync();
+            Host.Dispose();
+
+            await Teardown();
         }
+
+        protected virtual Task Setup() => Task.CompletedTask;
+
+        protected virtual Task Teardown() => Task.CompletedTask;
 
         [TearDown]
         public void Reset()
         {
-            _host.Services.GetRequiredService<Mock<ITokenReader>>().Reset();
-            _host.Services.GetRequiredService<Mock<IScriptReader>>().Reset();
+            Host.Services.GetRequiredService<Mock<ITokenReader>>().Reset();
+            Host.Services.GetRequiredService<Mock<IScriptReader>>().Reset();
         }
         
         [Test]
@@ -53,9 +66,9 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task MissingScriptAccess()
         {
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?>() });
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?>(), Ssh = _secureShellOptions});
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo testing-123"});
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
@@ -67,20 +80,20 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task ImplicitScriptAccess_ScriptNotFound()
         {
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token());
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token{ Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
             Assert.NotZero(exitCode);
             Assert.AreEqual("No script named 'test' is available", instance.ErrorData[0]);
         }
-
+        
         [Test]
         public async Task ExplicitScriptAccess_ScriptNotFound()
         {
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
@@ -91,10 +104,10 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task ImplicitScriptAccess_ScriptExists()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo testing-123"});
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token());
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token{ Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
@@ -105,10 +118,10 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task ExplicitScriptAccess_ScriptExists()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo testing-123"});
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
@@ -119,7 +132,7 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task ScriptInvocation_DuplicateVariables()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script
             {
                 Command = "echo $(test_var)",
@@ -128,8 +141,8 @@ namespace AgentDeploy.Tests.E2E
                     { "test_var", new ScriptVariableDefinition() }
                 }
             });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token());
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token{ Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -v test_var=test test_var=test2");
             
@@ -142,7 +155,7 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task ScriptInvocation_DuplicateSecretVariables()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script
             {
                 Command = "echo $(test_var)",
@@ -151,8 +164,8 @@ namespace AgentDeploy.Tests.E2E
                     { "test_var", new ScriptVariableDefinition() }
                 }
             });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token());
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token{ Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -s test_var=test test_var=test2");
             
@@ -165,7 +178,7 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task ScriptInvocation_DuplicateEnvironmentVariables()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script
             {
                 Command = "echo $(test_var)",
@@ -174,8 +187,8 @@ namespace AgentDeploy.Tests.E2E
                     { "test_var", new ScriptVariableDefinition() }
                 }
             });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token());
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token{ Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -s test_var=test -e test=123 test=321");
             
@@ -189,10 +202,10 @@ namespace AgentDeploy.Tests.E2E
         public async Task Websocket_Output()
         {
             It.IsAny<string>();
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo testing-123"});
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --ws");
             
@@ -204,15 +217,15 @@ namespace AgentDeploy.Tests.E2E
         [TestCase("test1", "test1", "tok1", "tok1", ConcurrentExecutionLevel.None, false)]
         public async Task ConcurrentExecution(string scriptName1, string scriptName2, string token1, string token2, ConcurrentExecutionLevel concurrencyLevel, bool success)
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load(scriptName1, It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "sleep 1", Concurrency = concurrencyLevel, Name = scriptName1 });
             if (scriptName1 != scriptName2)
                 scriptReaderMock.Setup(s => s.Load(scriptName2, It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "sleep 1", Concurrency = concurrencyLevel, Name = scriptName2 });
             
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile(token1, It.IsAny<CancellationToken>())).ReturnsAsync(new Token());
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile(token1, It.IsAny<CancellationToken>())).ReturnsAsync(new Token{ Ssh = _secureShellOptions });
             if (token1 != token2) 
-                tokenReaderMock.Setup(s => s.ParseTokenFile(token2, It.IsAny<CancellationToken>())).ReturnsAsync(new Token());
+                tokenReaderMock.Setup(s => s.ParseTokenFile(token2, It.IsAny<CancellationToken>())).ReturnsAsync(new Token{ Ssh = _secureShellOptions });
             
             var task1 = E2ETestUtils.ClientOutput($"invoke {scriptName1} http://localhost:5000 -t {token1}");
             await Task.Delay(100);
@@ -241,10 +254,10 @@ namespace AgentDeploy.Tests.E2E
         [TestCase("128.0.0.1-128.0.0.10", false)]
         public async Task TrustedIpFilter(string trustedIp, bool success)
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo testing-123"});
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { TrustedIps = new List<string>{ trustedIp }, AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { TrustedIps = new List<string>{ trustedIp }, AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
 
@@ -263,10 +276,10 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task HiddenHeaders()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo testing-123"});
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers");
             
@@ -278,10 +291,10 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task HiddenTimestamps()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo testing-123"});
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-timestamps");
             
@@ -292,10 +305,10 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task HiddenHeadersAndTimestamps()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo testing-123"});
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
@@ -307,10 +320,10 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task LineNumberFormat()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo testing-123\n\necho again", ShowCommand = true, ShowOutput = false });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
@@ -324,7 +337,7 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task PreprocessingFailed()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo testing-123\n\necho again", Files = new Dictionary<string, ScriptFileDefinition?>
             {
                 {"test", new ScriptFileDefinition
@@ -332,8 +345,8 @@ namespace AgentDeploy.Tests.E2E
                     FilePreprocessing = "exit 1"
                 }}
             }});
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
 
             var tempFile = Path.Combine(Path.GetTempPath(), "test_file.ext");
             await File.WriteAllTextAsync(tempFile, "test");
@@ -360,7 +373,7 @@ namespace AgentDeploy.Tests.E2E
         [TestCase(10, 100, "json", false)]
         public async Task FileInput(long minSize, long maxSize, string acceptedExtension, bool success)
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "cat $(test_file)", Files = new Dictionary<string, ScriptFileDefinition?>
             {
                 {"test_file", new ScriptFileDefinition
@@ -370,8 +383,8 @@ namespace AgentDeploy.Tests.E2E
                     AcceptedExtensions = string.IsNullOrEmpty(acceptedExtension) ? null : new [] { acceptedExtension }
                 }}
             } });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps -f test_file=E2E/Files/testfile.txt");
 
@@ -395,7 +408,7 @@ namespace AgentDeploy.Tests.E2E
         [TestCase(true, true, true)]
         public async Task RequiredFile(bool optional, bool provideFile, bool success)
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "echo test", Files = new Dictionary<string, ScriptFileDefinition?>
             {
                 {"test_file", new ScriptFileDefinition
@@ -403,8 +416,8 @@ namespace AgentDeploy.Tests.E2E
                     Optional = optional
                 }}
             } });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps{(provideFile ? " -f test_file=E2E/Files/testfile.txt" : "")}");
 
@@ -429,10 +442,10 @@ namespace AgentDeploy.Tests.E2E
         [TestCase("*.jpeg", false)]
         public async Task AssetFile(string assetGlob, bool exists)
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script { Command = "cat ./testfile.txt", Assets = new List<string> { assetGlob }});
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
 
@@ -454,7 +467,7 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task MissingArgument_NoDefaultValue()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script
             {
                 Command = "echo $(test_var)",
@@ -463,8 +476,8 @@ namespace AgentDeploy.Tests.E2E
                     { "test_var", new ScriptVariableDefinition() }
                 }
             });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
@@ -478,7 +491,7 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task MissingArgument_DefaultValue()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script
             {
                 Command = "echo $(test_var)",
@@ -487,8 +500,8 @@ namespace AgentDeploy.Tests.E2E
                     { "test_var", new ScriptVariableDefinition { DefaultValue = "testing-123" } }
                 }
             });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
@@ -500,7 +513,7 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task LockedVariable_CannotProvide()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script
             {
                 Command = "echo $(test_var)",
@@ -509,7 +522,7 @@ namespace AgentDeploy.Tests.E2E
                     { "test_var", new ScriptVariableDefinition() }
                 }
             });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
             tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token
             {
                 AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?>
@@ -538,7 +551,7 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task LockedVariable_ValueIsValidated()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script
             {
                 Command = "echo $(test_var)",
@@ -550,7 +563,7 @@ namespace AgentDeploy.Tests.E2E
                     } }
                 }
             });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
             tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token
             {
                 AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?>
@@ -564,7 +577,7 @@ namespace AgentDeploy.Tests.E2E
                             }
                         }
                     }
-                }
+                }, Ssh = _secureShellOptions
             });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
@@ -577,7 +590,7 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task LockedVariable_ValueIsUsed()
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script
             {
                 Command = "echo $(test_var)",
@@ -586,7 +599,7 @@ namespace AgentDeploy.Tests.E2E
                     { "test_var", new ScriptVariableDefinition() }
                 }
             });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
             tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token
             {
                 AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?>
@@ -600,7 +613,7 @@ namespace AgentDeploy.Tests.E2E
                             }
                         }
                     }
-                }
+                }, Ssh = _secureShellOptions
             });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
@@ -621,7 +634,7 @@ namespace AgentDeploy.Tests.E2E
         [TestCase("_mytestvar", "^_.*test.*_$", "^my", false)]
         public async Task ContrainedVariables(string testValue, string scriptConstraint, string tokenConstraint, bool shouldSucceed)
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script
             {
                 Command = "echo $(test_var)",
@@ -630,7 +643,7 @@ namespace AgentDeploy.Tests.E2E
                     { "test_var", new ScriptVariableDefinition { Regex = scriptConstraint } }
                 }
             });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
             tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token
             {
                 AvailableScripts = !string.IsNullOrEmpty(tokenConstraint)
@@ -646,8 +659,8 @@ namespace AgentDeploy.Tests.E2E
                             }
                         }
                     }
-                    : null
-                
+                    : null, 
+                Ssh = _secureShellOptions
             });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps -v test_var={testValue}");
@@ -682,7 +695,7 @@ namespace AgentDeploy.Tests.E2E
         [TestCase("true", ScriptArgumentType.Boolean, true)]
         public async Task VariableValidation_InbuiltTypes(string variableValue, ScriptArgumentType scriptArgumentType, bool success)
         {
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Reset();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script
             {
@@ -692,8 +705,8 @@ namespace AgentDeploy.Tests.E2E
                     { "test_var", new ScriptVariableDefinition { Type = scriptArgumentType } }
                 }
             });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 --hide-timestamps -t test -v test_var={variableValue}");
 
@@ -714,7 +727,7 @@ namespace AgentDeploy.Tests.E2E
         public async Task SecretsStaySecret(bool definedAsSecret, bool providedAsSecret)
         {
             const string secret = "myverysecretsecret";
-            var scriptReaderMock = _host.Services.GetRequiredService<Mock<IScriptReader>>();
+            var scriptReaderMock = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             scriptReaderMock.Reset();
             scriptReaderMock.Setup(s => s.Load("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Script
             {
@@ -726,8 +739,8 @@ namespace AgentDeploy.Tests.E2E
                     { "test_var", new ScriptVariableDefinition { Secret = definedAsSecret } }
                 }
             });
-            var tokenReaderMock = _host.Services.GetRequiredService<Mock<ITokenReader>>();
-            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} } });
+            var tokenReaderMock = Host.Services.GetRequiredService<Mock<ITokenReader>>();
+            tokenReaderMock.Setup(s => s.ParseTokenFile("test", It.IsAny<CancellationToken>())).ReturnsAsync(new Token { AvailableScripts = new Dictionary<string, ScriptAccessDeclaration?> { {"test", new ScriptAccessDeclaration()} }, Ssh = _secureShellOptions });
             
             var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 --hide-headers --hide-timestamps --hide-script-line-numbers -t test {(providedAsSecret ? "-s" : "-v")} test_var={secret}");
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
@@ -51,7 +52,8 @@ namespace AgentDeploy.Services.Scripts
         private string CreateScriptExecutionFolder(Guid correlationId, DateTime timestamp)
         {
             var directoryName = $"agentd_job_{timestamp:yyyyMMddhhmmssfff}_{correlationId}";
-            var directory = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, _executionOptions.TempDir, directoryName);
+            var baseFolder = _executionOptions.TempDir.Replace('\\', '/').TrimEnd('/');
+            var directory = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, baseFolder, directoryName);
             _fileService.CreateDirectory(directory);
             return directory;
         }
