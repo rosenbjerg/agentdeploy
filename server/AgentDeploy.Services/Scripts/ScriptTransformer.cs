@@ -27,7 +27,7 @@ namespace AgentDeploy.Services.Scripts
             var finalText =  string.Join(_executionOptions.Linebreak, textVariables);
 
             var scriptFilePath = BuildScriptPath(directory);
-            await _fileService.WriteText(scriptFilePath, finalText, cancellationToken);
+            await _fileService.WriteTextAsync(scriptFilePath, finalText, cancellationToken);
             
             return scriptText.Split(new []{'\r', '\n'}, StringSplitOptions.None);
         }
@@ -35,7 +35,7 @@ namespace AgentDeploy.Services.Scripts
         public string BuildScriptPath(string directory)
         {
             var scriptFileName = $"script.{_executionOptions.ShellFileExtension.TrimStart('.')}";
-            var scriptFilePath = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, directory, scriptFileName);
+            var scriptFilePath = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, directory.TrimEnd('/', '\\'), scriptFileName);
             return scriptFilePath;
         }
 

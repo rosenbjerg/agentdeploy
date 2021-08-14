@@ -32,7 +32,7 @@ namespace AgentDeploy.Services.ScriptExecutors
             
             try
             {
-                return await ExecuteInternal(ssh, directory, remoteDirectory, OnUnprocessedOutput);
+                return await ExecuteInternal(ssh, remoteDirectory, OnUnprocessedOutput);
             }
             finally
             {
@@ -59,17 +59,22 @@ namespace AgentDeploy.Services.ScriptExecutors
         }
 
         protected abstract Task<bool> Copy(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput);
-        protected abstract Task<int> Execute(SecureShellOptions ssh, string sourceDirectory, string fileArgument, Action<ProcessOutput> onOutput);
+        protected abstract Task<int> Execute(SecureShellOptions ssh, string remoteDirectory,
+            string fileArgument, Action<ProcessOutput> onOutput);
         protected abstract Task Cleanup(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput);
 
-        protected string GetExecuteCommand(string fileArgument) => $"{ExecutionOptions.Shell} {fileArgument}";
+        protected string GetExecuteCommand(string remoteDirectory, string formattedScriptFileArgument)
+        {
+            return $"cd {PathUtils.EscapeWhitespaceInPath(remoteDirectory, '\'')} ; {ExecutionOptions.Shell} {formattedScriptFileArgument}";
+        }
+
         protected static string GetCleanupCommand(string remoteDirectory) => $"rm -r {PathUtils.EscapeWhitespaceInPath(remoteDirectory, '\'')}";
 
-        private async Task<int> ExecuteInternal(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput)
+        private async Task<int> ExecuteInternal(SecureShellOptions ssh, string remoteDirectory, Action<ProcessOutput> onOutput)
         {
             var scriptFilePath = _scriptTransformer.BuildScriptPath(remoteDirectory);
             var fileArgument = _scriptTransformer.BuildScriptArgument(scriptFilePath);
-            return await Execute(ssh, sourceDirectory, fileArgument, onOutput);
+            return await Execute(ssh, remoteDirectory, fileArgument, onOutput);
         }
 
         private async Task<string?> CopyInternal(string directory, SecureShellOptions ssh, Action<ProcessOutput> onOutput)
@@ -78,10 +83,7 @@ namespace AgentDeploy.Services.ScriptExecutors
             var remoteDirectory = $"{ssh.TemporaryAgentDirectory.TrimEnd('/')}/{directoryName}";
             var sourceDirectory = directory;
 
-            onOutput(new ProcessOutput(DateTime.Now, "Copying files to remote..", false));
             var success = await Copy(ssh, sourceDirectory, remoteDirectory, onOutput);
-            if (success) onOutput(new ProcessOutput(DateTime.Now, "All files copied to remote", false));
-            
             return success ? remoteDirectory : null;
         }
     }

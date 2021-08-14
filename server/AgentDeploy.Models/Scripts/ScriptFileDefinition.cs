@@ -16,12 +16,12 @@ namespace AgentDeploy.Models.Scripts
         /// Whether this file is optional/can be skipped.
         /// The path variable used in scripts will be empty string if file is optional and not provided
         /// </summary>
-        public bool Optional { get; set; }
+        public bool Optional { get; init; }
         
         /// <summary>
         /// Array of acceptable file extensions
         /// </summary>
-        public string[]? AcceptedExtensions { get; init; }
+        public string[]? AcceptedExtensions { get; set; }
 
         /// <summary>
         /// Optional file preprocessing.
