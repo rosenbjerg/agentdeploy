@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace AgentDeploy.Tests.E2E
 {
-    [Category("E2E")]
+    [Category("E2E-notarget")]
     public class TestsWithoutServer
     {
         [Test]
