@@ -58,8 +58,7 @@ jobs:
       run: tsc src/index.ts
       
     - name: Run E2E test suite
-      working-directory: ${{ env.server_dir }}
-      run: dotnet test -c Release --filter TestCategory=E2E --collect "XPlat Code Coverage" --logger GitHubActions --no-build --verbosity normal
+      run: docker-compose -f container/test/docker-compose.yml up --build --exit-code-from test-suite
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v1

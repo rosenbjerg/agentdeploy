@@ -40,7 +40,16 @@
 
     <ItemGroup>
       <None Update="E2E\Files\testfile.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="E2E\Files\Dockerfile">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="E2E\Files\id_rsa.pub">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="E2E\Files\id_rsa">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
 

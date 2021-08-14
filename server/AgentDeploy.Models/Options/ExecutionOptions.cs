@@ -28,6 +28,11 @@ namespace AgentDeploy.Models.Options
         public string Shell { get; set; } = "/bin/sh";
         
         /// <summary>
+        /// Whetherto use WSL path on Windows (replacing C: with /mnt/c). Defaults to true
+        /// </summary>
+        public bool UseWslPathOnWindows { get; set; } = true;
+        
+        /// <summary>
         /// The file extension used for the script file. Defaults to .sh
         /// </summary>
         public string ShellFileExtension { get; set; } = ".sh";

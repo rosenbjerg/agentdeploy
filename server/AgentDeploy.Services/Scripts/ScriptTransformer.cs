@@ -35,7 +35,7 @@ namespace AgentDeploy.Services.Scripts
         public string BuildScriptPath(string directory)
         {
             var scriptFileName = $"script.{_executionOptions.ShellFileExtension.TrimStart('.')}";
-            var scriptFilePath = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, directory, scriptFileName);
+            var scriptFilePath = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, directory.TrimEnd('/', '\\'), scriptFileName);
             return scriptFilePath;
         }
 
