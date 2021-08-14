@@ -22,29 +22,5 @@ namespace AgentDeploy.Tests.E2E
         {
             return await Instance.FinishAsync("node", AgentdClientPath + " " +arguments);
         }
-
-        private static string _containerName = "ssh-target-dummy";
-        public static async Task SshTargetDummyStart()
-        {
-            if (!File.Exists("E2E/Files/Dockerfile"))
-                throw new FileNotFoundException($"Dockerfile not found", "E2E/Files/Dockerfile");
-            
-            var (buildExitCode, buildInstance) = await Instance.FinishAsync("docker", $"build -t {_containerName} E2E/Files");
-            if (buildExitCode != 0)
-                throw new Exception($"Unable to build {_containerName} image from E2E/Files: {string.Join("\n", buildInstance.ErrorData)}");
-            
-            var (startExitCode, startInstance) = await Instance.FinishAsync("docker", $"run --rm -d -p 127.0.0.1:5022:22/tcp --name={_containerName} {_containerName}");
-            if (startExitCode != 0)
-                throw new Exception($"Unable to start {_containerName}: {string.Join("\n", startInstance.ErrorData)}");
-
-            await Task.Delay(1000);
-        }
-
-        public static async Task SshTargetDummyStop()
-        {
-            var (stopExitCode, stopInstance) = await Instance.FinishAsync("docker", $"stop {_containerName}");
-            if (stopExitCode != 0)
-                throw new Exception($"Unable to stop {_containerName}: {string.Join("\n", stopInstance.ErrorData)}");
-        }
     }
 }
