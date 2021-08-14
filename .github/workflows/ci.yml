@@ -58,7 +58,6 @@ jobs:
       run: tsc src/index.ts
       
     - name: Run Local E2E test suite
-      working-directory: ${{ env.server_dir }}
       run: docker-compose -f container/test/docker-compose.yml up --build --exit-code-from test-suite
 
     - name: Upload coverage reports to Codecov
