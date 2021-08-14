@@ -20,4 +20,4 @@ RUN mkdir -p /home/testuser/.ssh && cat /tmp/publickey > /home/testuser/.ssh/aut
 
 EXPOSE 22 
 
-CMD ssh-keygen -A && service ssh restart && sleep 100000
+CMD ssh-keygen -A && service ssh restart && tail -f /dev/null

@@ -1,0 +1,11 @@
+version: '3'
+services: 
+  ssh-target:
+    build: ./ssh-target
+  
+  test-suite:
+    build: ./test-suite
+    depends_on: 
+      - ssh-target    
+    volumes:
+      - ../../:/app

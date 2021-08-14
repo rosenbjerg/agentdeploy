@@ -31,8 +31,6 @@ namespace AgentDeploy.Tests.E2E
         {
             var server = Program.CreateHostBuilder<TestApiStartup>(Array.Empty<string>());
             Host = await server.StartAsync();
-
-            await Setup();
         }
 
         [OneTimeTearDown]
@@ -40,13 +38,7 @@ namespace AgentDeploy.Tests.E2E
         {
             await Host.StopAsync();
             Host.Dispose();
-
-            await Teardown();
         }
-
-        protected virtual Task Setup() => Task.CompletedTask;
-
-        protected virtual Task Teardown() => Task.CompletedTask;
 
         [TearDown]
         public void Reset()
