@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using AgentDeploy.Models.Tokens;
 using NUnit.Framework;
 

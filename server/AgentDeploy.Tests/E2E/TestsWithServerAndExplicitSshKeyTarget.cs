@@ -1,6 +1,5 @@
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using AgentDeploy.Models.Tokens;
 using Instances;
 using NUnit.Framework;
