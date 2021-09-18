@@ -1,6 +1,6 @@
 # agentd
 
-An agent for managing execution of [taco bell programming](http://widgetsandshit.com/teddziuba/2010/10/taco-bell-programming.html)-style deployment and server management scripts
+An agent for managing execution of [taco bell programming](http://widgetsandshit.com/teddziuba/2010/10/taco-bell-programming.html)-style deployment and server management scripts on remote hosts
 
 [![CI](https://github.com/rosenbjerg/AgentDeploy/actions/workflows/ci.yml/badge.svg)](https://github.com/rosenbjerg/agentdeploy/actions/workflows/ci.yml)
 [![GitHub](https://img.shields.io/github/license/rosenbjerg/agentdeploy)](https://github.com/rosenbjerg/agentdeploy/blob/main/LICENSE)
