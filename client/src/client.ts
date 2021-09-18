@@ -11,6 +11,7 @@ import {
     ProcessOutputHandler,
     ScriptReceivedHandler
 } from "./types";
+import {AbortSignal} from "node-fetch/externals";
 
 function subscribeToWebsocketEvents(wsUrl: string, onOutput: ProcessOutputHandler, onScript: ScriptReceivedHandler, hideScriptLineNumbers: boolean): void {
     const websocket = new WebSocket(wsUrl);
@@ -34,7 +35,7 @@ function formatScript(scriptLines: string[], hideScriptLineNumbers: boolean) {
     return scriptLines;
 }
 
-export default async function invokeScript(scriptName: string, serverUrl: string, options: AgentDeployOptions, onOutput: ProcessOutputHandler, onScript: ScriptReceivedHandler, abortSignal?: AbortSignal | null): Promise<ExecutionResult> {
+export default async function invokeScript(scriptName: string, serverUrl: string, options: AgentDeployOptions, onOutput: ProcessOutputHandler, onScript: ScriptReceivedHandler, abortSignal?: AbortSignal | null | undefined): Promise<ExecutionResult> {
     const formdata = createForm(scriptName, options);
     const websocketId = v4();
     if (options.ws) formdata.append('websocket-session-id', websocketId);
