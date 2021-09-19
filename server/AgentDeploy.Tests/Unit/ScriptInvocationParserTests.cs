@@ -106,5 +106,60 @@ namespace AgentDeploy.Tests.Unit
                 Assert.AreEqual(fieldNames.First(), exception.Errors.First().Key);
             }
         }
+
+        [TestCase("test")]
+        [TestCase("=test")]
+        public void InvalidVariableFormat(string inputValue)
+        {
+            var invocation = new ScriptInvocation
+            {
+                ScriptName = "test",
+                WebsocketSessionId = Guid.NewGuid(),
+                Variables = new []{ inputValue }
+            };
+            
+            var exception = Assert.Throws<FailedInvocationValidationException>(() => ScriptInvocationParser.Parse(invocation));
+            
+            Assert.NotNull(exception);
+            Assert.AreEqual(1, exception!.Errors.Count);
+            Assert.AreEqual(inputValue, exception.Errors.First().Key);
+        }
+
+        [TestCase("test.txt")]
+        [TestCase("=test.txt")]
+        public void InvalidFormFileFormat(string inputValue)
+        {
+            var invocation = new ScriptInvocation
+            {
+                ScriptName = "test",
+                WebsocketSessionId = Guid.NewGuid(),
+                Files = new [] { (IFormFile)new FormFile(Stream.Null, 0, 0, "test", inputValue) }
+            };
+            
+            var exception = Assert.Throws<FailedInvocationValidationException>(() => ScriptInvocationParser.Parse(invocation));
+            
+            Assert.NotNull(exception);
+            Assert.AreEqual(1, exception!.Errors.Count);
+            Assert.AreEqual(inputValue, exception.Errors.First().Key);
+        }
+
+
+        [TestCase("test")]
+        [TestCase("=test")]
+        public void InvalidEnvironmentVariableFormat(string inputValue)
+        {
+            var invocation = new ScriptInvocation
+            {
+                ScriptName = "test",
+                WebsocketSessionId = Guid.NewGuid(),
+                EnvironmentVariables = new []{ inputValue }
+            };
+            
+            var exception = Assert.Throws<FailedInvocationValidationException>(() => ScriptInvocationParser.Parse(invocation));
+            
+            Assert.NotNull(exception);
+            Assert.AreEqual(1, exception!.Errors.Count);
+            Assert.AreEqual(inputValue, exception.Errors.First().Key);
+        }
     }
 }

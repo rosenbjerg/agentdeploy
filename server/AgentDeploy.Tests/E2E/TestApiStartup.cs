@@ -1,14 +1,10 @@
-using System;
-using System.IO;
 using AgentDeploy.ExternalApi;
 using AgentDeploy.Models.Options;
 using AgentDeploy.Services;
 using AgentDeploy.Services.Scripts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
-using NUnit.Framework;
 
 namespace AgentDeploy.Tests.E2E
 {

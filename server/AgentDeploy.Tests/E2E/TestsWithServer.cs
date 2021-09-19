@@ -225,6 +225,19 @@ namespace AgentDeploy.Tests.E2E
             Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
         }
         
+        [Test]
+        public async Task Websocket_Command_Output()
+        {
+            SetupMockedTokenReader(("test", new Token { AvailableScripts = CreateScriptAccess(("test", new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
+            SetupMockedScriptReader(("test", new Script { Command = "echo testing-123", ShowCommand = true }));
+            
+            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --ws");
+            
+            Assert.Zero(exitCode);
+            Assert.IsTrue(instance.OutputData.Contains("1 | echo testing-123"));
+            Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
+        }
+        
         [TestCase("test1", "test1", "tok1", "tok1", ConcurrentExecutionLevel.Full, true)]
         [TestCase("test1", "test1", "tok1", "tok1", ConcurrentExecutionLevel.None, false)]
         public async Task ConcurrentExecution(string scriptName1, string scriptName2, string token1, string token2, ConcurrentExecutionLevel concurrencyLevel, bool success)
@@ -616,7 +629,7 @@ namespace AgentDeploy.Tests.E2E
         [TestCase("_mytestvar", "^_.*test.*_$", "^_.*test.*_$", false)]
         [TestCase("_mytestvar_", "^_.*test.*_$", "^_my", true)]
         [TestCase("_mytestvar", "^_.*test.*_$", "^my", false)]
-        public async Task ContrainedVariables(string testValue, string scriptConstraint, string tokenConstraint, bool shouldSucceed)
+        public async Task ConstrainedVariables(string testValue, string scriptConstraint, string tokenConstraint, bool shouldSucceed)
         {
             SetupMockedTokenReader(("test", new Token
             {
