@@ -43,9 +43,6 @@ namespace AgentDeploy.Yaml
             return Enum.Parse(type, memberInfo.Name);
         }
 
-        public void WriteYaml(IEmitter emitter, object value, Type type)
-        {
-            throw new NotImplementedException();
-        }
+        public void WriteYaml(IEmitter emitter, object value, Type type) => throw new NotImplementedException();
     }
 }

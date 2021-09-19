@@ -27,7 +27,7 @@ namespace AgentDeploy.Services
         public string? FindFile(string directoryPath, string fileName, params string[] extensions)
         {
             return extensions
-                .Select(extension => PathUtils.Combine(_executionOptions.DirectorySeparatorChar, directoryPath, $"{fileName}.{extension}"))
+                .Select(extension => PathUtils.Combine(_executionOptions.DirectorySeparatorChar, directoryPath, $"{fileName}.{extension.TrimStart('.')}"))
                 .FirstOrDefault(File.Exists);
         }
 
