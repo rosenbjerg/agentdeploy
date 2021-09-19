@@ -65,22 +65,17 @@ namespace AgentDeploy.Tests.E2E
             }
         }
 
-        private Mock<ITokenReader> SetupMockedTokenReader(params (string name, Token token)[] tokens)
+        private void SetupMockedTokenReader(params (string name, Token token)[] tokens)
         {
             var mockedTokenReader = Host.Services.GetRequiredService<Mock<ITokenReader>>();
             foreach (var token in DistinctBy(tokens, t => t.name))
                 mockedTokenReader.Setup(s => s.ParseTokenFile(token.name, It.IsAny<CancellationToken>())).ReturnsAsync(token.token);
-
-            return mockedTokenReader;
         }
-        private Mock<IScriptReader> SetupMockedScriptReader(params (string name, Script script)[] scripts)
+        private void SetupMockedScriptReader(params (string name, Script script)[] scripts)
         {
             var mockedScriptReader = Host.Services.GetRequiredService<Mock<IScriptReader>>();
             foreach (var script in DistinctBy(scripts, s => s.name))
-            {
                 mockedScriptReader.Setup(s => s.Load(script.name, It.IsAny<CancellationToken>())).ReturnsAsync(script.script);
-            }
-            return mockedScriptReader;
         }
 
         private static Dictionary<string, ScriptAccessDeclaration?> CreateScriptAccess(params (string, ScriptAccessDeclaration)[]? scriptAccess)
@@ -235,8 +230,8 @@ namespace AgentDeploy.Tests.E2E
         public async Task ConcurrentExecution(string scriptName1, string scriptName2, string token1, string token2, ConcurrentExecutionLevel concurrencyLevel, bool success)
         {
             SetupMockedTokenReader(
-                (token1, new Token { AvailableScripts = CreateScriptAccess((token1, new ScriptAccessDeclaration())), Ssh = SecureShellOptions }),
-                (token2, new Token { AvailableScripts = CreateScriptAccess((token2, new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
+                (token1, new Token { AvailableScripts = CreateScriptAccess((scriptName1, new ScriptAccessDeclaration())), Ssh = SecureShellOptions }),
+                (token2, new Token { AvailableScripts = CreateScriptAccess((scriptName2, new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
             
             SetupMockedScriptReader(
                 (scriptName1, new Script { Command = "sleep 1", Concurrency = concurrencyLevel, Name = scriptName1 }), 
