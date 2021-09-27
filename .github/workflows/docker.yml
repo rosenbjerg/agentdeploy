@@ -142,7 +142,7 @@ jobs:
         docker manifest create mrosenbjerg/agentd-server:latest \
           mrosenbjerg/agentd-server:${SERVER_VERSION}-amd64 \
           mrosenbjerg/agentd-server:${SERVER_VERSION}-arm64v8 \
-          mrosenbjerg/agentd-server:${SERVER_VERSION}-arm32v7 \
+          mrosenbjerg/agentd-server:${SERVER_VERSION}-arm32v7 && \
         docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${SERVER_VERSION}-amd64   --arch amd64 --os linux && \
         docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${SERVER_VERSION}-arm64v8 --arch arm64 --os linux && \
         docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${SERVER_VERSION}-arm32v7 --arch arm --os linux && \
@@ -189,7 +189,7 @@ jobs:
         docker manifest create mrosenbjerg/agentd-client:latest \
           mrosenbjerg/agentd-client:${CLIENT_VERSION}-amd64 \
           mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm64v8 \
-          mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7 \
+          mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7 && \
         docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${CLIENT_VERSION}-amd64   --arch amd64 --os linux && \
         docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm64v8 --arch arm64 --os linux && \
         docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7 --arch arm --os linux && \
