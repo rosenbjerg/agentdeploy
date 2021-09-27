@@ -45,16 +45,23 @@ command: echo "Hello $(name)!"
 ```yaml
 variables:
   username:
+    default_value: johndoe
   password:
     secret: true
+    regex: ^s{16,32}$
 files:
   test_file:
     max_size: 1_000
+    preprocessing: clamscan -i $(FilePath)
+assets:
+  - *.jpeg
+  - resize.sh
 show_command: true
 concurrency: none
 command: |
   echo "logging in $(username):$(password)"
   cat $(test_file)
+  bash ./resize.sh ./*.jpeg /home/someuser/images
 ```
 </details>
 
@@ -85,6 +92,9 @@ available_scripts:
     variable_constraints: 
       name: ^john(doe)?$
   advanced-example:
+    ssh:
+      username: myotheruser
+      private_key_file: /home/myotheruser/.ssh/id_rsa
     locked_variables:
       username: john
     variable_constraints:
