@@ -38,7 +38,7 @@ jobs:
       
     - name: Run unit test suite
       working-directory: ${{ env.server_dir }}
-      run: dotnet test -c Release --filter TestCategory=Unit --collect "XPlat Code Coverage" --logger GitHubActions --no-build --verbosity normal
+      run: dotnet test -c Release --filter TestCategory=Unit --logger GitHubActions --no-build --verbosity normal
       
     - name: Setup Node.js environment
       uses: actions/setup-node@v2.1.5

@@ -16,7 +16,8 @@ FROM $BASE_IMAGE as runtime
 WORKDIR /app
 
 ARG TINI_VERSION=v0.19.0
-RUN wget -O /tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static && chmod +x /tini
+ARG TINI_BUILD=tini-static
+RUN wget -O /tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/${TINI_BUILD} && chmod +x /tini
 
 RUN addgroup -S agentd && adduser -S agentd -G agentd
 USER agentd

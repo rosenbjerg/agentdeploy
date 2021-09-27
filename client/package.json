@@ -22,15 +22,15 @@
     "commander": "^7.1.0",
     "dateformat": "^4.5.1",
     "form-data": "^4.0.0",
-    "node-fetch": "^2.6.1",
-    "prompt": "^1.1.0",
+    "node-fetch": "^2.6.2",
+    "prompt": "^1.2.0",
     "uuid": "^8.3.2",
-    "ws": "^7.4.5"
+    "ws": "^7.5.5"
   },
   "devDependencies": {
     "@types/commander": "^2.12.2",
     "@types/dateformat": "^3.0.1",
-    "@types/node": "^15.0.2",
+    "@types/node": "^15.14.9",
     "@types/node-fetch": "^2.5.10",
     "@types/prompt": "^1.1.0",
     "@types/uuid": "^8.3.0",
