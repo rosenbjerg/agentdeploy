@@ -8,8 +8,8 @@ RUN npm install -g pkg
 RUN npm ci
 COPY src/ ./src/
 RUN tsc src/index.ts
-ARG PKG_TARGET=node8-alpine-x64
-RUN pkg src/index.js --targets node8-alpine-x64 --output /app/agentd-client
+ARG PKG_TARGET=node12-alpine-x64
+RUN pkg src/index.js --targets ${PKG_TARGET} --output /app/agentd-client
 
 
 FROM $BASE_IMAGE as runtime
@@ -23,5 +23,4 @@ RUN addgroup -S agentd && adduser -S agentd -G agentd
 USER agentd
 
 COPY --from=builder /app/agentd-client /app/agentd-client
-ENTRYPOINT ["/tini", "-g", "--"]
-CMD /app/agentd-client
+ENTRYPOINT ["/tini", "-g", "--", "/app/agentd-client"]
