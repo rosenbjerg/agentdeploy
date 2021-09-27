@@ -49,8 +49,9 @@ namespace AgentDeploy.Tests.Unit
         [Test]
         public async Task ReadAsyncTest_FileExists()
         {
+            var expectedContent = "test";
             var tempFile = Path.Combine(Path.GetTempPath(), $"test_file.ext");
-            await File.WriteAllTextAsync(tempFile, "test");
+            await File.WriteAllTextAsync(tempFile, expectedContent);
             
             var service = new FileService(null!);
             
@@ -58,7 +59,7 @@ namespace AgentDeploy.Tests.Unit
             {
                 var fileContent = await service.ReadAsync(tempFile, CancellationToken.None);
                 Assert.NotNull(fileContent);
-                Assert.AreEqual(fileContent, "test");
+                Assert.AreEqual(expectedContent, fileContent);
             }
             finally
             {

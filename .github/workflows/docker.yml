@@ -102,33 +102,94 @@ jobs:
       run: docker push --all-tags mrosenbjerg/agentd-server
 
 
-    - name: Create and push agentd server manifest
+    - name: Create and push specific versioned agentd server manifest
+      env:
+        DOCKER_CLI_EXPERIMENTAL: enabled
+      run: |
+        SERVER_VERSION=$(cat server/AgentDeploy.ExternalApi/AgentDeploy.ExternalApi.csproj | grep '<PackageVersion>' | sed 's/.*<PackageVersion>\(.*\)<\/PackageVersion>/\1/' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
+
+        docker manifest create mrosenbjerg/agentd-server:${SERVER_VERSION} \
+          mrosenbjerg/agentd-server:${SERVER_VERSION}-amd64 \
+          mrosenbjerg/agentd-server:${SERVER_VERSION}-arm64v8 \
+          mrosenbjerg/agentd-server:${SERVER_VERSION}-arm32v7 && \
+        docker manifest annotate mrosenbjerg/agentd-server:${SERVER_VERSION} mrosenbjerg/agentd-server:${SERVER_VERSION}-amd64   --arch amd64 --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-server:${SERVER_VERSION} mrosenbjerg/agentd-server:${SERVER_VERSION}-arm64v8 --arch arm64 --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-server:${SERVER_VERSION} mrosenbjerg/agentd-server:${SERVER_VERSION}-arm32v7 --arch arm --os linux && \
+        docker manifest push mrosenbjerg/agentd-server:${SERVER_VERSION}
+
+    - name: Create and push major versioned agentd server manifest
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
       run: |
         SERVER_VERSION=$(cat server/AgentDeploy.ExternalApi/AgentDeploy.ExternalApi.csproj | grep '<PackageVersion>' | sed 's/.*<PackageVersion>\(.*\)<\/PackageVersion>/\1/' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
         MAJOR_SERVER_VERSION=$(echo "$SERVER_VERSION" | sed -E s/\.[0-9]+$//)
 
+        docker manifest create mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION} \
+          mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-amd64 \
+          mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-arm64v8 \
+          mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-arm32v7 && \
+        docker manifest annotate mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION} mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-amd64   --arch amd64 --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION} mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-arm64v8 --arch arm64 --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION} mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-arm32v7 --arch arm --os linux && \
+        docker manifest push mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}
+
+    - name: Create and push latest agentd server manifest
+      env:
+        DOCKER_CLI_EXPERIMENTAL: enabled
+      run: |
+        SERVER_VERSION=$(cat server/AgentDeploy.ExternalApi/AgentDeploy.ExternalApi.csproj | grep '<PackageVersion>' | sed 's/.*<PackageVersion>\(.*\)<\/PackageVersion>/\1/' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
+
         docker manifest create mrosenbjerg/agentd-server:latest \
           mrosenbjerg/agentd-server:${SERVER_VERSION}-amd64 \
           mrosenbjerg/agentd-server:${SERVER_VERSION}-arm64v8 \
-          mrosenbjerg/agentd-server:${SERVER_VERSION}-arm32v7 && \
+          mrosenbjerg/agentd-server:${SERVER_VERSION}-arm32v7 \
         docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${SERVER_VERSION}-amd64   --arch amd64 --os linux && \
         docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${SERVER_VERSION}-arm64v8 --arch arm64 --os linux && \
         docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${SERVER_VERSION}-arm32v7 --arch arm --os linux && \
         docker manifest push mrosenbjerg/agentd-server:latest
 
-    - name: Create and push agentd client manifest
+
+    - name: Create and push specific versioned agentd client manifest
+      env:
+        DOCKER_CLI_EXPERIMENTAL: enabled
+      run: |
+        CLIENT_VERSION=$(cat client/package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
+
+        docker manifest create mrosenbjerg/agentd-client:${CLIENT_VERSION} \
+          mrosenbjerg/agentd-client:${CLIENT_VERSION}-amd64 \
+          mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm64v8 \
+          mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7 && \
+        docker manifest annotate mrosenbjerg/agentd-client:${CLIENT_VERSION} mrosenbjerg/agentd-client:${CLIENT_VERSION}-amd64   --arch amd64 --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-client:${CLIENT_VERSION} mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm64v8 --arch arm64 --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-client:${CLIENT_VERSION} mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7 --arch arm --os linux && \
+        docker manifest push mrosenbjerg/agentd-client:${CLIENT_VERSION}
+        
+    - name: Create and push major versioned agentd client manifest
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
       run: |
         CLIENT_VERSION=$(cat client/package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
         MAJOR_CLIENT_VERSION=$(echo "$CLIENT_VERSION" | sed -E s/\.[0-9]+$//)
 
+        docker manifest create mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION} \
+          mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-amd64 \
+          mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-arm64v8 \
+          mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-arm32v7 && \
+        docker manifest annotate mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION} mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-amd64   --arch amd64 --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION} mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-arm64v8 --arch arm64 --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION} mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-arm32v7 --arch arm --os linux && \
+        docker manifest push mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}
+
+    - name: Create and push latest agentd client manifest
+      env:
+        DOCKER_CLI_EXPERIMENTAL: enabled
+      run: |
+        CLIENT_VERSION=$(cat client/package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
+
         docker manifest create mrosenbjerg/agentd-client:latest \
           mrosenbjerg/agentd-client:${CLIENT_VERSION}-amd64 \
           mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm64v8 \
-          mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7 && \
+          mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7 \
         docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${CLIENT_VERSION}-amd64   --arch amd64 --os linux && \
         docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm64v8 --arch arm64 --os linux && \
         docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7 --arch arm --os linux && \
