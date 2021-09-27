@@ -9,7 +9,7 @@ RUN npm install -g pkg
 RUN npm ci
 COPY src/ ./src/
 RUN tsc src/index.ts
-ARG PKG_TARGET=node14-alpine-x64
+ARG PKG_TARGET=node12-alpine-x64
 RUN pkg src/index.js --targets ${PKG_TARGET} --output /app/agentd-client
 
 
