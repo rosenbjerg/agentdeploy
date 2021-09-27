@@ -104,7 +104,11 @@ available_scripts:
 
 
 ## Client
-To simplify usage, the `agentd` CLI client can be used. The client provides functionality to utilize all functionality provided by the `agentd` server. This includes using WebSockets to allow for process output to be sent as soon as the process emits it, so it can be output in the CLI client.
+The `agentd-client` CLI tool simplifies usage in terminals, scripts and CD pipelines by providing a simple way to invoke the `agentd` server. 
+The CLI tool supports WebSockets to enable the output from the invoked script to be printed immediately after it was emitted.
+
+#### Installation
+Download a binary from [GitHub Releases](https://github.com/rosenbjerg/agentdeploy/releases) or use with docker using an alias `alias agentd-client='docker run --rm -it -v $(pwd):/files mrosenbjerg/agentd-client'`
 
 #### Minimal example
 ```
