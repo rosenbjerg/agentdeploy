@@ -74,7 +74,7 @@ jobs:
           -t "mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm64v8" \
           -t "mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-arm64v8" \
           --build-arg BASE_IMAGE=arm64v8/alpine \
-          --build-arg PKG_TARGET=node12-alpine-arm64 \
+          --build-arg PKG_TARGET=node12-linuxstatic-arm64 \
           --build-arg TINI_BUILD=tini-static-arm64 \
           client
         
@@ -87,7 +87,7 @@ jobs:
           -t "mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7" \
           -t "mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-arm32v7" \
           --build-arg BASE_IMAGE=arm32v7/alpine \
-          --build-arg PKG_TARGET=node12-alpine-armv7 \
+          --build-arg PKG_TARGET=node12-linuxstatic-armv7 \
           --build-arg TINI_BUILD=tini-static-armhf \
           client
 
