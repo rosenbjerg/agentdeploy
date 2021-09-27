@@ -17,7 +17,8 @@ jobs:
       with:
         platforms: arm64,arm
       
-    - name: Build agentd server image
+
+    - name: Build amd64 agentd server image
       run: |
         SERVER_VERSION=$(cat server/AgentDeploy.ExternalApi/AgentDeploy.ExternalApi.csproj | grep '<PackageVersion>' | sed 's/.*<PackageVersion>\(.*\)<\/PackageVersion>/\1/' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
         MAJOR_SERVER_VERSION=$(echo "$SERVER_VERSION" | sed -E s/\.[0-9]+$//)
@@ -25,7 +26,12 @@ jobs:
         docker build -f container/server/Dockerfile \
           -t "mrosenbjerg/agentd-server:${SERVER_VERSION}-amd64" \
           -t "mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-amd64" \
-          server && \
+          server
+
+    - name: Build arm64v8 agentd server image
+      run: |
+        SERVER_VERSION=$(cat server/AgentDeploy.ExternalApi/AgentDeploy.ExternalApi.csproj | grep '<PackageVersion>' | sed 's/.*<PackageVersion>\(.*\)<\/PackageVersion>/\1/' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
+        MAJOR_SERVER_VERSION=$(echo "$SERVER_VERSION" | sed -E s/\.[0-9]+$//)
 
         docker build -f container/server/Dockerfile \
           -t "mrosenbjerg/agentd-server:${SERVER_VERSION}-arm64v8" \
@@ -33,7 +39,12 @@ jobs:
           --build-arg BASE_IMAGE=arm64v8/alpine \
           --build-arg DOTNET_RID=linux-musl-arm64 \
           --build-arg TINI_BUILD=tini-static-arm64 \
-          server && \
+          server
+
+    - name: Build arm32v7 agentd server image
+      run: |
+        SERVER_VERSION=$(cat server/AgentDeploy.ExternalApi/AgentDeploy.ExternalApi.csproj | grep '<PackageVersion>' | sed 's/.*<PackageVersion>\(.*\)<\/PackageVersion>/\1/' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
+        MAJOR_SERVER_VERSION=$(echo "$SERVER_VERSION" | sed -E s/\.[0-9]+$//)
 
         docker build -f container/server/Dockerfile \
           -t "mrosenbjerg/agentd-server:${SERVER_VERSION}-arm32v7" \
@@ -42,8 +53,9 @@ jobs:
           --build-arg DOTNET_RID=linux-musl-arm \
           --build-arg TINI_BUILD=tini-static-armhf \
           server
-    
-    - name: Build agentd client image
+
+
+    - name: Build amd64 agentd client image
       run: |
         CLIENT_VERSION=$(cat client/package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
         MAJOR_CLIENT_VERSION=$(echo "$CLIENT_VERSION" | sed -E s/\.[0-9]+$//)
@@ -51,21 +63,31 @@ jobs:
         docker build -f container/client/Dockerfile \
           -t "mrosenbjerg/agentd-client:${CLIENT_VERSION}-amd64" \
           -t "mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-amd64" \
-          client && \
+          client
+        
+    - name: Build arm64v8 agentd client image
+      run: |
+        CLIENT_VERSION=$(cat client/package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
+        MAJOR_CLIENT_VERSION=$(echo "$CLIENT_VERSION" | sed -E s/\.[0-9]+$//)
 
         docker build -f container/client/Dockerfile \
           -t "mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm64v8" \
           -t "mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-arm64v8" \
           --build-arg BASE_IMAGE=arm64v8/alpine \
-          --build-arg PKG_TARGET=node8-alpine-arm64 \
+          --build-arg PKG_TARGET=node12-alpine-arm64 \
           --build-arg TINI_BUILD=tini-static-arm64 \
-          client && \
+          client
+        
+    - name: Build arm32v7 agentd client image
+      run: |
+        CLIENT_VERSION=$(cat client/package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed -E s/\.[0-9]+$//)
+        MAJOR_CLIENT_VERSION=$(echo "$CLIENT_VERSION" | sed -E s/\.[0-9]+$//)
 
         docker build -f container/client/Dockerfile \
           -t "mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7" \
           -t "mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-arm32v7" \
           --build-arg BASE_IMAGE=arm32v7/alpine \
-          --build-arg PKG_TARGET=node8-alpine-armv7 \
+          --build-arg PKG_TARGET=node12-alpine-armv7 \
           --build-arg TINI_BUILD=tini-static-armhf \
           client
 
@@ -89,17 +111,11 @@ jobs:
 
         docker manifest create mrosenbjerg/agentd-server:latest \
           mrosenbjerg/agentd-server:${SERVER_VERSION}-amd64 \
-          mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-amd64 \
           mrosenbjerg/agentd-server:${SERVER_VERSION}-arm64v8 \
-          mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-arm64v8 \
           mrosenbjerg/agentd-server:${SERVER_VERSION}-arm32v7 \
-          mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-arm32v7 && \
-        docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${SERVER_VERSION}-amd64         --arch amd64 --os linux && \
-        docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-amd64   --arch amd64 --os linux && \
-        docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${SERVER_VERSION}-arm64v8       --arch arm64 --os linux && \
-        docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-arm64v8 --arch arm64 --os linux && \
-        docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${SERVER_VERSION}-arm32v7       --arch arm --os linux && \
-        docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${MAJOR_SERVER_VERSION}-arm32v7 --arch arm --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${SERVER_VERSION}-amd64   --arch amd64 --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${SERVER_VERSION}-arm64v8 --arch arm64 --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-server:latest mrosenbjerg/agentd-server:${SERVER_VERSION}-arm32v7 --arch arm --os linux && \
         docker manifest push mrosenbjerg/agentd-server:latest
 
     - name: Create and push agentd client manifest
@@ -111,15 +127,9 @@ jobs:
 
         docker manifest create mrosenbjerg/agentd-client:latest \
           mrosenbjerg/agentd-client:${CLIENT_VERSION}-amd64 \
-          mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-amd64 \
           mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm64v8 \
-          mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-arm64v8 \
           mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7 \
-          mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-arm32v7 && \
-        docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${CLIENT_VERSION}-amd64         --arch amd64 --os linux && \
-        docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-amd64   --arch amd64 --os linux && \
-        docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm64v8       --arch arm64 --os linux && \
-        docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-arm64v8 --arch arm64 --os linux && \
-        docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7       --arch arm --os linux && \
-        docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${MAJOR_CLIENT_VERSION}-arm32v7 --arch arm --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${CLIENT_VERSION}-amd64   --arch amd64 --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm64v8 --arch arm64 --os linux && \
+        docker manifest annotate mrosenbjerg/agentd-client:latest mrosenbjerg/agentd-client:${CLIENT_VERSION}-arm32v7 --arch arm --os linux && \
         docker manifest push mrosenbjerg/agentd-client:latest
