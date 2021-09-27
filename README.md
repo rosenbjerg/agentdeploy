@@ -105,17 +105,17 @@ available_scripts:
 
 ## Client
 The `agentd-client` CLI tool simplifies usage in terminals, scripts and CD pipelines by providing a simple way to invoke the `agentd` server. 
-The CLI tool supports WebSockets to enable the output from the invoked script to be printed immediately after it was emitted.
+The CLI tool supports WebSockets to enable the output from the invoked script to be printed immediately after it is emitted.
 
 #### Installation
 Download a binary from [GitHub Releases](https://github.com/rosenbjerg/agentdeploy/releases) or use with docker using an alias `alias agentd-client='docker run --rm -it -v $(pwd):/files mrosenbjerg/agentd-client'`
 
-#### Minimal example
+#### Minimal usage example
 ```
 agentd-client invoke minimal-example http://localhost:5000 -i -v name=John
 ```
 
-#### Advanced example
+#### Advanced usage example
 ```
 agentd-client invoke advanced-example http://localhost:5000 -iw -v username=johndoe password=longbutveryweakpassword -f test_file=./the-test-file.txt
 ```
