@@ -70,8 +70,8 @@ namespace AgentDeploy.ExternalApi
             if (agentOptions.TrustXForwardedHeaders) app.UseForwardedHeaders();
             if (agentOptions.AllowCors) app.UseCors("Default");
 
-            app.UseMiddleware<LoggingEnrichingMiddleware>();
             app.UseMiddleware<AuthenticationMiddleware>();
+            app.UseMiddleware<LoggingEnrichingMiddleware>();
             app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
             app.UseRouting();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
