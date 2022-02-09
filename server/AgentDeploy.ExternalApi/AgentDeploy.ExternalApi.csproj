@@ -21,7 +21,7 @@
 
     <ItemGroup>
       <PackageReference Include="IPAddressRange" Version="4.2.0" />
-      <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.12" />
+      <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.14" />
       <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
