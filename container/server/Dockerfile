@@ -1,6 +1,6 @@
 ARG BASE_IMAGE=amd64/alpine
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0-alpine as builder
+FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine as builder
 WORKDIR /app
 COPY ./ /app/src
 ARG DOTNET_RID=linux-musl-x64
