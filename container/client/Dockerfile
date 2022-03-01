@@ -1,7 +1,6 @@
 ARG BASE_IMAGE=amd64/alpine
 
 FROM node:lts-alpine as builder
-RUN apk add --update --no-cache patch
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install -g typescript
@@ -9,7 +8,7 @@ RUN npm install -g pkg
 RUN npm ci
 COPY src/ ./src/
 RUN tsc src/index.ts
-ARG PKG_TARGET=node12-linuxstatic-x64
+ARG PKG_TARGET=node16-linuxstatic-x64
 RUN pkg src/index.js --targets ${PKG_TARGET} --output /app/agentd-client
 
 
