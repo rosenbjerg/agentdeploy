@@ -25,7 +25,7 @@ namespace AgentDeploy.Services
         {
             if (!HasAccessToScript(scriptInvocation.ScriptName))
             {
-                _logger.LogWarning("Access to invoke script {ScriptName} denied for token ");
+                _logger.LogWarning("Access to invoke script {ScriptName} denied for token ", scriptInvocation.ScriptName);
                 return null;
             }
 
