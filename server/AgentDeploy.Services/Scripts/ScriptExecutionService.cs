@@ -29,7 +29,7 @@ namespace AgentDeploy.Services.Scripts
             var scriptLines = await _scriptTransformer.PrepareScriptFile(invocationContext, directory, cancellationToken);
             var processedScriptLines = scriptLines.Select(line => ReplacementUtils.HideSecrets(line, invocationContext)).ToArray();
             var executor = _scriptExecutorFactory.Build(invocationContext);
-            _logger.LogDebug($"Executing script using {executor.GetType().Name}");
+            _logger.LogInformation($"Executing script using {executor.GetType().Name}");
 
             var output = new LinkedList<ProcessOutput>();
             var onOutput = await SetupOutputHandlers(invocationContext, processedScriptLines, output, cancellationToken);

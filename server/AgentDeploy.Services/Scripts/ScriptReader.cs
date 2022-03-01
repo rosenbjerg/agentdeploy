@@ -28,7 +28,7 @@ namespace AgentDeploy.Services.Scripts
         public async Task<Script?> Load(string scriptName, CancellationToken cancellationToken)
         {
             var filePath = _fileService.FindFile(_directoryOptions.Scripts, scriptName, "yaml", "yml");
-            _logger.LogDebug($"Attempting to read command file: {filePath}");
+            _logger.LogDebug($"Attempting to read script file: {filePath}");
 
             var content = await _fileService.ReadAsync(filePath, cancellationToken);
             if (content == null)

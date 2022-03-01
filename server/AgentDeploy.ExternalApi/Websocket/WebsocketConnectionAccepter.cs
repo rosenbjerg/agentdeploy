@@ -10,7 +10,8 @@ namespace AgentDeploy.ExternalApi.Websocket
     {
         private readonly IOperationContext _operationContext;
 
-        public WebsocketConnectionAccepter(IOperationContext operationContext, IConnectionHub connectionHub) : base(connectionHub)
+        public WebsocketConnectionAccepter(IOperationContext operationContext, IConnectionHub connectionHub) 
+            : base(connectionHub)
         {
             _operationContext = operationContext;
         }

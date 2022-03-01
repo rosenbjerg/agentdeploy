@@ -2,6 +2,7 @@
 using AgentDeploy.Models;
 using AgentDeploy.Services.Scripts;
 using AgentDeploy.Services.TypeValidation;
+using Microsoft.Extensions.Logging;
 
 namespace AgentDeploy.Services
 {
@@ -10,18 +11,23 @@ namespace AgentDeploy.Services
         private readonly IOperationContext _operationContext;
         private readonly IScriptReader _scriptReader;
         private readonly ITypeValidationService _typeValidationService;
+        private readonly ILogger<InvocationContextService> _logger;
 
-        public InvocationContextService(IOperationContext operationContext, IScriptReader scriptReader, ITypeValidationService typeValidationService)
+        public InvocationContextService(IOperationContext operationContext, IScriptReader scriptReader, ITypeValidationService typeValidationService, ILogger<InvocationContextService> logger)
         {
             _operationContext = operationContext;
             _scriptReader = scriptReader;
             _typeValidationService = typeValidationService;
+            _logger = logger;
         }
         
         public async Task<ScriptInvocationContext?> Build(ParsedScriptInvocation scriptInvocation)
         {
             if (!HasAccessToScript(scriptInvocation.ScriptName))
+            {
+                _logger.LogWarning("Access to invoke script {ScriptName} denied for token ", scriptInvocation.ScriptName);
                 return null;
+            }
 
             var script = await _scriptReader.Load(scriptInvocation.ScriptName, _operationContext.OperationCancelled);
             if (script == null)

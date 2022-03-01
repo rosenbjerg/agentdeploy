@@ -56,7 +56,7 @@ namespace AgentDeploy.Services.Scripts
 
             foreach (var (sourcePath, destinationPath) in globResults.SelectMany(file => file.Found))
             {
-                _logger.LogDebug("Copying required file {InputFile} to {Path}", sourcePath, directory);
+                _logger.LogTrace("Copying required file {InputFile} to {Path}", sourcePath, directory);
                 await _fileService.CopyFileAsync(sourcePath, destinationPath, cancellationToken);
             }
         }
@@ -90,7 +90,7 @@ namespace AgentDeploy.Services.Scripts
             string filesDirectory, string filesFolderName, AcceptedScriptInvocationFile file)
         {
             var filePath = PathUtils.Combine(_executionOptions.DirectorySeparatorChar, filesDirectory, file.FileName);
-            _logger.LogDebug("Downloading {InputFile} to {Path}", file.FileName, filePath);
+            _logger.LogTrace("Downloading {InputFile} to {Path}", file.FileName, filePath);
 
             await using var inputStream = file.OpenRead!();
             await _fileService.WriteAsync(inputStream, filePath, cancellationToken);
@@ -104,7 +104,7 @@ namespace AgentDeploy.Services.Scripts
             var preprocessing = file.Preprocessing ?? _executionOptions.DefaultFilePreprocessing;
             if (!string.IsNullOrEmpty(preprocessing))
             {
-                _logger.LogDebug("Preprocessing {File} with {Preprocessor}", filePath, preprocessing);
+                _logger.LogTrace("Preprocessing {File} with {Preprocessor}", filePath, preprocessing);
                 var preprocess = ReplacementUtils.ReplaceVariable(preprocessing, "FilePath", PathUtils.EscapeWhitespaceInPath(filePath, '\''));
                 var arguments = ReplacementUtils.ReplaceVariable(_executionOptions.CommandArgumentFormat, "Command", preprocess);
                 var preprocessResult = await _processExecutionService.Invoke(_executionOptions.Shell, arguments, null);
