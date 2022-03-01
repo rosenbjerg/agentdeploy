@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:5.0-alpine as builder
+FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine as builder
 RUN apk add --update --no-cache icu-libs openssh-client sshpass nodejs
 WORKDIR /app
 CMD dotnet build --verbosity quiet server/AgentDeploy.sln && \

@@ -26,7 +26,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.x
+        dotnet-version: 6.0.x
         
     - name: Restore NuGet packages
       working-directory: ${{ env.server_dir }}
@@ -43,7 +43,7 @@ jobs:
     - name: Setup Node.js environment
       uses: actions/setup-node@v2.1.5
       with: 
-        node-version: 12.x
+        node-version: 14.x
 
     - name: Install TypeScript
       working-directory: ${{ env.client_dir }}
