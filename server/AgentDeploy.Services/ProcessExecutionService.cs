@@ -19,7 +19,6 @@ namespace AgentDeploy.Services
             };
             var instance = new Instance(startInfo);
             instance.DataReceived += (_, args) => onOutput?.Invoke(args.Data, args.Type == DataType.Error);
-            instance.Started = true;
 
             cancellationToken.Register(() => instance.Started = false);
             var exitCode = await instance.FinishedRunning();
