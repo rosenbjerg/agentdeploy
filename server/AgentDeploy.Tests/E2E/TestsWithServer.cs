@@ -277,17 +277,19 @@ namespace AgentDeploy.Tests.E2E
         {
             SetupMockedTokenReader(("test", new Token { AvailableScripts = CreateScriptAccess(("test", new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
             
-            SetupMockedScriptReader(("test", new Script { Command = "sleep 10", Name = "test" }));
+            SetupMockedScriptReader(("test", new Script { Command = "echo Hello; sleep 10; echo World" }));
 
             var started = DateTime.UtcNow;
             
             var tokenSource = new CancellationTokenSource();
-            var task = E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test", tokenSource.Token);
+            var task = E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --ws --hide-headers --hide-timestamps", tokenSource.Token);
             tokenSource.CancelAfter(TimeSpan.FromMilliseconds(500));
-            await task;
+            var (exitCode, instance) = await task;
             
             var elapsed = DateTime.UtcNow - started;
             Assert.True(elapsed.TotalSeconds < 1);
+            Assert.AreEqual(1, instance.OutputData.Count);
+            Assert.AreEqual("Hello", instance.OutputData[0]);
         }
         
         [TestCase("127.0.0.1", true)]
