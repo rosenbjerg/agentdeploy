@@ -283,11 +283,11 @@ namespace AgentDeploy.Tests.E2E
             
             var tokenSource = new CancellationTokenSource();
             var task = E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --ws --hide-headers --hide-timestamps", tokenSource.Token);
-            tokenSource.CancelAfter(TimeSpan.FromMilliseconds(500));
+            tokenSource.CancelAfter(TimeSpan.FromMilliseconds(1000));
             var (exitCode, instance) = await task;
             
             var elapsed = DateTime.UtcNow - started;
-            Assert.True(elapsed.TotalSeconds < 1);
+            Assert.True(elapsed.TotalSeconds < 2);
             Assert.AreEqual(1, instance.OutputData.Count);
             Assert.AreEqual("Hello", instance.OutputData[0]);
         }
