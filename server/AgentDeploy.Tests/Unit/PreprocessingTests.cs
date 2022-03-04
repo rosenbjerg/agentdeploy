@@ -29,7 +29,7 @@ namespace AgentDeploy.Tests.Unit
             var processExecutionServiceMock = new Mock<IProcessExecutionService>();
             var fileService = new Mock<IFileService>();
             processExecutionServiceMock
-                .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>(), It.IsAny<string>()))
+                .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ProcessExecutionResult(0, Array.Empty<string>(), Array.Empty<string>()));
             var invocationContext = new ScriptInvocationContext
             {
@@ -42,7 +42,7 @@ namespace AgentDeploy.Tests.Unit
             var service = new ScriptInvocationFileService(executionOptions, null!, processExecutionServiceMock.Object, fileService.Object, NullLogger<ScriptInvocationFileService>.Instance);
             await service.DownloadFiles(invocationContext, "testDir", CancellationToken.None);
             
-            processExecutionServiceMock.Verify(s => s.Invoke("bash", $"-c \"{expectedCommand}\"", It.IsAny<Action<string, bool>>(), It.IsAny<string>()), Times.Once);
+            processExecutionServiceMock.Verify(s => s.Invoke("bash", $"-c \"{expectedCommand}\"", It.IsAny<Action<string, bool>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
 
         }
         
@@ -58,7 +58,7 @@ namespace AgentDeploy.Tests.Unit
             var processExecutionServiceMock = new Mock<IProcessExecutionService>();
             var fileService = new Mock<IFileService>();
             processExecutionServiceMock
-                .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>(), It.IsAny<string>()))
+                .Setup(s => s.Invoke(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Action<string, bool>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ProcessExecutionResult(1, Array.Empty<string>(), Array.Empty<string>()));
             var invocationContext = new ScriptInvocationContext
             {

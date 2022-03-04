@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
@@ -19,7 +20,8 @@ namespace AgentDeploy.Services.ScriptExecutors
             _processExecutionService = processExecutionService;
         }
 
-        public async Task<int> Execute(ScriptInvocationContext invocationContext, string directory, Action<ProcessOutput> onOutput)
+        public async Task<int> Execute(ScriptInvocationContext invocationContext, string directory, Action<ProcessOutput> onOutput,
+            CancellationToken cancellationToken)
         {
             var scriptFilePath = _scriptTransformer.BuildScriptPath(directory);
             if (_executionOptions.UseWslPathOnWindows)

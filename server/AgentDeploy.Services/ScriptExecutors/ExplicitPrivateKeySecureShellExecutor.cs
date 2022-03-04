@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
@@ -22,7 +23,8 @@ namespace AgentDeploy.Services.ScriptExecutors
             return result.ExitCode == 0;
         }
 
-        protected override async Task<int> Execute(SecureShellOptions ssh, string remoteDirectory, string fileArgument, Action<ProcessOutput> onOutput)
+        protected override async Task<int> Execute(SecureShellOptions ssh, string remoteDirectory, string fileArgument, Action<ProcessOutput> onOutput,
+            CancellationToken cancellationToken)
         {
             var privateKeyPath = PathUtils.EscapeWhitespaceInPath(ssh.PrivateKeyPath!);
             var sshCommand = $"-qtti {privateKeyPath} {StrictHostKeyChecking(ssh)} -p {ssh.Port} {Credentials(ssh)} \"{GetExecuteCommand(remoteDirectory, fileArgument)}\"";

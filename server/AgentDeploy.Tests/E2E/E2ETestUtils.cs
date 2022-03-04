@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Instances;
 
@@ -18,9 +19,12 @@ namespace AgentDeploy.Tests.E2E
                 throw new FileNotFoundException(Path.Combine(AgentdClientPath, "index.js"));
         }
         
-        public static async Task<(int exitCode, Instance instance)> ClientOutput(string arguments)
+        public static async Task<(int exitCode, Instance instance)> ClientOutput(string arguments, CancellationToken cancellationToken = default)
         {
-            return await Instance.FinishAsync("node", AgentdClientPath + " " +arguments);
+            var instance = new Instance("node", $"{AgentdClientPath} {arguments}");
+            cancellationToken.Register(() => instance.Started = false);
+            var exitCode = await instance.FinishedRunning();
+            return (exitCode, instance);
         }
     }
 }

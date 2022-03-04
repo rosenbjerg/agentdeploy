@@ -36,7 +36,7 @@ namespace AgentDeploy.Services.Scripts
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var exitCode = await executor.Execute(invocationContext, directory, onOutput);
+            var exitCode = await executor.Execute(invocationContext, directory, onOutput, cancellationToken);
 
             var visibleOutput = invocationContext.Script.ShowOutput ? output : Enumerable.Empty<ProcessOutput>();
             var visibleCommand = invocationContext.Script.ShowCommand ? processedScriptLines : Enumerable.Empty<string>();
