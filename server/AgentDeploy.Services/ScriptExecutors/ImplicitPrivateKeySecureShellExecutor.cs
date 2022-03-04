@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
@@ -21,7 +22,8 @@ namespace AgentDeploy.Services.ScriptExecutors
             return result.ExitCode == 0;
         }
 
-        protected override async Task<int> Execute(SecureShellOptions ssh, string remoteDirectory, string fileArgument, Action<ProcessOutput> onOutput)
+        protected override async Task<int> Execute(SecureShellOptions ssh, string remoteDirectory, string fileArgument, Action<ProcessOutput> onOutput,
+            CancellationToken cancellationToken)
         {
             var sshCommand = $"-qtt {StrictHostKeyChecking(ssh)} -p {ssh.Port} {Credentials(ssh)} \"{GetExecuteCommand(remoteDirectory, fileArgument)}\"";
             var result = await ProcessExecutionService.Invoke("ssh", sshCommand, (data, error) => onOutput(new ProcessOutput(DateTime.UtcNow, data, error)));

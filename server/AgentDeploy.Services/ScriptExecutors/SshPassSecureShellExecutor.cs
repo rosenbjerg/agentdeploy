@@ -32,7 +32,8 @@ namespace AgentDeploy.Services.ScriptExecutors
             });
         }
 
-        protected override async Task<int> Execute(SecureShellOptions ssh, string remoteDirectory, string fileArgument, Action<ProcessOutput> onOutput)
+        protected override async Task<int> Execute(SecureShellOptions ssh, string remoteDirectory, string fileArgument, Action<ProcessOutput> onOutput,
+            CancellationToken cancellationToken)
         {
             return await UsePasswordFile(ssh, async passwordFile =>
             {

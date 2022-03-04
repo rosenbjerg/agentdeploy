@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using AgentDeploy.Models;
 using AgentDeploy.Models.Options;
@@ -21,7 +22,8 @@ namespace AgentDeploy.Services.ScriptExecutors
             ProcessExecutionService = processExecutionService;
         }
         
-        public async Task<int> Execute(ScriptInvocationContext invocationContext, string directory, Action<ProcessOutput> onOutput)
+        public async Task<int> Execute(ScriptInvocationContext invocationContext, string directory, Action<ProcessOutput> onOutput,
+            CancellationToken cancellationToken)
         {
             var ssh = invocationContext.SecureShellOptions!;
             void OnUnprocessedOutput(ProcessOutput output) => onOutput(new ProcessOutput(output.Timestamp, ReplacementUtils.HideSecrets(output.Output, invocationContext), output.Error));
@@ -32,7 +34,8 @@ namespace AgentDeploy.Services.ScriptExecutors
             
             try
             {
-                return await ExecuteInternal(ssh, remoteDirectory, OnUnprocessedOutput);
+                cancellationToken.ThrowIfCancellationRequested(); 
+                return await ExecuteInternal(ssh, remoteDirectory, OnUnprocessedOutput, cancellationToken);
             }
             finally
             {
@@ -60,7 +63,7 @@ namespace AgentDeploy.Services.ScriptExecutors
 
         protected abstract Task<bool> Copy(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput);
         protected abstract Task<int> Execute(SecureShellOptions ssh, string remoteDirectory,
-            string fileArgument, Action<ProcessOutput> onOutput);
+            string fileArgument, Action<ProcessOutput> onOutput, CancellationToken cancellationToken);
         protected abstract Task Cleanup(SecureShellOptions ssh, string sourceDirectory, string remoteDirectory, Action<ProcessOutput> onOutput);
 
         protected string GetExecuteCommand(string remoteDirectory, string formattedScriptFileArgument)
@@ -70,11 +73,12 @@ namespace AgentDeploy.Services.ScriptExecutors
 
         protected static string GetCleanupCommand(string remoteDirectory) => $"rm -r {PathUtils.EscapeWhitespaceInPath(remoteDirectory, '\'')}";
 
-        private async Task<int> ExecuteInternal(SecureShellOptions ssh, string remoteDirectory, Action<ProcessOutput> onOutput)
+        private async Task<int> ExecuteInternal(SecureShellOptions ssh, string remoteDirectory, Action<ProcessOutput> onOutput,
+            CancellationToken cancellationToken)
         {
             var scriptFilePath = _scriptTransformer.BuildScriptPath(remoteDirectory);
             var fileArgument = _scriptTransformer.BuildScriptArgument(scriptFilePath);
-            return await Execute(ssh, remoteDirectory, fileArgument, onOutput);
+            return await Execute(ssh, remoteDirectory, fileArgument, onOutput, cancellationToken);
         }
 
         private async Task<string?> CopyInternal(string directory, SecureShellOptions ssh, Action<ProcessOutput> onOutput)
