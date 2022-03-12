@@ -32,7 +32,7 @@ Permission to invoke a **script** is granted through a **token**, which is also 
 
 ### Script examples
 
-#### Minimal example
+#### Minimal example (`minimal-example.yaml`)
 ```yaml
 variables:
   name:
@@ -40,7 +40,7 @@ command: echo "Hello $(name)!"
 ```
 
 <details>
-  <summary>Advanced example</summary>
+  <summary>Advanced example (<code>advanced-example.yaml</code>)</summary>
  
 ```yaml
 variables:
@@ -67,7 +67,7 @@ command: |
 
 
 ### Token examples
-#### Minimal example
+#### Minimal example (`my-token-123.yaml`)
 ```yaml
 available_scripts:
   minimal-example:
@@ -75,7 +75,7 @@ available_scripts:
 ```
 
 <details>
-  <summary>Advanced example</summary>
+  <summary>Advanced example (<code>adv-token-321.yaml</code>)</summary>
  
 ```yaml
 name: advanced example
@@ -113,11 +113,15 @@ Download a binary from [GitHub Releases](https://github.com/rosenbjerg/agentdepl
 #### Minimal usage example
 ```
 agentd-client invoke minimal-example http://localhost:5000 -i -v name=John
+// or
+agentd-client invoke minimal-example http://localhost:5000 -t my-token-123 -v name=John
 ```
 
 #### Advanced usage example
 ```
 agentd-client invoke advanced-example http://localhost:5000 -iw -v username=johndoe password=longbutveryweakpassword -f test_file=./the-test-file.txt
+// or
+agentd-client invoke advanced-example http://localhost:5000 -w -t adv-token-321 -v username=johndoe password=longbutveryweakpassword -f test_file=./the-test-file.txt
 ```
 
 #### Help
