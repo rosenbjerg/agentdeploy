@@ -50,9 +50,9 @@ namespace AgentDeploy.Tests.E2E
         [Test]
         public async Task InvalidToken()
         {
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke script http://localhost:5000 -t test");
-            Assert.NotZero(exitCode);
-            Assert.AreEqual("The provided token is invalid", instance.ErrorData[0]);
+            var result = await E2ETestUtils.ClientOutput("invoke script http://localhost:5000 -t test");
+            Assert.NotZero(result.ExitCode);
+            Assert.AreEqual("The provided token is invalid", result.ErrorData[0]);
         }
 
         private IEnumerable<T> DistinctBy<T, TKey>(IEnumerable<T> enumerable, Func<T, TKey> keySelector)
@@ -98,10 +98,10 @@ namespace AgentDeploy.Tests.E2E
             SetupMockedTokenReader(("test", new Token { AvailableScripts = CreateScriptAccess(), Ssh = SecureShellOptions}));
             SetupMockedScriptReader(("test", new Script { Command = "echo testing-123"}));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
-            Assert.NotZero(exitCode);
-            Assert.AreEqual("No script named 'test' is available", instance.ErrorData[0]);
+            Assert.NotZero(result.ExitCode);
+            Assert.AreEqual("No script named 'test' is available", result.ErrorData[0]);
         }
 
         [Test]
@@ -109,10 +109,10 @@ namespace AgentDeploy.Tests.E2E
         {
             SetupMockedTokenReader(("test", new Token { Ssh = SecureShellOptions}));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
-            Assert.NotZero(exitCode);
-            Assert.AreEqual("No script named 'test' is available", instance.ErrorData[0]);
+            Assert.NotZero(result.ExitCode);
+            Assert.AreEqual("No script named 'test' is available", result.ErrorData[0]);
         }
         
         [Test]
@@ -120,10 +120,10 @@ namespace AgentDeploy.Tests.E2E
         {
             SetupMockedTokenReader(("test", new Token { AvailableScripts = CreateScriptAccess(("test", new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
 
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
-            Assert.NotZero(exitCode);
-            Assert.AreEqual("No script named 'test' is available", instance.ErrorData[0]);
+            Assert.NotZero(result.ExitCode);
+            Assert.AreEqual("No script named 'test' is available", result.ErrorData[0]);
         }
 
         [Test]
@@ -132,10 +132,10 @@ namespace AgentDeploy.Tests.E2E
             SetupMockedTokenReader(("test", new Token { Ssh = SecureShellOptions }));
             SetupMockedScriptReader(("test", new Script { Command = "echo testing-123"}));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
-            Assert.Zero(exitCode);
-            Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
+            Assert.Zero(result.ExitCode);
+            Assert.IsTrue(result.OutputData[1].EndsWith("testing-123"));
         }
         
         [Test]
@@ -144,10 +144,10 @@ namespace AgentDeploy.Tests.E2E
             SetupMockedTokenReader(("test", new Token { AvailableScripts = CreateScriptAccess(("test", new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
             SetupMockedScriptReader(("test", new Script { Command = "echo testing-123"}));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
             
-            Assert.Zero(exitCode);
-            Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
+            Assert.Zero(result.ExitCode);
+            Assert.IsTrue(result.OutputData[1].EndsWith("testing-123"));
         }
         
         [Test]
@@ -163,12 +163,12 @@ namespace AgentDeploy.Tests.E2E
                 }
             }));
 
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -v test_var=test test_var=test2");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -v test_var=test test_var=test2");
             
-            Assert.NotZero(exitCode);
-            Assert.AreEqual("One or more validation errors occured", instance.ErrorData[0]);
-            Assert.AreEqual("test_var:", instance.ErrorData[1]);
-            Assert.AreEqual("  Variable with same key already provided", instance.ErrorData[2]);
+            Assert.NotZero(result.ExitCode);
+            Assert.AreEqual("One or more validation errors occured", result.ErrorData[0]);
+            Assert.AreEqual("test_var:", result.ErrorData[1]);
+            Assert.AreEqual("  Variable with same key already provided", result.ErrorData[2]);
         }
         
         [Test]
@@ -184,12 +184,12 @@ namespace AgentDeploy.Tests.E2E
                 }
             }));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -s test_var=test test_var=test2");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -s test_var=test test_var=test2");
             
-            Assert.NotZero(exitCode);
-            Assert.AreEqual("One or more validation errors occured", instance.ErrorData[0]);
-            Assert.AreEqual("test_var:", instance.ErrorData[1]);
-            Assert.AreEqual("  Secret variable with same key already provided", instance.ErrorData[2]);
+            Assert.NotZero(result.ExitCode);
+            Assert.AreEqual("One or more validation errors occured", result.ErrorData[0]);
+            Assert.AreEqual("test_var:", result.ErrorData[1]);
+            Assert.AreEqual("  Secret variable with same key already provided", result.ErrorData[2]);
         }
         
         [Test]
@@ -205,12 +205,12 @@ namespace AgentDeploy.Tests.E2E
                 }
             }));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -s test_var=test -e test=123 test=321");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test -s test_var=test -e test=123 test=321");
             
-            Assert.NotZero(exitCode);
-            Assert.AreEqual("One or more validation errors occured", instance.ErrorData[0]);
-            Assert.AreEqual("test:", instance.ErrorData[1]);
-            Assert.AreEqual("  Environment variable with same key already provided", instance.ErrorData[2]);
+            Assert.NotZero(result.ExitCode);
+            Assert.AreEqual("One or more validation errors occured", result.ErrorData[0]);
+            Assert.AreEqual("test:", result.ErrorData[1]);
+            Assert.AreEqual("  Environment variable with same key already provided", result.ErrorData[2]);
         }
 
         [Test]
@@ -219,10 +219,10 @@ namespace AgentDeploy.Tests.E2E
             SetupMockedTokenReader(("test", new Token { AvailableScripts = CreateScriptAccess(("test", new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
             SetupMockedScriptReader(("test", new Script { Command = "echo testing-123"}));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --ws");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --ws");
             
-            Assert.Zero(exitCode);
-            Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
+            Assert.Zero(result.ExitCode);
+            Assert.IsTrue(result.OutputData[1].EndsWith("testing-123"));
         }
         
         [Test]
@@ -231,11 +231,11 @@ namespace AgentDeploy.Tests.E2E
             SetupMockedTokenReader(("test", new Token { AvailableScripts = CreateScriptAccess(("test", new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
             SetupMockedScriptReader(("test", new Script { Command = "echo testing-123", ShowCommand = true }));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --ws");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --ws");
             
-            Assert.Zero(exitCode);
-            Assert.IsTrue(instance.OutputData.Contains("1 | echo testing-123"));
-            Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
+            Assert.Zero(result.ExitCode);
+            Assert.IsTrue(result.OutputData.Contains("1 | echo testing-123"));
+            Assert.IsTrue(result.OutputData[1].EndsWith("testing-123"));
         }
         
         [TestCase("test1", "test1", "tok1", "tok1", ConcurrentExecutionLevel.Full, true)]
@@ -261,14 +261,14 @@ namespace AgentDeploy.Tests.E2E
             
             if (success)
             {
-                Assert.Zero(task1Result.exitCode);
-                Assert.Zero(task2Result.exitCode);
+                Assert.Zero(task1Result.ExitCode);
+                Assert.Zero(task2Result.ExitCode);
             }
             else
             {
-                Assert.Zero(task1Result.exitCode);
-                Assert.NotZero(task2Result.exitCode);
-                Assert.AreEqual($"The script '{scriptName2}' is currently locked. Try again later", task2Result.instance.ErrorData[0]);
+                Assert.Zero(task1Result.ExitCode);
+                Assert.NotZero(task2Result.ExitCode);
+                Assert.AreEqual($"The script '{scriptName2}' is currently locked. Try again later", task2Result.ErrorData[0]);
             }
         }
         
@@ -284,12 +284,12 @@ namespace AgentDeploy.Tests.E2E
             var tokenSource = new CancellationTokenSource();
             var task = E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --ws --hide-headers --hide-timestamps", tokenSource.Token);
             tokenSource.CancelAfter(TimeSpan.FromMilliseconds(1000));
-            var (exitCode, instance) = await task;
+            var result = await task;
             
             var elapsed = DateTime.UtcNow - started;
             Assert.True(elapsed.TotalSeconds < 2);
-            Assert.AreEqual(1, instance.OutputData.Count);
-            Assert.AreEqual("Hello", instance.OutputData[0]);
+            Assert.AreEqual(1, result.OutputData.Count);
+            Assert.AreEqual("Hello", result.OutputData[0]);
         }
         
         [TestCase("127.0.0.1", true)]
@@ -302,17 +302,17 @@ namespace AgentDeploy.Tests.E2E
             SetupMockedTokenReader(("test", new Token { TrustedIps = new List<string>{ trustedIp }, AvailableScripts = CreateScriptAccess(("test", new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
             SetupMockedScriptReader(("test", new Script { Command = "echo testing-123"}));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test");
 
             if (success)
             {
-                Assert.Zero(exitCode);
-                Assert.IsTrue(instance.OutputData[1].EndsWith("testing-123"));
+                Assert.Zero(result.ExitCode);
+                Assert.IsTrue(result.OutputData[1].EndsWith("testing-123"));
             }
             else
             {
-                Assert.NotZero(exitCode);
-                Assert.AreEqual("The provided token is invalid", instance.ErrorData[0]);
+                Assert.NotZero(result.ExitCode);
+                Assert.AreEqual("The provided token is invalid", result.ErrorData[0]);
             }
         }
         
@@ -322,11 +322,11 @@ namespace AgentDeploy.Tests.E2E
             SetupMockedTokenReader(("test", new Token { AvailableScripts = CreateScriptAccess(("test", new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
             SetupMockedScriptReader(("test", new Script { Command = "echo testing-123"}));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers");
             
-            Assert.Zero(exitCode);
-            Assert.IsTrue(instance.OutputData[0].EndsWith("testing-123"));
-            Assert.AreEqual(1, instance.OutputData.Count);
+            Assert.Zero(result.ExitCode);
+            Assert.IsTrue(result.OutputData[0].EndsWith("testing-123"));
+            Assert.AreEqual(1, result.OutputData.Count);
         }
         
         [Test]
@@ -335,10 +335,10 @@ namespace AgentDeploy.Tests.E2E
             SetupMockedTokenReader(("test", new Token { AvailableScripts = CreateScriptAccess(("test", new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
             SetupMockedScriptReader(("test", new Script { Command = "echo testing-123"}));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-timestamps");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-timestamps");
             
-            Assert.Zero(exitCode);
-            Assert.AreEqual("testing-123", instance.OutputData[1]);
+            Assert.Zero(result.ExitCode);
+            Assert.AreEqual("testing-123", result.OutputData[1]);
         }
         
         [Test]
@@ -347,11 +347,11 @@ namespace AgentDeploy.Tests.E2E
             SetupMockedTokenReader(("test", new Token { AvailableScripts = CreateScriptAccess(("test", new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
             SetupMockedScriptReader(("test", new Script { Command = "echo testing-123"}));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
-            Assert.Zero(exitCode);
-            Assert.AreEqual("testing-123", instance.OutputData[0]);
-            Assert.AreEqual(1, instance.OutputData.Count);
+            Assert.Zero(result.ExitCode);
+            Assert.AreEqual("testing-123", result.OutputData[0]);
+            Assert.AreEqual(1, result.OutputData.Count);
         }
         
         [Test]
@@ -360,13 +360,13 @@ namespace AgentDeploy.Tests.E2E
             SetupMockedTokenReader(("test", new Token { AvailableScripts = CreateScriptAccess(("test", new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
             SetupMockedScriptReader(("test", new Script { Command = "echo testing-123\n\necho again", ShowCommand = true, ShowOutput = false }));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
-            Assert.Zero(exitCode);
-            Assert.AreEqual(3, instance.OutputData.Count);
-            Assert.AreEqual("1 | echo testing-123", instance.OutputData[0]);
-            Assert.AreEqual("2 | ", instance.OutputData[1]);
-            Assert.AreEqual("3 | echo again", instance.OutputData[2]);
+            Assert.Zero(result.ExitCode);
+            Assert.AreEqual(3, result.OutputData.Count);
+            Assert.AreEqual("1 | echo testing-123", result.OutputData[0]);
+            Assert.AreEqual("2 | ", result.OutputData[1]);
+            Assert.AreEqual("3 | echo again", result.OutputData[2]);
         }
         
         [Test]
@@ -385,11 +385,11 @@ namespace AgentDeploy.Tests.E2E
             await File.WriteAllTextAsync(tempFile, "test");
             try
             {
-                var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test -f test={tempFile}");
-                Assert.NotZero(exitCode);
-                Assert.AreEqual(3, instance.ErrorData.Count);
-                Assert.AreEqual("File preprocessing failed with non-zero exit-code: 1", instance.ErrorData[0]);
-                Assert.AreEqual("test:", instance.ErrorData[1]);
+                var result = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test -f test={tempFile}");
+                Assert.NotZero(result.ExitCode);
+                Assert.AreEqual(3, result.ErrorData.Count);
+                Assert.AreEqual("File preprocessing failed with non-zero exit-code: 1", result.ErrorData[0]);
+                Assert.AreEqual("test:", result.ErrorData[1]);
             }
             finally
             {
@@ -417,19 +417,19 @@ namespace AgentDeploy.Tests.E2E
                 }}
             }}));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps -f test_file=E2E/Files/testfile.txt");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps -f test_file=E2E/Files/testfile.txt");
 
             if (success)
             {
-                Assert.Zero(exitCode);
-                Assert.AreEqual(1, instance.OutputData.Count);
-                Assert.AreEqual("the quick brown fox jumps over the lazy dog", instance.OutputData[0]);
+                Assert.Zero(result.ExitCode);
+                Assert.AreEqual(1, result.OutputData.Count);
+                Assert.AreEqual("the quick brown fox jumps over the lazy dog", result.OutputData[0]);
             }
             else
             {
-                Assert.NotZero(exitCode);
-                Assert.AreEqual(3, instance.ErrorData.Count);
-                Assert.AreEqual("test_file:", instance.ErrorData[1]);
+                Assert.NotZero(result.ExitCode);
+                Assert.AreEqual(3, result.ErrorData.Count);
+                Assert.AreEqual("test_file:", result.ErrorData[1]);
             }
         }
         
@@ -448,20 +448,20 @@ namespace AgentDeploy.Tests.E2E
                 }}
             }}));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps{(provideFile ? " -f test_file=E2E/Files/testfile.txt" : "")}");
+            var result = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps{(provideFile ? " -f test_file=E2E/Files/testfile.txt" : "")}");
 
             if (success)
             {
-                Assert.Zero(exitCode);
-                Assert.AreEqual(1, instance.OutputData.Count);
-                Assert.AreEqual("test", instance.OutputData[0]);
+                Assert.Zero(result.ExitCode);
+                Assert.AreEqual(1, result.OutputData.Count);
+                Assert.AreEqual("test", result.OutputData[0]);
             }
             else
             {
-                Assert.NotZero(exitCode);
-                Assert.AreEqual(3, instance.ErrorData.Count);
-                Assert.AreEqual("test_file:", instance.ErrorData[1]);
-                Assert.AreEqual("  No file provided", instance.ErrorData[2]);
+                Assert.NotZero(result.ExitCode);
+                Assert.AreEqual(3, result.ErrorData.Count);
+                Assert.AreEqual("test_file:", result.ErrorData[1]);
+                Assert.AreEqual("  No file provided", result.ErrorData[2]);
             }
         }
         
@@ -474,20 +474,20 @@ namespace AgentDeploy.Tests.E2E
             SetupMockedTokenReader(("test", new Token { AvailableScripts = CreateScriptAccess(("test", new ScriptAccessDeclaration())), Ssh = SecureShellOptions }));
             SetupMockedScriptReader(("test", new Script { Command = "cat ./testfile.txt", Assets = new List<string> { assetGlob }}));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
+            var result = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
             if (exists)
             {
-                Assert.Zero(exitCode);
-                Assert.AreEqual(1, instance.OutputData.Count);
-                Assert.AreEqual("the quick brown fox jumps over the lazy dog", instance.OutputData[0]);
+                Assert.Zero(result.ExitCode);
+                Assert.AreEqual(1, result.OutputData.Count);
+                Assert.AreEqual("the quick brown fox jumps over the lazy dog", result.OutputData[0]);
             }
             else
             {
-                Assert.NotZero(exitCode);
-                Assert.AreEqual(3, instance.ErrorData.Count);
-                Assert.AreEqual("Missing files:", instance.ErrorData[1]);
-                Assert.AreEqual($"  {assetGlob}", instance.ErrorData[2]);
+                Assert.NotZero(result.ExitCode);
+                Assert.AreEqual(3, result.ErrorData.Count);
+                Assert.AreEqual("Missing files:", result.ErrorData[1]);
+                Assert.AreEqual($"  {assetGlob}", result.ErrorData[2]);
             }
         }
 
@@ -504,13 +504,13 @@ namespace AgentDeploy.Tests.E2E
                 }
             }));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
-            Assert.NotZero(exitCode);
-            Assert.AreEqual(3, instance.ErrorData.Count);
-            Assert.AreEqual("One or more validation errors occured", instance.ErrorData[0]);
-            Assert.AreEqual("test_var:", instance.ErrorData[1]);
-            Assert.AreEqual("  No value provided", instance.ErrorData[2]);
+            Assert.NotZero(result.ExitCode);
+            Assert.AreEqual(3, result.ErrorData.Count);
+            Assert.AreEqual("One or more validation errors occured", result.ErrorData[0]);
+            Assert.AreEqual("test_var:", result.ErrorData[1]);
+            Assert.AreEqual("  No value provided", result.ErrorData[2]);
         }
 
         [Test]
@@ -526,11 +526,11 @@ namespace AgentDeploy.Tests.E2E
                 }
             }));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
-            Assert.Zero(exitCode);
-            Assert.AreEqual(1, instance.OutputData.Count);
-            Assert.AreEqual("testing-123", instance.OutputData[0]);
+            Assert.Zero(result.ExitCode);
+            Assert.AreEqual(1, result.OutputData.Count);
+            Assert.AreEqual("testing-123", result.OutputData[0]);
         }
 
         [Test]
@@ -560,13 +560,13 @@ namespace AgentDeploy.Tests.E2E
                 }
             }));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps -v test_var=testing-123");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps -v test_var=testing-123");
             
-            Assert.NotZero(exitCode);
-            Assert.AreEqual(3, instance.ErrorData.Count);
-            Assert.AreEqual("One or more validation errors occured", instance.ErrorData[0]);
-            Assert.AreEqual("test_var:", instance.ErrorData[1]);
-            Assert.AreEqual("  Variable is locked and can not be provided", instance.ErrorData[2]);
+            Assert.NotZero(result.ExitCode);
+            Assert.AreEqual(3, result.ErrorData.Count);
+            Assert.AreEqual("One or more validation errors occured", result.ErrorData[0]);
+            Assert.AreEqual("test_var:", result.ErrorData[1]);
+            Assert.AreEqual("  Variable is locked and can not be provided", result.ErrorData[2]);
         }
         
         [Test]
@@ -599,11 +599,11 @@ namespace AgentDeploy.Tests.E2E
                 }
             }));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
-            Assert.Zero(exitCode);
-            Assert.AreEqual(1, instance.OutputData.Count);
-            Assert.AreEqual("testing_321", instance.OutputData[0]);
+            Assert.Zero(result.ExitCode);
+            Assert.AreEqual(1, result.OutputData.Count);
+            Assert.AreEqual("testing_321", result.OutputData[0]);
         }
 
         [Test]
@@ -633,11 +633,11 @@ namespace AgentDeploy.Tests.E2E
                 }
             }));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
+            var result = await E2ETestUtils.ClientOutput("invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps");
             
-            Assert.Zero(exitCode);
-            Assert.AreEqual(1, instance.OutputData.Count);
-            Assert.AreEqual("testing_321", instance.OutputData[0]);
+            Assert.Zero(result.ExitCode);
+            Assert.AreEqual(1, result.OutputData.Count);
+            Assert.AreEqual("testing_321", result.OutputData[0]);
         }
 
         [TestCase("_mytestvar_", null, null, true)]
@@ -678,27 +678,27 @@ namespace AgentDeploy.Tests.E2E
                 }
             }));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps -v test_var={testValue}");
+            var result = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 -t test --hide-headers --hide-timestamps -v test_var={testValue}");
             
             if (shouldSucceed)
             {
-                Assert.Zero(exitCode);
-                Assert.AreEqual(1, instance.OutputData.Count);
-                Assert.AreEqual(testValue, instance.OutputData[0]);
+                Assert.Zero(result.ExitCode);
+                Assert.AreEqual(1, result.OutputData.Count);
+                Assert.AreEqual(testValue, result.OutputData[0]);
             }
             else
             {
-                Assert.NotZero(exitCode);
-                Assert.AreEqual(3, instance.ErrorData.Count);
-                Assert.AreEqual("One or more validation errors occured", instance.ErrorData[0]);
-                Assert.AreEqual("test_var:", instance.ErrorData[1]);
+                Assert.NotZero(result.ExitCode);
+                Assert.AreEqual(3, result.ErrorData.Count);
+                Assert.AreEqual("One or more validation errors occured", result.ErrorData[0]);
+                Assert.AreEqual("test_var:", result.ErrorData[1]);
                 if (string.IsNullOrEmpty(scriptConstraint) && !string.IsNullOrEmpty(tokenConstraint))
                 {
-                    Assert.AreEqual($"  Provided value does not pass profile constraint regex validation ({tokenConstraint})", instance.ErrorData[2]);
+                    Assert.AreEqual($"  Provided value does not pass profile constraint regex validation ({tokenConstraint})", result.ErrorData[2]);
                 }
                 else if (!string.IsNullOrEmpty(scriptConstraint))
                 {
-                    Assert.AreEqual($"  Provided value does not pass script regex validation ({scriptConstraint})", instance.ErrorData[2]);
+                    Assert.AreEqual($"  Provided value does not pass script regex validation ({scriptConstraint})", result.ErrorData[2]);
                 }
             }
         }
@@ -720,19 +720,19 @@ namespace AgentDeploy.Tests.E2E
                 }
             }));
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 --hide-timestamps -t test -v test_var={variableValue}");
+            var result = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 --hide-timestamps -t test -v test_var={variableValue}");
 
             if (success)
             {
-                Assert.Zero(exitCode);
-                Assert.AreEqual(variableValue, instance.OutputData[1]);
+                Assert.Zero(result.ExitCode);
+                Assert.AreEqual(variableValue, result.OutputData[1]);
             }
             else
             {
-                Assert.NotZero(exitCode);
-                Assert.AreEqual(3, instance.ErrorData.Count);
-                Assert.AreEqual("test_var:", instance.ErrorData[1]);
-                Assert.IsTrue(instance.ErrorData[2].StartsWith("  Provided value does not pass type validation"));
+                Assert.NotZero(result.ExitCode);
+                Assert.AreEqual(3, result.ErrorData.Count);
+                Assert.AreEqual("test_var:", result.ErrorData[1]);
+                Assert.IsTrue(result.ErrorData[2].StartsWith("  Provided value does not pass type validation"));
             }
         }
         
@@ -756,24 +756,24 @@ namespace AgentDeploy.Tests.E2E
             
             const string secret = "myverysecretsecret";
             
-            var (exitCode, instance) = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 --hide-headers --hide-timestamps --hide-script-line-numbers -t test {(providedAsSecret ? "-s" : "-v")} test_var={secret}");
+            var result = await E2ETestUtils.ClientOutput($"invoke test http://localhost:5000 --hide-headers --hide-timestamps --hide-script-line-numbers -t test {(providedAsSecret ? "-s" : "-v")} test_var={secret}");
 
             var shouldBeSecret = definedAsSecret || providedAsSecret;
-            Assert.Zero(exitCode);
-            Assert.AreEqual(2, instance.OutputData.Count);
-            Assert.AreEqual(0, instance.ErrorData.Count);
+            Assert.Zero(result.ExitCode);
+            Assert.AreEqual(2, result.OutputData.Count);
+            Assert.AreEqual(0, result.ErrorData.Count);
             
             if (shouldBeSecret)
             {
-                Assert.False(instance.OutputData.Any(s => s.Contains(secret)));
-                Assert.False(instance.ErrorData.Any(s => s.Contains(secret)));
-                Assert.AreEqual("echo " + new string('*', secret.Length), instance.OutputData[0]);
-                Assert.AreEqual(new string('*', secret.Length), instance.OutputData[1]);
+                Assert.False(result.OutputData.Any(s => s.Contains(secret)));
+                Assert.False(result.ErrorData.Any(s => s.Contains(secret)));
+                Assert.AreEqual("echo " + new string('*', secret.Length), result.OutputData[0]);
+                Assert.AreEqual(new string('*', secret.Length), result.OutputData[1]);
             }
             else
             {
-                Assert.AreEqual("echo " + secret, instance.OutputData[0]);
-                Assert.AreEqual(secret, instance.OutputData[1]);
+                Assert.AreEqual("echo " + secret, result.OutputData[0]);
+                Assert.AreEqual(secret, result.OutputData[1]);
             }
         }
     }

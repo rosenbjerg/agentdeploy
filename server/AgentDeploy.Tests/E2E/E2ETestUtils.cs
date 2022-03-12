@@ -19,12 +19,9 @@ namespace AgentDeploy.Tests.E2E
                 throw new FileNotFoundException(Path.Combine(AgentdClientPath, "index.js"));
         }
         
-        public static async Task<(int exitCode, Instance instance)> ClientOutput(string arguments, CancellationToken cancellationToken = default)
+        public static async Task<IProcessResult> ClientOutput(string arguments, CancellationToken cancellationToken = default)
         {
-            var instance = new Instance("node", $"{AgentdClientPath} {arguments}");
-            cancellationToken.Register(() => instance.Started = false);
-            var exitCode = await instance.FinishedRunning();
-            return (exitCode, instance);
+            return await Instance.FinishAsync("node", $"{AgentdClientPath} {arguments}", cancellationToken);
         }
     }
 }

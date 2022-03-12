@@ -17,13 +17,8 @@ namespace AgentDeploy.Services
                 Arguments = arguments,
                 WorkingDirectory = workingDir
             };
-            var instance = new Instance(startInfo);
-            instance.DataReceived += (_, args) => onOutput?.Invoke(args.Data, args.Type == DataType.Error);
-
-            cancellationToken.Register(() => instance.Started = false);
-            var exitCode = await instance.FinishedRunning();
-            
-            return new ProcessExecutionResult(exitCode, instance.OutputData, instance.ErrorData);
+            var result = await Instance.FinishAsync(startInfo, cancellationToken, (_, s) => onOutput?.Invoke(s, false), (_, s) => onOutput?.Invoke(s, true));
+            return new ProcessExecutionResult(result.ExitCode, result.OutputData, result.ErrorData);
         }
     }
 }
